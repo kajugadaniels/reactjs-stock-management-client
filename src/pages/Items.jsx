@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import Swal from 'sweetalert2';
 import { useFetchItems, useItemForm } from '../hooks';
 
 const Items = () => {
-    const { items, loading, error } = useFetchItems();
+    const { items, loading, error, fetchItems } = useFetchItems();
     const { deleteItem } = useItemForm();
     const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
     const [isItemsEditOpen, setIsItemsEditOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+
+    useEffect(() => {
+        fetchItems();
+    }, []);
 
     const toggleItemsCreateModal = () => {
         setIsItemsCreateOpen(!isItemsCreateOpen);
@@ -41,7 +45,7 @@ const Items = () => {
             try {
                 await deleteItem(id);
                 Swal.fire('Deleted!', 'Item has been deleted.', 'success').then(() => {
-                    window.location.reload();
+                    fetchItems();
                 });
             } catch (error) {
                 Swal.fire('Error!', 'Failed to delete item.', 'error');
@@ -97,13 +101,13 @@ const Items = () => {
                                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
                                         onClick={() => openItemsEditModal(item)}
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></g></svg>
+                                        Edit
                                     </button>
                                     <button
                                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                                         onClick={() => handleDeleteItem(item.id)}
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5" /></svg>
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

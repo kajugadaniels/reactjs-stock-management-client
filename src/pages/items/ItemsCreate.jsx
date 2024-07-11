@@ -4,6 +4,59 @@ import { useItemForm } from '../../hooks';
 
 const ItemsCreate = ({ isOpen, onClose }) => {
     const { formData, loading, handleChange, addItem } = useItemForm();
+    const [categories, setCategories] = useState([]);
+    const [types, setTypes] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchSuppliers();
+    }, []);
+
+    useEffect(() => {
+        if (formData.category_id) {
+            fetchTypes(formData.category_id);
+        }
+    }, [formData.category_id]);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch categories');
+            }
+            const data = await response.json();
+            setCategories(data);
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
+
+    const fetchTypes = async (categoryId) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types/category/${categoryId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch types');
+            }
+            const data = await response.json();
+            setTypes(data);
+        } catch (error) {
+            console.error('Error fetching types:', error);
+        }
+    };
+
+    const fetchSuppliers = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch suppliers');
+            }
+            const data = await response.json();
+            setSuppliers(data);
+        } catch (error) {
+            console.error('Error fetching suppliers:', error);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,64 +86,107 @@ const ItemsCreate = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="w-full max-w-lg mx-auto p-6 bg-card text-card-foreground rounded-lg shadow-md bg-white">
-                <h2 className="text-2xl font-semibold mb-4">Items Form</h2>
-                <p className="text-muted-foreground mb-6 text-[#424955]">Sub-title goes here</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
+                <h2 className="mb-4 text-2xl font-semibold">Add an Item</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="name">Name</label>
+                        <label htmlFor="name" className="block text-sm font-medium mb-1 text-[#424955]">Item Name</label>
                         <input
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             type="text"
                             id="name"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Item Name"
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            placeholder="Enter item name"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="category">Category</label>
-                        <input
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            type="text"
-                            id="category"
-                            name="category"
-                            value={formData.category}
+                        <label htmlFor="category_id" className="block text-sm font-medium mb-1 text-[#424955]">Category</label>
+                        <select
+                            id="category_id"
+                            name="category_id"
+                            value={formData.category_id}
                             onChange={handleChange}
-                            placeholder="Item Category"
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             required
-                        />
+                        >
+                            <option value="">Select category</option>
+                            {categories.map((category) => (
+                                <option key={category.id} value={category.id}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="price">Price</label>
-                        <input
+                        <label htmlFor="type_id" className="block text-sm font-medium mb-1 text-[#424955]">Item Type</label>
+                        <select
+                            id="type_id"
+                            name="type_id"
+                            value={formData.type_id}
+                            onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            required
+                            disabled={!formData.category_id}
+                        >
+                            <option value="">Select type</option>
+                            {types.map((type) => (
+                                <option key={type.id} value={type.id}>
+                                    {type.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="capacity" className="block text-sm font-medium mb-1 text-[#424955]">Capacity</label>
+                        <input
                             type="number"
-                            id="price"
-                            name="price"
-                            value={formData.price}
+                            id="capacity"
+                            name="capacity"
+                            value={formData.capacity}
                             onChange={handleChange}
-                            placeholder="Item Price"
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            placeholder="Enter capacity"
                             required
                         />
                     </div>
-                    <div className="flex justify-end">
-                        <button
-                            className="mr-2 px-4 py-2 text-white bg-red-500 rounded"
-                            type="button"
-                            onClick={onClose}
+                    <div className="mb-4">
+                        <label htmlFor="unit" className="block text-sm font-medium mb-1 text-[#424955]">Unit</label>
+                        <input
+                            type="text"
+                            id="unit"
+                            name="unit"
+                            value={formData.unit}
+                            onChange={handleChange}
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            placeholder="Enter unit"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="supplier_id" className="block text-sm font-medium mb-1 text-[#424955]">Supplier</label>
+                        <select
+                            id="supplier_id"
+                            name="supplier_id"
+                            value={formData.supplier_id}
+                            onChange={handleChange}
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            required
                         >
-                            Cancel
-                        </button>
-                        <button
-                            className="px-4 py-2 text-white bg-[#00BDD6] rounded"
-                            type="submit"
-                            disabled={loading}
-                        >
-                            {loading ? 'Adding...' : 'Add Item'}
+                            <option value="">Select supplier</option>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                        <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
+                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                            {loading ? 'Creating...' : 'Create Item'}
                         </button>
                     </div>
                 </form>
