@@ -21,7 +21,8 @@ const useItemForm = (initialData = {}) => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add item');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add item');
             }
 
             const data = await response.json();
@@ -44,12 +45,24 @@ const useItemForm = (initialData = {}) => {
                 },
                 body: JSON.stringify(formData),
             });
-
+    
+            const responseText = await response.text();
+    
             if (!response.ok) {
-                throw new Error('Failed to update item');
+                console.error('Failed to update item:', response.status, response.statusText);
+                console.error('Response headers:', Array.from(response.headers.entries()));
+                console.error('Response text:', responseText);
+                let errorMessage = 'Failed to update item';
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.message || errorMessage;
+                } catch (e) {
+                    console.error('Error parsing JSON response:', e);
+                }
+                throw new Error(errorMessage);
             }
-
-            const data = await response.json();
+    
+            const data = JSON.parse(responseText);
             setLoading(false);
             return data;
         } catch (error) {
@@ -67,7 +80,8 @@ const useItemForm = (initialData = {}) => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete item');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to delete item');
             }
 
             setLoading(false);
