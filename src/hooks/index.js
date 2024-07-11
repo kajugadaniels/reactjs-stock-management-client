@@ -1,5 +1,3 @@
-import useFetchStockIn from './useFetchStockIn'
-
 // Suppliers
 import useSupplierForm from './suppliers/useSupplierForm'
 import useFetchSuppliers from './suppliers/useFetchSuppliers'
@@ -9,9 +7,10 @@ import useFetchItems from './items/useFetchItems'
 import useItemForm from './items/useItemForm'
 import useFetchTypes from './items/useFetchTypes'
 
-export {
-    useFetchStockIn,
+// Stock In
+import useStockIn from './stockIn/useStockIn'
 
+export {
     // Suppliers
     useSupplierForm,
     useFetchSuppliers,
@@ -19,5 +18,8 @@ export {
     // Item
     useFetchItems,
     useItemForm,
-    useFetchTypes
+    useFetchTypes,
+
+    // Stock In
+    useStockIn
 }
