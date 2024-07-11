@@ -1,6 +1,5 @@
 // Suppliers
-import useSupplierForm from './suppliers/useSupplierForm'
-import useFetchSuppliers from './suppliers/useFetchSuppliers'
+import useSupplier from './suppliers/useSupplier'
 
 // Items
 import useFetchItems from './items/useFetchItems'
@@ -12,8 +11,7 @@ import useStockIn from './stockIn/useStockIn'
 
 export {
     // Suppliers
-    useSupplierForm,
-    useFetchSuppliers,
+    useSupplier,
 
     // Item
     useFetchItems,
