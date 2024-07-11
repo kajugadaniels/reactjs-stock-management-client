@@ -77,7 +77,9 @@ const Items = () => {
                             <th scope='col' className="px-6 py-3 border">Item Id</th>
                             <th scope='col' className="px-6 py-3 border">Name</th>
                             <th scope='col' className="px-6 py-3 border">Category</th>
-                            <th scope='col' className="px-6 py-3 border">Price</th>
+                            <th scope='col' className="px-6 py-3 border">Type</th>
+                            <th scope='col' className="px-6 py-3 border">Capacity</th>
+                            <th scope='col' className="px-6 py-3 border">Supplier Name</th>
                             <th scope='col' className="px-6 py-3 border">Action</th>
                         </tr>
                     </thead>
@@ -86,8 +88,10 @@ const Items = () => {
                             <tr className="border-t" key={item.id}>
                                 <td className="px-4 py-4 border">item-{item.id}</td>
                                 <td className="px-10 py-4 border">{item.name}</td>
-                                <td className="px-10 py-4 border">{item.category}</td>
-                                <td className="px-10 py-4 border">{item.price}</td>
+                                <td className="px-10 py-4 border">{item.category_name}</td>
+                                <td className="px-10 py-4 border">{item.type_name}</td>
+                                <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>
+                                <td className="px-10 py-4 border">{item.supplier_name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button
                                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
