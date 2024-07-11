@@ -17,7 +17,7 @@ const useItemForm = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/categories');
+                const response = await fetch('${import.meta.env.VITE_API_URL}/categories');
                 if (!response.ok) {
                     throw new Error('Failed to fetch categories');
                 }
@@ -33,7 +33,7 @@ const useItemForm = () => {
 
     const fetchTypesByCategory = async (categoryId) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/types?category_id=${categoryId}`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types?category_id=${categoryId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch types');
             }
@@ -56,7 +56,7 @@ const useItemForm = () => {
     const addItem = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8000/api/items', {
+            const response = await fetch('${import.meta.env.VITE_API_URL}/items', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

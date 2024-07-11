@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SuppliersCreate, SuppliersItems } from './items';
-import useFetchSuppliers from '../hooks/useFetchSuppliers';
+import { useFetchSuppliers } from '../hooks';
 
 const Suppliers = () => {
     const { suppliers, loading, error } = useFetchSuppliers();  // Add parentheses here

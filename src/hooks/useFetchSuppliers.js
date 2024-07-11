@@ -8,7 +8,7 @@ const useFetchSuppliers = () => {
     useEffect(() => {
         const fetchSuppliers = async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/suppliers`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
                 if (!response.ok) {
                     throw new Error('failed to fetch suppliers');
                 }

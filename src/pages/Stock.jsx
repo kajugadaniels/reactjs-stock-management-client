@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreateRequest, } from './items';
+import { CreateRequest } from './items';
 
 const Stock = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);

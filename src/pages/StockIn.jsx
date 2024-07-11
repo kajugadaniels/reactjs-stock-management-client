@@ -1,5 +1,5 @@
 import React from 'react'
-import useFetchStockIn from '../hooks/useFetchStockIn';
+import { useFetchStockIn } from '../hooks';
 
 function StockIn() {
     const { stockIns, loading, error } = useFetchStockIn();
