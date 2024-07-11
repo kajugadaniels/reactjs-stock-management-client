@@ -70,6 +70,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                 capacity: item.capacity,
                 unit: item.unit,
                 supplier_id: item.supplier_id,
+                comment: item.comment,
             });
         }
     }, [item, setFormData]);

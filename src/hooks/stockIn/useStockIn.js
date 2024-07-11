@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 
 const useStockIn = (initialData = {}) => {
-    // State for fetching stock ins
     const [stockIns, setStockIns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
