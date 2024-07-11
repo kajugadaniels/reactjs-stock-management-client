@@ -96,7 +96,7 @@ const Items = () => {
                                 <td className="px-10 py-4 border">{item.type_name}</td>
                                 <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>
                                 <td className="px-10 py-4 border">{item.supplier_name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <button
                                     className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
                                         onClick={() => openItemsEditModal(item)}
