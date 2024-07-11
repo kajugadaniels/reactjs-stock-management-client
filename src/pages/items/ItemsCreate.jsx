@@ -87,7 +87,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
+            <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground w-[700px]">
                 <h2 className="mb-4 text-2xl font-semibold">Add an Item</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
@@ -98,7 +98,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] p-2 w-full border border-input rounded bg-input text-foreground"
                             placeholder="Enter item name"
                             required
                         />
@@ -110,10 +110,10 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             name="category_id"
                             value={formData.category_id}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground 'text-gray-500"
                             required
                         >
-                            <option value="">Select category</option>
+                            <option value="" >Select category</option>
                             {categories.map((category) => (
                                 <option key={category.id} value={category.id}>
                                     {category.name}
@@ -186,7 +186,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
                         <button type="submit" className="btn btn-primary" disabled={loading}>
-                            {loading ? 'Creating...' : 'Create Item'}
+                            <div className='bg-[#00BDD6] p-2 text-white rounded-xl'> {loading ? 'Creating...' : 'Create Item'}</div>
                         </button>
                     </div>
                 </form>
