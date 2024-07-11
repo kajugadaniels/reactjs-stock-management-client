@@ -45,24 +45,12 @@ const useItemForm = (initialData = {}) => {
                 },
                 body: JSON.stringify(formData),
             });
-    
-            const responseText = await response.text();
-    
+
             if (!response.ok) {
-                console.error('Failed to update item:', response.status, response.statusText);
-                console.error('Response headers:', Array.from(response.headers.entries()));
-                console.error('Response text:', responseText);
-                let errorMessage = 'Failed to update item';
-                try {
-                    const errorData = JSON.parse(responseText);
-                    errorMessage = errorData.message || errorMessage;
-                } catch (e) {
-                    console.error('Error parsing JSON response:', e);
-                }
-                throw new Error(errorMessage);
+                throw new Error('Failed to update item');
             }
-    
-            const data = JSON.parse(responseText);
+
+            const data = await response.json();
             setLoading(false);
             return data;
         } catch (error) {

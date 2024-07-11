@@ -61,6 +61,19 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
         }
     };
 
+    useEffect(() => {
+        if (item) {
+            setFormData({
+                name: item.name,
+                category_id: item.category_id,
+                type_id: item.type_id,
+                capacity: item.capacity,
+                unit: item.unit,
+                supplier_id: item.supplier_id,
+            });
+        }
+    }, [item, setFormData]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
