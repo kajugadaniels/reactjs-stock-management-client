@@ -18,7 +18,6 @@ const Header = () => {
             <div className="flex items-center space-x-4">
                 <img src="images/logo.jpeg" alt="Jabana" className="rounded-full w-14 h-14" />
             </div>
-            {/* Menu for larger screens */}
             <ul className="items-center hidden ml-6 space-x-6 md:flex">
                 <li>
                     <Link to="/dashboard" className={`flex items-center space-x-2 ${location.pathname === '/dashboard' ? activeLinkClass : inactiveLinkClass}`}>
@@ -39,7 +38,7 @@ const Header = () => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/stock" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
+                    <Link to="/products" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
                         <Icon icon="ph:cube-bold" width="1.3em" height="1.3em" />
                         <span>Stock</span>
                     </Link>

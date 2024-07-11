@@ -15,7 +15,7 @@ const App = () => {
                     <Route path="items" element={<Items />} />
                     <Route path="suppliers" element={<Suppliers />} />
                     <Route path="stock" element={<Stock />} />
-                    <Route path="stockin" element={<StockIn />} />
+                    <Route path="products" element={<StockIn />} />
                     <Route path="inventory" element={<Inventory />} />
                     <Route path="process" element={<Process />} />
                     <Route path="product-stock-in" element={<ProductStockIn />} />
