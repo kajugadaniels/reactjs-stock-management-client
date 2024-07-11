@@ -39,21 +39,21 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                     <table className="min-w-full bg-white">
                         <thead>
                             <tr>
-                                <th className="px-6 py-2 text-left">Item ID</th>
-                                <th className="px-6 py-2 text-left">Name</th>
-                                <th className="px-6 py-2 text-left">Description</th>
-                                <th className="px-6 py-2 text-left">Price</th>
-                                <th className="px-6 py-2 text-left">Quantity</th>
+                                <th className="px-10 py-5 border">Item ID</th>
+                                <th className="px-10 py-5 border">Name</th>
+                                <th className="px-10 py-5 border">Category</th>
+                                <th className="px-10 py-5 border">Type</th>
+                                <th className="px-10 py-5 border">Capacity</th>
                             </tr>
                         </thead>
                         <tbody>
                             {items.map((item) => (
                                 <tr key={item.id}>
-                                    <td className="px-6 py-2">{item.id}</td>
-                                    <td className="px-6 py-2">{item.name}</td>
-                                    <td className="px-6 py-2">{item.description}</td>
-                                    <td className="px-6 py-2">{item.price}</td>
-                                    <td className="px-6 py-2">{item.quantity}</td>
+                                    <td className="px-10 py-5 border">{item.id}</td>
+                                    <td className="px-10 py-5 border">{item.name}</td>
+                                    <td className="px-10 py-5 border">{item.category_name}</td>
+                                    <td className="px-10 py-5 border">{item.type_name}</td>
+                                    <td className="px-10 py-5 border">{item.capacity} {item.unit}</td>
                                 </tr>
                             ))}
                         </tbody>
