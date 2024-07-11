@@ -80,7 +80,7 @@ const useStockIn = (initialData = {}) => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update stock in');
+                throw new Error('Failed to update product');
             }
 
             const data = await response.json();
@@ -88,7 +88,8 @@ const useStockIn = (initialData = {}) => {
             return data;
         } catch (error) {
             setLoading(false);
-            throw error;
+            console.error('Error updating product:', error);
+            throw new Error(error.message || 'Failed to update product');
         }
     };
 

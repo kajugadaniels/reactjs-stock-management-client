@@ -23,6 +23,20 @@ const StockInEdit = ({ isOpen, onClose, stockIn }) => {
         }
     };
 
+    useEffect(() => {
+        if (stockIn) {
+            setFormData({
+                item_id: stockIn.item_id,
+                quantity: stockIn.quantity,
+                registered_by: stockIn.registered_by,
+                plaque: stockIn.plaque,
+                batch: stockIn.batch,
+                status: stockIn.status,
+                comment: stockIn.comment,
+            });
+        }
+    }, [stockIn, setFormData]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -31,19 +45,19 @@ const StockInEdit = ({ isOpen, onClose, stockIn }) => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    text: 'Stock in record updated successfully!',
+                    text: 'Product updated successfully!',
                 }).then(() => {
                     onClose();
                     window.location.reload();
                 });
             } else {
-                throw new Error('Failed to update stock in record');
+                throw new Error('Failed to update product');
             }
         } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'Failed to update stock in record',
+                text: error.message || 'Failed to update product',
             });
         }
     };
