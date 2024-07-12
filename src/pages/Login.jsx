@@ -44,6 +44,10 @@ const Login = () => {
                     text: 'Welcome back!',
                 });
                 localStorage.setItem('token', data.data.token);
+                localStorage.setItem('user', JSON.stringify({
+                    name: data.data.name,
+                    role: data.data.role
+                }));
                 if (rememberMe) {
                     localStorage.setItem('email', email);
                 } else {
