@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import ItemsCreate from './items/ItemsCreate';
-import ItemsEdit from './items/ItemsEdit';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useFetchItems, useItemForm } from '../hooks';
+import CategoryCreate from './categories/CategoryCreate';
+import ItemsCreate from './items/ItemsCreate';
+import ItemsEdit from './items/ItemsEdit';
+import TypesCreate from './types/TypesCreate';
 
 const Items = () => {
     const { items, loading, error, fetchItems } = useFetchItems();
     const { deleteItem } = useItemForm();
     const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
+    const [isCategoryCreateOpen, setIsCategoryCreateOpen] = useState(false);
+    const [isTypesCreateOpen, setIsTypesCreateOpen] = useState(false);
     const [isItemsEditOpen, setIsItemsEditOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
@@ -18,12 +22,30 @@ const Items = () => {
     const toggleItemsCreateModal = () => {
         setIsItemsCreateOpen(!isItemsCreateOpen);
         setIsItemsEditOpen(false);
+        setIsCategoryCreateOpen(false);
+        setIsTypesCreateOpen(false);
     };
+
+    const toggleCategoryCreateModal = () => {
+        setIsCategoryCreateOpen(!isCategoryCreateOpen);
+        setIsItemsCreateOpen(false);
+        setIsItemsEditOpen(false);
+        setIsTypesCreateOpen(false);
+    };
+
+    const toggleTypesCreateModal = () => {
+        setIsTypesCreateOpen(!isTypesCreateOpen);
+        setIsItemsCreateOpen(false);
+        setIsItemsEditOpen(false);
+        setIsCategoryCreateOpen(false);
+    };
+    
 
     const openItemsEditModal = (item) => {
         setSelectedItem(item);
         setIsItemsEditOpen(true);
         setIsItemsCreateOpen(false);
+        setIsCategoryCreateOpen(false);
     };
 
     const closeItemsEditModal = () => {
@@ -63,19 +85,40 @@ const Items = () => {
 
     return (
         <div className="p-4">
-            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
+           <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
                 <div className="p-4 text-center bg-white rounded-lg shadow">
                     <h2 className="text-zinc-600">Total Items</h2>
                     <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
                 </div>
+
+                <div className="p-4 text-center bg-white rounded-lg shadow">
+                    <h2 className="text-zinc-600">Total Category</h2>
+                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
+                </div>
+
+                <div className="p-4 text-center bg-white rounded-lg shadow">
+                    <h2 className="text-zinc-600">Total Types</h2>
+                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
+                </div>
+
             </div>
-            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
+
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row justify-start items-center">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
                     Add Item
                 </button>
+
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleCategoryCreateModal}>
+                    Add Category
+                </button>
+
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleTypesCreateModal}>
+                    Add Types
+                </button>
             </div>
+
             <div className="overflow-x-auto">
-                <table className="w-full min-w-full bg-white rounded-lg shadow">
+            <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
                         <tr>
                             <th scope='col' className="px-6 py-3 border">Item Id</th>
@@ -87,6 +130,8 @@ const Items = () => {
                             <th scope='col' className="px-6 py-3 border">Action</th>
                         </tr>
                     </thead>
+
+
                     <tbody>
                         {items.map((item) => (
                             <tr className="border-t" key={item.id}>
@@ -113,9 +158,13 @@ const Items = () => {
                             </tr>
                         ))}
                     </tbody>
+
+
                 </table>
             </div>
             {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} />}
+            {isCategoryCreateOpen && <CategoryCreate isOpen={isCategoryCreateOpen} onClose={toggleCategoryCreateModal} />}
+            {isTypesCreateOpen && <TypesCreate isOpen={isTypesCreateOpen} onClose={toggleTypesCreateModal} />}
             {isItemsEditOpen && <ItemsEdit isOpen={isItemsEditOpen} onClose={closeItemsEditModal} item={selectedItem} />}
         </div>
     );

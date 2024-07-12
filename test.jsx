@@ -1,142 +1,134 @@
-import { Icon } from '@iconify/react';
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
+import { useFetchItems, useItemForm } from '../hooks';
+import ItemsCreate from './items/ItemsCreate';
+import ItemsEdit from './items/ItemsEdit';
 
-const Header = () => {
-    const location = useLocation();
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // State for menu toggle
-    const activeLinkClass = "text-[#00BDD6] border-b-2 border-[#00BDD6]";
-    const inactiveLinkClass = "text-black";
+const Items = () => {
+    const { items, loading, error, fetchItems } = useFetchItems();
+    const { deleteItem } = useItemForm();
+    const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
+    const [isItemsEditOpen, setIsItemsEditOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
-    // Function to toggle menu state
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+    useEffect(() => {
+        fetchItems();
+    }, []);
+
+    const toggleItemsCreateModal = () => {
+        setIsItemsCreateOpen(!isItemsCreateOpen);
+        setIsItemsEditOpen(false);
     };
 
+    const openItemsEditModal = (item) => {
+        setSelectedItem(item);
+        setIsItemsEditOpen(true);
+        setIsItemsCreateOpen(false);
+    };
+
+    const closeItemsEditModal = () => {
+        setIsItemsEditOpen(false);
+        setSelectedItem(null);
+    };
+
+    const handleDeleteItem = async (id) => {
+        const confirmed = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will not be able to recover this item!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, keep it'
+        });
+
+        if (confirmed.isConfirmed) {
+            try {
+                await deleteItem(id);
+                Swal.fire('Deleted!', 'Item has been deleted.', 'success').then(() => {
+                    fetchItems();
+                });
+            } catch (error) {
+                Swal.fire('Error!', 'Failed to delete item.', 'error');
+            }
+        }
+    };
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
     return (
-        <nav className="flex items-center p-2 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
-            <div className="flex items-center space-x-4">
-                <img src="images/logo.jpeg" alt="Jabana" className="rounded-full w-14 h-14" />
+        <div className="p-4">
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
+                <div className="p-4 text-center bg-white rounded-lg shadow">
+                    <h2 className="text-zinc-600">Total Items</h2>
+                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
+                </div>
             </div>
-            {/* Menu for larger screens */}
-            <ul className="items-center hidden ml-6 space-x-6 md:flex">
-                <li>
-                    <Link to="/dashboard" className={`flex items-center space-x-2 ${location.pathname === '/dashboard' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="ic:baseline-dashboard" width="1.3em" height="1.3em" />
-                        <span>Dashboard</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/items" className={`flex items-center space-x-2 ${location.pathname === '/items' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="mdi:cart" width="1.2em" height="1.2em" />
-                        <span>Items</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/suppliers" className={`flex items-center space-x-2 ${location.pathname === '/suppliers' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="tabler:stack" width="1.3em" height="1.3em" />
-                        <span>Suppliers</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/stock" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="ph:cube-bold" width="1.3em" height="1.3em" />
-                        <span>Stock</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/inventory" className={`flex items-center space-x-2 ${location.pathname === '/inventory' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="bi:layers" width="1.3em" height="1.3em" />
-                        <span>Inventory</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/process" className={`flex items-center space-x-2 ${location.pathname === '/process' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="fa-solid:cogs" width="1.3em" height="1.3em" />
-                        <span>Process</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/product-stock-in" className={`flex items-center space-x-2 ${location.pathname === '/product-stock-in' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="ri:product-hunt-line" width="1.3em" height="1.3em" />
-                        <span>Product Stock In</span>
-                    </Link>
-                </li>
-                <li>
-                    <Link to="/product-stock-out" className={`flex items-center space-x-2 ${location.pathname === '/product-stock-out' ? activeLinkClass : inactiveLinkClass}`}>
-                        <Icon icon="ri:product-hunt-fill" width="1.3em" height="1.3em" />
-                        <span>Product Stock Out</span>
-                    </Link>
-                </li>
-            </ul>
-            
-            {/* Menu toggle for small screens */}
-            <div className="ml-auto md:hidden">
-                <button onClick={toggleMenu} className="text-xl text-black focus:outline-none">
-                    <Icon icon={isMenuOpen ? "bi:justify" : "bi:justify-left"} />
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
+                    Add Item
                 </button>
             </div>
-            
-            {/* Responsive menu */}
-            {isMenuOpen && (
-                <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow md:hidden top-16 dark:bg-card-foreground text-card-foreground dark:text-customgray">
-                    <li>
-                        <Link to="/dashboard" className={`flex items-center space-x-2 ${location.pathname === '/dashboard' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="ic:baseline-dashboard" width="1.3em" height="1.3em" />
-                            <span>Dashboard</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/items" className={`flex items-center space-x-2 ${location.pathname === '/items' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="mdi:cart" width="1.2em" height="1.2em" />
-                            <span>Items</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/suppliers" className={`flex items-center space-x-2 ${location.pathname === '/suppliers' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="tabler:stack" width="1.3em" height="1.3em" />
-                            <span>Suppliers</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/stock" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="ph:cube-bold" width="1.3em" height="1.3em" />
-                            <span>Stock</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/inventory" className={`flex items-center space-x-2 ${location.pathname === '/inventory' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="bi:layers" width="1.3em" height="1.3em" />
-                            <span>Inventory</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/process" className={`flex items-center space-x-2 ${location.pathname === '/process' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="fa-solid:cogs" width="1.3em" height="1.3em" />
-                            <span>Process</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/product-stock-in" className={`flex items-center space-x-2 ${location.pathname === '/product-stock-in' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="ri:product-hunt-line" width="1.3em" height="1.3em" />
-                            <span>Product Stock In</span>
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/product-stock-out" className={`flex items-center space-x-2 ${location.pathname === '/product-stock-out' ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon="ri:product-hunt-fill" width="1.3em" height="1.3em" />
-                            <span>Product Stock Out</span>
-                        </Link>
-                    </li>
-                </ul>
-            )}
-            
-            {/* Search input */}
-            <div className="hidden ml-auto md:block">
-                <input type="text" placeholder="Search..." className="px-4 py-1 border rounded-md bg-input text-input-foreground border-border sm:rounded-full" />
-            </div>
-        </nav>
-    );
-}
 
-export default Header;
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
+                    Add_Category
+                </button>
+            </div>
+
+            
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-full bg-white rounded-lg shadow">
+                    <thead>
+                        <tr>
+                            <th scope='col' className="px-6 py-3 border">Item Id</th>
+                            <th scope='col' className="px-6 py-3 border">Name</th>
+                            <th scope='col' className="px-6 py-3 border">Category</th>
+                            <th scope='col' className="px-6 py-3 border">Type</th>
+                            <th scope='col' className="px-6 py-3 border">Capacity</th>
+                            <th scope='col' className="px-6 py-3 border">Supplier Name</th>
+                            <th scope='col' className="px-6 py-3 border">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items.map((item) => (
+                            <tr className="border-t" key={item.id}>
+                                <td className="px-4 py-4 border">item-{item.id}</td>
+                                <td className="px-10 py-4 border">{item.name}</td>
+                                <td className="px-10 py-4 border">{item.category_name}</td>
+                                <td className="px-10 py-4 border">{item.type_name}</td>
+                                <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>
+                                <td className="px-10 py-4 border">{item.supplier_name}</td>
+                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                    <button
+                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
+                                        onClick={() => openItemsEditModal(item)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></g></svg>
+                                    </button>
+                                    <button
+                                        className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                                        onClick={() => handleDeleteItem(item.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            
+            {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} />}
+            {isItemsEditOpen && <ItemsEdit isOpen={isItemsEditOpen} onClose={closeItemsEditModal} item={selectedItem} />}
+        </div>
+    );
+};
+
+export default Items;
