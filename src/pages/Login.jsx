@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.error) {
+            setError(location.state.error);
+        }
+    }, [location]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -28,30 +36,41 @@ const Login = () => {
             if (response.ok) {
                 console.log('Login successful:', data);
                 setError('');
-                alert(`Login Successful! Welcome ${data.data.name}`);
+                localStorage.setItem('token', data.data.token);
+                if (rememberMe) {
+                    localStorage.setItem('email', email);
+                } else {
+                    localStorage.removeItem('email');
+                }
                 navigate('/dashboard');
             } else {
                 console.error('Login error:', data.message);
                 setError(data.message || 'Login failed');
-                alert('Login Failed: ' + (data.message || 'Invalid credentials'));
             }
         } catch (error) {
             console.error('Network error:', error);
             setError('An error occurred. Please try again.');
-            alert('Network Error: Please try again later.');
         }
     };
 
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('email');
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
+
     return (
-        <div className="flex justify-center items-start min-h-screen bg-white">
-            <div className="flex flex-col md:flex-row bg-white overflow-hidden gap-32 mt-32">
-                <div className="hidden md:flex md:w-1/2 bg-cover bg-center">
-                    <div className="flex flex-col items-center justify-center mb-28 p-6">
-                        <img src="images/Container.png" alt="icon1" className="mb-4 w-auto h-96" />
+        <div className="flex items-start justify-center min-h-screen bg-white">
+            <div className="flex flex-col gap-32 mt-32 overflow-hidden bg-white md:flex-row">
+                <div className="hidden bg-center bg-cover md:flex md:w-1/2">
+                    <div className="flex flex-col items-center justify-center p-6 mb-28">
+                        <img src="images/Container.png" alt="icon1" className="w-auto mb-4 h-96" />
                     </div>
                 </div>
-                <div className="flex items-start justify-center mb-28 bg-white">
-                    <div className="w-96 max-w-md px-6 py-20 space-y-6 bg-white rounded-lg shadow-md">
+                <div className="flex items-start justify-center bg-white mb-28">
+                    <div className="max-w-md px-6 py-20 space-y-6 bg-white rounded-lg shadow-md w-96">
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-zinc-900">
                                 Welcome back{' '}
@@ -61,7 +80,7 @@ const Login = () => {
                             </h2>
                             <p className="text-zinc-600">Log in to your account</p>
                         </div>
-                        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                        {error && <div className="text-sm text-center text-red-500">{error}</div>}
                         <form className="space-y-6" onSubmit={handleLogin}>
                             <div className="space-y-1">
                                 <label htmlFor="email" className="sr-only">
@@ -75,7 +94,7 @@ const Login = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-10 gap-10 flex-grow px-4 py-2 text-zinc-900 placeholder-zinc-500 bg-zinc-100 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="flex-grow w-full gap-10 px-4 py-2 pl-10 border rounded-md text-zinc-900 placeholder-zinc-500 bg-zinc-100 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                     placeholder="md@jabana.com"
                                 />
                             </div>
@@ -91,8 +110,8 @@ const Login = () => {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-10 gap-10 flex-grow px-4 py-2 text-zinc-900 placeholder-zinc-500 bg-zinc-100 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent "
-                                    placeholder="...................."
+                                    className="flex-grow w-full gap-10 px-4 py-2 pl-10 border rounded-md text-zinc-900 placeholder-zinc-500 bg-zinc-100 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent "
+                                    placeholder="*******"
                                 />
                             </div>
                             <div className="flex items-center justify-between">
@@ -101,9 +120,11 @@ const Login = () => {
                                         id="remember_me"
                                         name="remember_me"
                                         type="checkbox"
-                                        className="h-4 w-4 text-primary border-zinc-300 rounded focus:ring-primary"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="w-4 h-4 rounded text-primary border-zinc-300 focus:ring-primary"
                                     />
-                                    <label htmlFor="remember_me" className="ml-2 block text-sm text-zinc-900">
+                                    <label htmlFor="remember_me" className="block ml-2 text-sm text-zinc-900">
                                         Remember me
                                     </label>
                                 </div>
@@ -113,9 +134,12 @@ const Login = () => {
                                     </a>
                                 </div>
                             </div>
-                            <button type="submit" className="w-full px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
-                                    Continue
-                                </button>
+                            <button 
+                                type="submit" 
+                                className="w-full px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                            >
+                                Continue
+                            </button>
                         </form>
                         <div className="text-center">
                             <p className="text-zinc-600">
