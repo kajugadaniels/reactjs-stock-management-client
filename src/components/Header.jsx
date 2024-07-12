@@ -15,7 +15,7 @@ const Header = () => {
     };
 
     return (
-        <nav className="flex justify-between items-center p-2 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
+        <nav className="flex items-center justify-between p-2 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
             <div className="flex items-center space-x-4">
                 <img src="images/logo.jpeg" alt="Jabana" className="rounded-full w-14 h-14" />
             </div>
@@ -72,7 +72,7 @@ const Header = () => {
                 </li>
             </ul>
 
-            <div className="flex-grow flex items-center justify-end space-x-4">
+            <div className="flex items-center justify-end flex-grow space-x-4">
                 <input type="text" placeholder="Search..." className="px-4 py-1 border rounded-md bg-input text-input-foreground border-border sm:rounded-full" />
                 {/* Profile dropdown next to the search bar */}
                 <Dropdown>
@@ -80,8 +80,8 @@ const Header = () => {
                         <img src="images/logo.jpeg" alt="Profile" className="w-10 h-10 rounded-full" style={{ border: '2px solid gray' }} />
                     </Dropdown.Toggle>
                     <Dropdown.Menu align="right" className="w-full">
-                        <Dropdown.Item as={Link} to="/profile" className="block w-full text-left px-3 py-2 hover:bg-gray-100">Profile</Dropdown.Item>
-                        <Dropdown.Item as={Link} to="/logout" className="block w-full text-left px-3 py-2 hover:bg-gray-100">Logout</Dropdown.Item>
+                        <Dropdown.Item as={Link} to="/profile" className="block w-full px-3 py-2 text-left hover:bg-gray-100">Profile</Dropdown.Item>
+                        <Dropdown.Item as={Link} to="/logout" className="block w-full px-3 py-2 text-left hover:bg-gray-100">Logout</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
             </div>
