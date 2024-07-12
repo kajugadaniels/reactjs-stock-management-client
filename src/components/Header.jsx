@@ -41,7 +41,7 @@ const Header = () => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/products" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
+                    <Link to="/stock" className={`flex items-center space-x-2 ${location.pathname === '/stock' ? activeLinkClass : inactiveLinkClass}`}>
                         <Icon icon="ph:cube-bold" width="1.3em" height="1.3em" />
                         <span>Stock</span>
                     </Link>
