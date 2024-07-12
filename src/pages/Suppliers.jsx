@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { useFetchSuppliers, useSupplierForm } from '../hooks';
 import SuppliersCreate from './suppliers/SuppliersCreate';
 import SuppliersEdit from './suppliers/SuppliersEdit';
 import SupplierItems from './suppliers/SupplierItems'; // Import the new component
 import Swal from 'sweetalert2';
+import { useSupplier } from '../hooks';
 
 const Suppliers = () => {
-    const { suppliers, loading, error } = useFetchSuppliers();
-    const { deleteSupplier } = useSupplierForm();
+    const { suppliers, deleteSupplier, loading, error } = useSupplier();
     const [isSuppliersCreateOpen, setIsSuppliersCreateOpen] = useState(false);
     const [isSuppliersEditOpen, setIsSuppliersEditOpen] = useState(false);
     const [isSupplierItemsOpen, setIsSupplierItemsOpen] = useState(false);

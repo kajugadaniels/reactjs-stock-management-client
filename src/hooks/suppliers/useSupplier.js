@@ -1,12 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 
-const useSupplierForm = () => {
+const useSupplier = () => {
+    const [suppliers, setSuppliers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
         address: '',
     });
-    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchSuppliers = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch suppliers');
+                }
+                const data = await response.json();
+                setSuppliers(data);
+                setLoading(false);
+            }
+            catch (error) {
+                console.error('Fetch suppliers error:', error);
+                setError('Failed to fetch suppliers. Please try again later');
+                setLoading(false);
+            }
+        };
+        fetchSuppliers();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -87,9 +109,11 @@ const useSupplierForm = () => {
     };
 
     return {
-        formData,
-        setFormData, // Add this to manually set form data
+        suppliers,
         loading,
+        error,
+        formData,
+        setFormData,
         handleChange,
         addSupplier,
         editSupplier,
@@ -97,4 +121,4 @@ const useSupplierForm = () => {
     };
 };
 
-export default useSupplierForm;
+export default useSupplier;

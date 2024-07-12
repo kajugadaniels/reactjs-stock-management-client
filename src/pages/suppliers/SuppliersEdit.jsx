@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useSupplierForm } from '../../hooks';
+import { useSupplier } from '../../hooks';
 
 const SuppliersEdit = ({ isOpen, onClose, supplier }) => {
-    const { formData, setFormData, loading, handleChange, editSupplier } = useSupplierForm();
+    const { formData, setFormData, loading, handleChange, editSupplier } = useSupplier();
 
     useEffect(() => {
         if (supplier) {

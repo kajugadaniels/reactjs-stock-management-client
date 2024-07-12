@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useSupplierForm } from '../../hooks';
+import { useSupplier } from '../../hooks';
 
 const SuppliersCreate = ({ isOpen, onClose }) => {
-    const { formData, loading, handleChange, addSupplier } = useSupplierForm();
+    const { formData, loading, handleChange, addSupplier } = useSupplier();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
