@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
         if (location.state?.error) {
-            setError(location.state.error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: location.state.error,
+            });
         }
     }, [location]);
 
@@ -34,8 +38,11 @@ const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
-                console.log('Login successful:', data);
-                setError('');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: 'Welcome back!',
+                });
                 localStorage.setItem('token', data.data.token);
                 if (rememberMe) {
                     localStorage.setItem('email', email);
@@ -44,12 +51,18 @@ const Login = () => {
                 }
                 navigate('/dashboard');
             } else {
-                console.error('Login error:', data.message);
-                setError(data.message || 'Login failed');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: data.message || 'Login failed',
+                });
             }
         } catch (error) {
-            console.error('Network error:', error);
-            setError('An error occurred. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'An error occurred. Please try again.',
+            });
         }
     };
 
@@ -80,7 +93,6 @@ const Login = () => {
                             </h2>
                             <p className="text-zinc-600">Log in to your account</p>
                         </div>
-                        {error && <div className="text-sm text-center text-red-500">{error}</div>}
                         <form className="space-y-6" onSubmit={handleLogin}>
                             <div className="space-y-1">
                                 <label htmlFor="email" className="sr-only">
