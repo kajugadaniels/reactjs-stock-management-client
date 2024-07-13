@@ -27,6 +27,7 @@ const Stock = () => {
                         </div>
                     </div>
                 </Link>
+                <Link to='/StockOut'>
                 <div className="bg-purple-500 text-white pt-1 rounded-lg h-60">
                     <div className="flex justify-between items-center">
                         <div>
@@ -42,6 +43,7 @@ const Stock = () => {
 
                     </div>
                 </div>
+                </Link>
                 <div className="bg-blue-500 text-white rounded-lg">
                     <div className="flex justify-between items-center">
                         <div>

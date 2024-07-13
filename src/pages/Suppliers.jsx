@@ -106,13 +106,11 @@ const Suppliers = () => {
             ) : (
                 <p>You don't have permission to add suppliers.</p>
             )}
-            {userRole === 'manager' && (
-                <div className="flex flex-col gap-4 mb-4 sm:flex-row">
-                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
-                        Add Supplier
-                    </button>
-                </div>
-            )}
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
+                    Add Supplier
+                </button>
+            </div>
             <div className="overflow-x-auto">
                 <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>

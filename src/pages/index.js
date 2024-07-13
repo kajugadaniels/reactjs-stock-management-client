@@ -6,6 +6,7 @@ import Stock from "./Stock";
 import Inventory from "./Inventory";
 import Process from "./Process";
 import StockIn from "./StockIn";
+import StockOut from "./StockOut";
 import ProductStockIn from "./ProductStockIn";
 import ProductStockOut from "./ProductStockOut";
 
@@ -18,6 +19,7 @@ export {
     Inventory,
     Process,
     StockIn,
+    StockOut,
     ProductStockIn,
     ProductStockOut,
 }
