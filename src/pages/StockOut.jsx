@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import StockoutCreate from './StockOut/StockoutCreate';
+import StockOutCreate from './Stockout/StockOutCreate'; // Ensure this path is correct
 
 const StockOut = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -7,16 +7,16 @@ const StockOut = () => {
   const toggleStockOutCreateModal = () => {
     setIsModalOpen(!isModalOpen);
   };
+
   return (
     <div className="p-4">
-
-      <div className="grid grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
           <h2 className="text-muted-foreground">Total Row Material</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
-          <h2 className="text-muted-foreground">Total Packageing</h2>
+          <h2 className="text-muted-foreground">Total Packaging</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">500</p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
@@ -34,6 +34,7 @@ const StockOut = () => {
           New StockOut
         </button>
       </div>
+      <StockOutCreate isOpen={isModalOpen} onClose={toggleStockOutCreateModal} />
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded-lg shadow-md">
@@ -52,7 +53,6 @@ const StockOut = () => {
             </tr>
           </thead>
           <tbody>
-
             <tr className="border-b">
               <td className="py-2 px-4"><input type="checkbox" /></td>
               <td className="py-2 px-4">REQ - 30</td>
@@ -63,14 +63,13 @@ const StockOut = () => {
               <td className="py-2 px-4">Marla White</td>
               <td className="py-2 px-4">64</td>
               <td className="py-2 px-4">13/01/2022</td>
-              <td className="py-2 px-4"><img undefinedhidden="true" alt="edit-icon" src="https://openui.fly.dev/openui/24x24.svg?text=✏️" /></td>
+              <td className="py-2 px-4"><img alt="edit-icon" src="https://openui.fly.dev/openui/24x24.svg?text=✏️" /></td>
             </tr>
-
           </tbody>
         </table>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StockOut
+export default StockOut;
