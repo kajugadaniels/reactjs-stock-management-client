@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import StockOutCreate from './Stockout/StockOutCreate'; // Ensure this path is correct
+import StockOutCreate from './Stockout/StockOutCreate';
 
 const StockOut = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
