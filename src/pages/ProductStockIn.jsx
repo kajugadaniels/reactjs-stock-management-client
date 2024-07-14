@@ -1,5 +1,5 @@
 import React,{ useState } from 'react'
-import ProductStockInCreate from './ProductStock/ProductStockInCreate';
+import ProductStockInCreate from './ProductStockIn/ProductStockInCreate';
 
 const ProductStockIn = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);

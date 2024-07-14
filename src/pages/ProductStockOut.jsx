@@ -1,8 +1,9 @@
-import React from 'react'
+import React,{useState} from 'react'
+import ProductStockOutCreate from './ProductStockOut/ProductStockOutCreate';
 const ProductStockOut = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const toggleProductStockInCreateModal = () => {
+    const toggleProductStockOutCreateModal = () => {
         setIsModalOpen(!isModalOpen);
     };
 
@@ -30,11 +31,11 @@ const ProductStockOut = () => {
 
             <div className="flex space-x-2">
                 <div className="mb-4">
-                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleProductStockInCreateModal}>
+                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleProductStockOutCreateModal}>
                         Product stockIn
                     </button>
                 </div>
-                <ProductStockInCreate isOpen={isModalOpen} onClose={toggleProductStockInCreateModal} />
+                <ProductStockOutCreate isOpen={isModalOpen} onClose={toggleProductStockOutCreateModal} />
                 <button className="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600">Product Stock In</button>
                 <button className="bg-orange-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-orange-600">Product Stock Out</button>
             </div>
