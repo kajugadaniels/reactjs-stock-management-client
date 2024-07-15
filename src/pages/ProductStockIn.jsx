@@ -37,8 +37,6 @@ const ProductStockIn = () => {
                     </button>
                 </div>
                 <ProductStockInCreate isOpen={isModalOpen} onClose={toggleProductStockInCreateModal} />
-                <button className="bg-green-500 text-white px-4 py-2 rounded-lg">Product Stock In</button>
-                <button className="bg-yellow-500 text-white px-4 py-2 rounded-lg">Product Stock Out</button>
             </div>
 
             <div className="overflow-x-auto">
