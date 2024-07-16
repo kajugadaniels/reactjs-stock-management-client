@@ -87,7 +87,7 @@ const Items = () => {
         <div className="p-4">
            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
                 <div className="p-4 text-center bg-white rounded-lg shadow">
-                    <h2 className="text-zinc-600">Total Items</h2>
+                    <h2 className="text-zinc-600">Total Supplier Items</h2>
                     <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
                 </div>
 
@@ -103,9 +103,9 @@ const Items = () => {
 
             </div>
 
-            <div className="flex flex-col gap-4 mb-4 sm:flex-row justify-start items-center">
+            <div className="flex flex-col items-center justify-start gap-4 mb-4 sm:flex-row">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
-                    Add Item
+                    Add Supplier to Item
                 </button>
 
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleCategoryCreateModal}>
@@ -121,8 +121,7 @@ const Items = () => {
             <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
                         <tr>
-                            <th scope='col' className="px-6 py-3 border">Item Id</th>
-                            <th scope='col' className="px-6 py-3 border">Name</th>
+                            <th scope='col' className="px-6 py-3 border">Item Name</th>
                             <th scope='col' className="px-6 py-3 border">Category</th>
                             <th scope='col' className="px-6 py-3 border">Type</th>
                             <th scope='col' className="px-6 py-3 border">Capacity</th>
@@ -135,8 +134,7 @@ const Items = () => {
                     <tbody>
                         {items.map((item) => (
                             <tr className="border-t" key={item.id}>
-                                <td className="px-4 py-4 border">item-{item.id}</td>
-                                <td className="px-10 py-4 border">{item.name}</td>
+                                <td className="px-10 py-4 border">{item.product_item_name}</td>
                                 <td className="px-10 py-4 border">{item.category_name}</td>
                                 <td className="px-10 py-4 border">{item.type_name}</td>
                                 <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>

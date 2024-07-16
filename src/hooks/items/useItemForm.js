@@ -12,7 +12,7 @@ const useItemForm = (initialData = {}) => {
     const addItem = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ const useItemForm = (initialData = {}) => {
     const updateItem = async (id) => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const useItemForm = (initialData = {}) => {
     const deleteItem = async (id) => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/${id}`, {
                 method: 'DELETE',
             });
 

@@ -7,10 +7,12 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
+    const [productItems, setProductItems] = useState([]); // State for Product Items
 
     useEffect(() => {
         fetchCategories();
         fetchSuppliers();
+        fetchProductItems(); // Fetch Product Items
         if (item.category_id) {
             fetchTypes(item.category_id);
         }
@@ -61,10 +63,24 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
         }
     };
 
+    const fetchProductItems = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch product items');
+            }
+            const data = await response.json();
+            setProductItems(data);
+        } catch (error) {
+            console.error('Error fetching product items:', error);
+        }
+    };
+
     useEffect(() => {
         if (item) {
             setFormData({
                 name: item.name,
+                product_item_id: item.product_item_id,
                 category_id: item.category_id,
                 type_id: item.type_id,
                 capacity: item.capacity,
@@ -108,17 +124,22 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                 <h2 className="mb-4 text-2xl font-semibold">Edit Item</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="name" className="block text-sm font-medium mb-1 text-[#424955]">Item Name</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
+                        <label htmlFor="product_item_id" className="block text-sm font-medium mb-1 text-[#424955]">Product Item</label>
+                        <select
+                            id="product_item_id"
+                            name="product_item_id"
+                            value={formData.product_item_id}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter item name"
+                            className="bg-[#f3f4f6] p-2 w-full border border-input rounded bg-input text-foreground"
                             required
-                        />
+                        >
+                            <option value="">Select product item</option>
+                            {productItems.map((productItem) => (
+                                <option key={productItem.id} value={productItem.id}>
+                                    {productItem.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="category_id" className="block text-sm font-medium mb-1 text-[#424955]">Category</label>
