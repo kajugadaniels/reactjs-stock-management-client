@@ -153,7 +153,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
                         <button type="submit" className="btn btn-primary" disabled={loading}>
-                        <div className='bg-[#00BDD6] p-2 text-white rounded-xl'> {loading ? 'Creating...' : 'Create Stock In'}</div>
+                            <div className='bg-[#00BDD6] p-2 text-white rounded-xl'> {loading ? 'Creating...' : 'Create Stock In'}</div>
                         </button>
                     </div>
                 </form>

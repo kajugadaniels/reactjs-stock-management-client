@@ -91,13 +91,13 @@ const StockIn = () => {
                         {stockIns.map((stockIn) => (
                             <tr className="border-t" key={stockIn.id}>
                                 <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-10 py-4 border">{stockIn.item.name}</td>
+                                <td className="px-4 py-2 border">{stockIn.item.product_item.name}</td>
                                 <td className="px-10 py-4 border">{stockIn.quantity}</td>
                                 <td className="px-10 py-4 border">{stockIn.registered_by}</td>
                                 <td className="px-10 py-4 border">{stockIn.plaque || 'N/A'}</td>
                                 <td className="px-10 py-4 border">{stockIn.batch}</td>
                                 <td className="px-10 py-4 border">{stockIn.status}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <button
                                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
                                         onClick={() => openStockInEditModal(stockIn)}
