@@ -65,13 +65,13 @@ const StockIn = () => {
         <div className="p-4">
             <div className='flex gap-10 p-4'>
                 <Link to="/TotalRowMaterial">
-                    <div className="bg-card p-10 rounded-lg shadow-md text-center">
+                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Raw Material</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
                 </Link>
                 <Link to="/TotalPackeging">
-                    <div className="bg-card p-10 rounded-lg shadow-md text-center">
+                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Packeging</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
@@ -106,7 +106,7 @@ const StockIn = () => {
                                 <td className="px-4 py-4 border">{stockIn.id}</td>
                                 <td className="px-4 py-4 border">{stockIn.supplier.name}</td>
                                 <td className="px-4 py-4 border">{stockIn.item.name}</td>
-                                <td className="px-4 py-4 border">{stockIn.item.category_id}</td>
+                                <td className="px-4 py-4 border">{stockIn.item.category_name}</td>
                                 <td className="px-4 py-4 border">{stockIn.item.type_id}</td>
                                 <td className="px-4 py-4 border">{stockIn.quantity}</td>
                                 <td className="px-4 py-4 border">{stockIn.registered_by}</td>

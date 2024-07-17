@@ -1,73 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const [suppliers, setSuppliers] = useState([]);
-    const [items, setItems] = useState([]);
+    const { suppliers, getItemsBySupplier } = useStockIn();
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: '',
         quantity: '',
         plate_number: '',
         batch_number: '',
-        comment: ''
+        comment: '',
     });
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/suppliers`)
-            .then(response => response.json())
-            .then(data => setSuppliers(data))
-            .catch(error => console.error('Error fetching suppliers:', error));
-    }, []);
-
-    useEffect(() => {
-        if (formData.supplier_id) {
-            fetch(`${import.meta.env.VITE_API_URL}/stock-ins/items-by-supplier/${formData.supplier_id}`)
-                .then(response => response.json())
-                .then(data => setItems(data))
-                .catch(error => console.error('Error fetching items:', error));
+        if (isOpen) {
+            // Reset form data when modal opens
+            setFormData({
+                supplier_id: '',
+                item_id: '',
+                quantity: '',
+                plate_number: '',
+                batch_number: '',
+                comment: '',
+            });
         }
-    }, [formData.supplier_id]);
+    }, [isOpen]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to create stock in');
+                throw new Error('Failed to create stock in record');
             }
 
-            const data = await response.json();
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In created successfully',
                 icon: 'success',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
             }).then(() => {
-                onClose(); // Close the modal after successful creation
+                onClose();  // Close the modal after successful creation
             });
         } catch (error) {
             Swal.fire({
                 title: 'Error',
                 text: error.message,
                 icon: 'error',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
             });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSupplierChange = async (e) => {
+        const supplierId = e.target.value;
+        setFormData({
+            ...formData,
+            supplier_id: supplierId,
+        });
+
+        setLoading(true);
+        try {
+            const response = await getItemsBySupplier(supplierId);
+            const itemsData = await response.json();
+            setItems(itemsData.data);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -89,12 +111,12 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             id="supplier_id"
                             name="supplier_id"
                             value={formData.supplier_id}
-                            onChange={handleInputChange}
+                            onChange={handleSupplierChange}
                             className="w-full p-2 border border-gray-300 rounded"
                             required
                         >
                             <option value="">Select Supplier</option>
-                            {suppliers.map((supplier) => (
+                            {suppliers && suppliers.map((supplier) => (
                                 <option key={supplier.id} value={supplier.id}>
                                     {supplier.name}
                                 </option>
@@ -112,11 +134,12 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             onChange={handleInputChange}
                             className="w-full p-2 border border-gray-300 rounded"
                             required
+                            disabled={loading || !formData.supplier_id}
                         >
                             <option value="">Select Item</option>
                             {items.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                    {item.name} - {item.category?.name || 'Unknown Category'} - {item.type?.name || 'Unknown Type'}
+                                    {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
                                 </option>
                             ))}
                         </select>
@@ -177,8 +200,9 @@ const StockInCreate = ({ isOpen, onClose }) => {
                     <button
                         type="submit"
                         className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                        disabled={loading || !formData.supplier_id || !formData.item_id}
                     >
-                        Create Stock In
+                        {loading ? 'Creating...' : 'Create Stock In'}
                     </button>
                 </form>
             </div>
