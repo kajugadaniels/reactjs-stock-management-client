@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useSupplier } from '../hooks';
+import EmployeesCreate from './employees/EmployeesCreate';
 import SupplierItems from './suppliers/SupplierItems';
 import SuppliersCreate from './suppliers/SuppliersCreate';
 import SuppliersEdit from './suppliers/SuppliersEdit';
@@ -28,6 +29,7 @@ const Suppliers = () => {
     const [isAddItemToSupplierOpen, setIsAddItemToSupplierOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [isEmployeesCreateOpen, setIsEmployeesCreateOpen] = useState(false);
+    
     const userRole = useUserRole();
 
     const toggleSuppliersCreateModal = () => {
@@ -107,11 +109,6 @@ const Suppliers = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
-
-
-
-
-
 
     return (
         <div className="p-4">
@@ -194,6 +191,8 @@ const Suppliers = () => {
                                             </g>
                                         </svg>
                                     </button>
+
+                                    
                                     <button
                                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                                         onClick={() => handleDeleteSupplier(supplier.id)}
@@ -206,6 +205,7 @@ const Suppliers = () => {
                                             />
                                         </svg>
                                     </button>
+
                                     <button
                                         className="font-medium text-green-600 dark:text-green-500 hover:underline ms-3"
                                         onClick={() => openSupplierItemsModal(supplier)}
@@ -217,6 +217,8 @@ const Suppliers = () => {
                                             </g>
                                         </svg>
                                     </button>
+
+
                                     <button
                                         className="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ms-3"
                                         onClick={() => openAddItemToSupplierModal(supplier)}
@@ -232,6 +234,8 @@ const Suppliers = () => {
                                             />
                                         </svg>
                                     </button>
+
+
                                 </td>
                             </tr>
                         ))}
@@ -241,6 +245,8 @@ const Suppliers = () => {
             {isSuppliersCreateOpen && <SuppliersCreate isOpen={isSuppliersCreateOpen} onClose={toggleSuppliersCreateModal} />}
             {isSuppliersEditOpen && <SuppliersEdit isOpen={isSuppliersEditOpen} onClose={closeSuppliersEditModal} supplier={selectedSupplier} />}
             {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={closeSupplierItemsModal} supplier={selectedSupplier} />}
+            {isEmployeesCreateOpen && <EmployeesCreate isOpen={isEmployeesCreateOpen} onClose={toggleEmployeesCreateModal} />}
+
         </div>
     );
 };

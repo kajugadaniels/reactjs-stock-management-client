@@ -6,19 +6,9 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
     const { formData, setFormData, loading, handleChange, updateItem } = useItemForm(item);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
-<<<<<<< HEAD
-    const [suppliers, setSuppliers] = useState([]);
-    const [productItems, setProductItems] = useState([]); 
 
     useEffect(() => {
         fetchCategories();
-        fetchSuppliers();
-        fetchProductItems(); 
-=======
-
-    useEffect(() => {
-        fetchCategories();
->>>>>>> fc6636fb0e7f58e10fc343934d060a85b9d9e608
         if (item.category_id) {
             fetchTypes(item.category_id);
         }
