@@ -1,73 +1,119 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const [suppliers, setSuppliers] = useState([]);
-    const [items, setItems] = useState([]);
+    const { suppliers, getItemsBySupplier } = useStockIn();
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: '',
         quantity: '',
         plate_number: '',
         batch_number: '',
-        comment: ''
+        comment: '',
+        date: '',
+        registered_by: '',
+        loading_payment_status: false
     });
+    const [items, setItems] = useState([]);
+    const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/suppliers`)
-            .then(response => response.json())
-            .then(data => setSuppliers(data))
-            .catch(error => console.error('Error fetching suppliers:', error));
-    }, []);
-
-    useEffect(() => {
-        if (formData.supplier_id) {
-            fetch(`${import.meta.env.VITE_API_URL}/stock-ins/items-by-supplier/${formData.supplier_id}`)
-                .then(response => response.json())
-                .then(data => setItems(data))
-                .catch(error => console.error('Error fetching items:', error));
+        if (isOpen) {
+            fetchEmployees();
+            setFormData({
+                supplier_id: '',
+                item_id: '',
+                quantity: '',
+                plate_number: '',
+                batch_number: '',
+                comment: '',
+                date: '',
+                registered_by: '',
+                loading_payment_status: false
+            });
         }
-    }, [formData.supplier_id]);
+    }, [isOpen]);
+
+    const fetchEmployees = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch employees');
+            }
+            const data = await response.json();
+            setEmployees(data);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setFormData(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Failed to create stock in');
+                throw new Error(data.message || 'Failed to create stock in record');
             }
 
-            const data = await response.json();
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In created successfully',
                 icon: 'success',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
             }).then(() => {
-                onClose(); // Close the modal after successful creation
+                onClose();
             });
         } catch (error) {
+            console.error('Error creating stock in:', error);
             Swal.fire({
                 title: 'Error',
                 text: error.message,
                 icon: 'error',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
             });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSupplierChange = async (e) => {
+        const supplierId = e.target.value;
+        setFormData(prevState => ({
+            ...prevState,
+            supplier_id: supplierId,
+        }));
+
+        setLoading(true);
+        try {
+            const itemsData = await getItemsBySupplier(supplierId);
+            setItems(itemsData);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -89,12 +135,12 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             id="supplier_id"
                             name="supplier_id"
                             value={formData.supplier_id}
-                            onChange={handleInputChange}
+                            onChange={handleSupplierChange}
                             className="w-full p-2 border border-gray-300 rounded"
                             required
                         >
                             <option value="">Select Supplier</option>
-                            {suppliers.map((supplier) => (
+                            {suppliers && suppliers.map((supplier) => (
                                 <option key={supplier.id} value={supplier.id}>
                                     {supplier.name}
                                 </option>
@@ -112,11 +158,12 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             onChange={handleInputChange}
                             className="w-full p-2 border border-gray-300 rounded"
                             required
+                            disabled={loading || !formData.supplier_id}
                         >
                             <option value="">Select Item</option>
                             {items.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                    {item.name} - {item.category?.name || 'Unknown Category'} - {item.type?.name || 'Unknown Type'}
+                                    {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
                                 </option>
                             ))}
                         </select>
@@ -163,6 +210,53 @@ const StockInCreate = ({ isOpen, onClose }) => {
                         />
                     </div>
                     <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                            Date
+                        </label>
+                        <input
+                            type="date"
+                            id="date"
+                            name="date"
+                            value={formData.date}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
+                            Registered By
+                        </label>
+                        <select
+                            id="registered_by"
+                            name="registered_by"
+                            value={formData.registered_by}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
+                            required
+                        >
+                            <option value="">Select Employee</option>
+                            {employees && employees.map((employee) => (
+                                <option key={employee.id} value={employee.id}>
+                                    {employee.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700">
+                            Loading Payment Status
+                        </label>
+                        <input
+                            type="checkbox"
+                            id="loading_payment_status"
+                            name="loading_payment_status"
+                            checked={formData.loading_payment_status}
+                            onChange={handleInputChange}
+                            className="w-4 h-4"
+                        /> Paid
+                    </div>
+                    <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
                             Comment
                         </label>
@@ -177,8 +271,9 @@ const StockInCreate = ({ isOpen, onClose }) => {
                     <button
                         type="submit"
                         className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                        disabled={loading || !formData.supplier_id || !formData.item_id}
                     >
-                        Create Stock In
+                        {loading ? 'Creating...' : 'Create Stock In'}
                     </button>
                 </form>
             </div>

@@ -1,128 +1,121 @@
 import { useState, useEffect } from 'react';
 
-const useStockIn = (initialData = {}) => {
+const useStockIn = () => {
     const [stockIns, setStockIns] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [types, setTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // State for form data
-    const [formData, setFormData] = useState({
-        item_id: '',
-        quantity: '',
-        registered_by: '',
-        plaque: '',
-        comment: '',
-        batch: '',
-        status: '',
-        loading_payment_status: false,
-        ...initialData
-    });
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prevState => ({
-            ...prevState,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
+    useEffect(() => {
+        fetchStockIns();
+        fetchSuppliers();
+        fetchCategories();
+        fetchTypes();
+    }, []);
 
     const fetchStockIns = async () => {
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`);
             if (!response.ok) {
-                throw new Error('Failed to fetch stock ins');
+                throw new Error('Failed to fetch data');
             }
             const data = await response.json();
             setStockIns(data);
             setLoading(false);
         } catch (error) {
-            console.error('Fetch stock ins error:', error);
-            setError('Failed to fetch stock ins. Please try again later.');
+            setError(error.message);
             setLoading(false);
         }
     };
 
-    const addStockIn = async () => {
+    const fetchSuppliers = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
             if (!response.ok) {
-                throw new Error('Failed to add stock in');
+                throw new Error('Failed to fetch suppliers');
             }
-
             const data = await response.json();
+            setSuppliers(data);
             setLoading(false);
-            return data;
         } catch (error) {
+            setError(error.message);
             setLoading(false);
-            throw error;
         }
     };
 
-    const updateStockIn = async (id) => {
+    const fetchCategories = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
             if (!response.ok) {
-                throw new Error('Failed to update product');
+                throw new Error('Failed to fetch categories');
             }
-
             const data = await response.json();
+            setCategories(data);
             setLoading(false);
-            return data;
         } catch (error) {
+            setError(error.message);
             setLoading(false);
-            console.error('Error updating product:', error);
-            throw new Error(error.message || 'Failed to update product');
+        }
+    };
+
+    const fetchTypes = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch types');
+            }
+            const data = await response.json();
+            setTypes(data);
+            setLoading(false);
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
         }
     };
 
     const deleteStockIn = async (id) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
                 method: 'DELETE',
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete stock in');
-            }
-
-            return true;
         } catch (error) {
+            throw new Error('Failed to delete stock in record');
+        }
+    };
+
+    const getItemsBySupplier = async (supplierId) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplierId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch items for supplier');
+            }
+            const data = await response.json();
+            setLoading(false);
+            return data.data;
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
             throw error;
         }
     };
 
-    useEffect(() => {
-        fetchStockIns();
-    }, []);
-
-    return { 
-        stockIns, 
-        loading, 
-        error, 
-        fetchStockIns, 
-        formData, 
-        setFormData, 
-        handleChange, 
-        addStockIn, 
-        updateStockIn, 
-        deleteStockIn 
+    return {
+        stockIns,
+        suppliers,
+        categories,
+        types,
+        loading,
+        error,
+        fetchStockIns,
+        deleteStockIn,
+        getItemsBySupplier,
     };
 };
 
