@@ -104,6 +104,7 @@ const Items = () => {
             </div>
 
             <div className="flex flex-col items-center justify-start gap-4 mb-4 sm:flex-row">
+                
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
                     Add Item
                 </button>
@@ -115,6 +116,8 @@ const Items = () => {
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleTypesCreateModal}>
                     Add Types
                 </button>
+
+                
             </div>
 
             <div className="overflow-x-auto">

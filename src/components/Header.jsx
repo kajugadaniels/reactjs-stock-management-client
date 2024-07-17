@@ -37,7 +37,7 @@ const Header = () => {
                 <li>
                     <Link to="/suppliers" className={`flex items-center space-x-2 ${location.pathname === '/suppliers' ? activeLinkClass : inactiveLinkClass}`}>
                         <Icon icon="tabler:stack" width="1.3em" height="1.3em" />
-                        <span>Suppliers</span>
+                        <span>HR</span>
                     </Link>
                 </li>
                 <li>
