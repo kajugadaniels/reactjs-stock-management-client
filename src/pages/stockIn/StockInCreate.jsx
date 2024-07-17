@@ -1,49 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const { formData, loading, handleChange, addStockIn } = useStockIn();
+    const [suppliers, setSuppliers] = useState([]);
     const [items, setItems] = useState([]);
+    const [formData, setFormData] = useState({
+        supplier_id: '',
+        item_id: '',
+        quantity: '',
+        plate_number: '',
+        batch_number: '',
+        comment: ''
+    });
 
     useEffect(() => {
-        fetchItems();
+        fetch(`${import.meta.env.VITE_API_URL}/suppliers`)
+            .then(response => response.json())
+            .then(data => setSuppliers(data))
+            .catch(error => console.error('Error fetching suppliers:', error));
     }, []);
 
-    const fetchItems = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-            const data = await response.json();
-            setItems(data);
-        } catch (error) {
-            console.error('Error fetching items:', error);
+    useEffect(() => {
+        if (formData.supplier_id) {
+            fetch(`${import.meta.env.VITE_API_URL}/stock-ins/items-by-supplier/${formData.supplier_id}`)
+                .then(response => response.json())
+                .then(data => setItems(data))
+                .catch(error => console.error('Error fetching items:', error));
         }
+    }, [formData.supplier_id]);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await addStockIn();
-            if (response) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Stock in record created successfully!',
-                }).then(() => {
-                    onClose();
-                    window.location.reload();
-                });
-            } else {
-                throw new Error('Failed to create stock in record');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create stock in');
             }
+
+            const data = await response.json();
+            Swal.fire({
+                title: 'Success',
+                text: 'Stock In created successfully',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                onClose(); // Close the modal after successful creation
+            });
         } catch (error) {
             Swal.fire({
-                icon: 'error',
                 title: 'Error',
-                text: error.message || 'Failed to create stock in record',
+                text: error.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
             });
         }
     };
@@ -51,111 +74,112 @@ const StockInCreate = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground  w-[700px]">
-                <h2 className="mb-4 text-2xl font-semibold">Add Stock In Record</h2>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="p-6 bg-white rounded-md shadow-md">
+                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
+                    Close
+                </button>
+                <h2 className="mb-4 text-xl font-semibold">Create Stock In</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="item_id" className="block text-sm font-medium mb-1 text-[#424955]">Item</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
+                            Supplier
+                        </label>
                         <select
-                            id="item_id"
-                            name="item_id"
-                            value={formData.item_id}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            id="supplier_id"
+                            name="supplier_id"
+                            value={formData.supplier_id}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                             required
                         >
-                            <option value="">Select item</option>
-                            {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name}
+                            <option value="">Select Supplier</option>
+                            {suppliers.map((supplier) => (
+                                <option key={supplier.id} value={supplier.id}>
+                                    {supplier.name}
                                 </option>
                             ))}
                         </select>
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="quantity" className="block text-sm font-medium mb-1 text-[#424955]">Quantity</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
+                            Item
+                        </label>
+                        <select
+                            id="item_id"
+                            name="item_id"
+                            value={formData.item_id}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
+                            required
+                        >
+                            <option value="">Select Item</option>
+                            {items.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.name} - {item.category?.name || 'Unknown Category'} - {item.type?.name || 'Unknown Type'}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
+                            Quantity
+                        </label>
                         <input
                             type="number"
                             id="quantity"
                             name="quantity"
                             value={formData.quantity}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter quantity"
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="registered_by" className="block text-sm font-medium mb-1 text-[#424955]">Registered By</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
+                            Plate Number
+                        </label>
                         <input
                             type="text"
-                            id="registered_by"
-                            name="registered_by"
-                            value={formData.registered_by}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter name"
+                            id="plate_number"
+                            name="plate_number"
+                            value={formData.plate_number}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="plaque" className="block text-sm font-medium mb-1 text-[#424955]">Plaque</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="batch_number">
+                            Batch Number
+                        </label>
                         <input
                             type="text"
-                            id="plaque"
-                            name="plaque"
-                            value={formData.plaque}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter plaque"
+                            id="batch_number"
+                            name="batch_number"
+                            value={formData.batch_number}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="batch" className="block text-sm font-medium mb-1 text-[#424955]">Batch</label>
-                        <input
-                            type="text"
-                            id="batch"
-                            name="batch"
-                            value={formData.batch}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter batch"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="status" className="block text-sm font-medium mb-1 text-[#424955]">Status</label>
-                        <select
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
-                        >
-                            <option value="">Select status</option>
-                            <option value="Complete">Complete</option>
-                            <option value="Pending">Pending</option>
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="comment" className="block text-sm font-medium mb-1 text-[#424955]">Comment</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
+                            Comment
+                        </label>
                         <textarea
                             id="comment"
                             name="comment"
                             value={formData.comment}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter comment"
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-                    <div className="flex justify-end space-x-4">
-                        <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                            <div className='bg-[#00BDD6] p-2 text-white rounded-xl'> {loading ? 'Creating...' : 'Create Stock In'}</div>
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                    >
+                        Create Stock In
+                    </button>
                 </form>
             </div>
         </div>

@@ -84,9 +84,8 @@ const StockIn = () => {
                             <th scope='col' className="px-6 py-3 border">Type</th>
                             <th scope='col' className="px-6 py-3 border">Quantity</th>
                             <th scope='col' className="px-6 py-3 border">Registered By</th>
-                            <th scope='col' className="px-6 py-3 border">Plaque</th>
-                            <th scope='col' className="px-6 py-3 border">Batch</th>
-                            <th scope='col' className="px-6 py-3 border">Status</th>
+                            <th scope='col' className="px-6 py-3 border">Plate Number</th>
+                            <th scope='col' className="px-6 py-3 border">Batch Number</th>
                             <th scope='col' className="px-6 py-3 border">Action</th>
                         </tr>
                     </thead>
@@ -95,13 +94,13 @@ const StockIn = () => {
                             <tr className="border-t" key={stockIn.id}>
                                 <td className="px-4 py-4 border">{stockIn.id}</td>
                                 <td className="px-4 py-4 border">{stockIn.supplier.name}</td>
-                                <td className="px-4 py-4 border">{stockIn.item.item_id.name}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
+                                <td className="px-4 py-4 border">{stockIn.item.name}</td>
+                                <td className="px-4 py-4 border">{stockIn.item.category_id}</td>
+                                <td className="px-4 py-4 border">{stockIn.item.type_id}</td>
+                                <td className="px-4 py-4 border">{stockIn.quantity}</td>
+                                <td className="px-4 py-4 border">{stockIn.registered_by}</td>
+                                <td className="px-4 py-4 border">{stockIn.plate_number}</td>
+                                <td className="px-4 py-4 border">{stockIn.batch_number}</td>
                                 <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <button
                                         className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
