@@ -18,7 +18,7 @@ const StockOut = () => {
           <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
         </div>
        </Link>
-        <Link to="/">
+        <Link to="/TotalPackegingOut">
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
           <h2 className="text-muted-foreground">Total Packaging</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">500</p>
