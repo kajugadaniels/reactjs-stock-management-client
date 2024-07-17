@@ -7,12 +7,9 @@ const ItemsCreate = ({ isOpen, onClose }) => {
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
-    const [productItems, setProductItems] = useState([]); // State for Product Items
 
     useEffect(() => {
         fetchCategories();
-        fetchSuppliers();
-        fetchProductItems(); // Fetch Product Items
     }, []);
 
     useEffect(() => {
@@ -44,32 +41,6 @@ const ItemsCreate = ({ isOpen, onClose }) => {
             setTypes(data);
         } catch (error) {
             console.error('Error fetching types:', error);
-        }
-    };
-
-    const fetchSuppliers = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch suppliers');
-            }
-            const data = await response.json();
-            setSuppliers(data);
-        } catch (error) {
-            console.error('Error fetching suppliers:', error);
-        }
-    };
-
-    const fetchProductItems = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch product items');
-            }
-            const data = await response.json();
-            setProductItems(data);
-        } catch (error) {
-            console.error('Error fetching product items:', error);
         }
     };
 
@@ -106,22 +77,17 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                 <h2 className="mb-4 text-2xl font-semibold">Add an Item</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="product_item_id" className="block text-sm font-medium mb-1 text-[#424955]">Product Item</label>
-                        <select
-                            id="product_item_id"
-                            name="product_item_id"
-                            value={formData.product_item_id}
+                        <label htmlFor="name" className="block text-sm font-medium mb-1 text-[#424955]">Item Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] p-2 w-full border border-input rounded bg-input text-foreground"
+                            placeholder="Enter item name"
                             required
-                        >
-                            <option value="">Select product item</option>
-                            {productItems.map((productItem) => (
-                                <option key={productItem.id} value={productItem.id}>
-                                    {productItem.name}
-                                </option>
-                            ))}
-                        </select>
+                        />
                     </div>
                     <div className="mb-4">
                         <label htmlFor="category_id" className="block text-sm font-medium mb-1 text-[#424955]">Category</label>
@@ -130,10 +96,10 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             name="category_id"
                             value={formData.category_id}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground 'text-gray-500"
                             required
                         >
-                            <option value="">Select category</option>
+                            <option value="" >Select category</option>
                             {categories.map((category) => (
                                 <option key={category.id} value={category.id}>
                                     {category.name}
@@ -149,7 +115,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             value={formData.type_id}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
+                            // required
                             disabled={!formData.category_id}
                         >
                             <option value="">Select type</option>
@@ -171,7 +137,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             placeholder="Enter capacity"
-                            required
+                            // required
                         />
                     </div>
                     
@@ -185,25 +151,8 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             placeholder="Enter unit"
+                            // required
                         />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="supplier_id" className="block text-sm font-medium mb-1 text-[#424955]">Supplier</label>
-                        <select
-                            id="supplier_id"
-                            name="supplier_id"
-                            value={formData.supplier_id}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
-                        >
-                            <option value="">Select supplier</option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </select>
                     </div>
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>

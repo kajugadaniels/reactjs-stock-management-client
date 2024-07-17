@@ -14,7 +14,7 @@ const TypesCreate = ({ isOpen, onClose }) => {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/categories');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
             if (!response.ok) {
                 throw new Error('Failed to fetch categories');
             }
@@ -29,7 +29,7 @@ const TypesCreate = ({ isOpen, onClose }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/types', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
