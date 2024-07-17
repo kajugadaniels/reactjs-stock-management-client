@@ -11,7 +11,7 @@ const useUserRole = () => {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from localStorage:', user);  // Debug log
+        console.log('User data from localStorage:', user);  
         console.log('Current user role:', userRole);
         if (user && user.role) {
             setUserRole(user.role);
@@ -192,7 +192,7 @@ const Suppliers = () => {
                                         </svg>
                                     </button>
 
-                                    
+
                                     <button
                                         className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                                         onClick={() => handleDeleteSupplier(supplier.id)}

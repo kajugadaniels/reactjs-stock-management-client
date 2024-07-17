@@ -25,34 +25,31 @@ export default function EmployeesCreate({ isOpen, onClose }) {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData) 
+            body: JSON.stringify(formData)
         };
     
         try {
             const response = await fetch('http://127.0.0.1:8000/api/employees', requestOptions);
-            const data = await response.json();
-            console.log('Server Response:', data);
             if (response.ok) {
-                onClose(); 
-                
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Employee added successfully!',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const data = await response.json();
+                    console.log('Server Response:', data);
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Employee added successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    console.log('Server response was not JSON:', await response.text());
+                    throw new Error('Server response was not in JSON format');
+                }
             } else {
-                
-                Swal.fire({
-                    title: 'Failed!',
-                    text: 'Failed to add employee: ' + data.message,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+                throw new Error('Server responded with status code: ' + response.status);
             }
         } catch (error) {
             console.error('Error:', error);
-            
             Swal.fire({
                 title: 'Error!',
                 text: 'Error submitting form: ' + error.message,
@@ -60,7 +57,9 @@ export default function EmployeesCreate({ isOpen, onClose }) {
                 confirmButtonText: 'OK'
             });
         }
+        onClose(); 
     };
+    
     
 
     if (!isOpen) return null;
