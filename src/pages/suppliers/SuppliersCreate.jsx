@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Swal from 'sweetalert2';
 import { useSupplier } from '../../hooks';
 

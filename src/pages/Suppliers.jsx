@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import SuppliersCreate from './suppliers/SuppliersCreate';
-import SuppliersEdit from './suppliers/SuppliersEdit';
-import SupplierItems from './suppliers/SupplierItems';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useSupplier } from '../hooks';
+import EmployeesCreate from './employees/EmployeesCreate';
+import SupplierItems from './suppliers/SupplierItems';
+import SuppliersCreate from './suppliers/SuppliersCreate';
+import SuppliersEdit from './suppliers/SuppliersEdit';
+
 
 // Custom hook to get user role
 const useUserRole = () => {
@@ -11,7 +13,7 @@ const useUserRole = () => {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from localStorage:', user);  // Debug log
+        console.log('User data from localStorage:', user); 
         console.log('Current user role:', userRole);
         if (user && user.role) {
             setUserRole(user.role);
@@ -27,12 +29,19 @@ const Suppliers = () => {
     const [isSuppliersEditOpen, setIsSuppliersEditOpen] = useState(false);
     const [isSupplierItemsOpen, setIsSupplierItemsOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [isEmployeesCreateOpen, setIsEmployeesCreateOpen] = useState(false);
     const userRole = useUserRole();
 
     const toggleSuppliersCreateModal = () => {
         setIsSuppliersCreateOpen(!isSuppliersCreateOpen);
         setIsSuppliersEditOpen(false);
         setIsSupplierItemsOpen(false);
+    };
+
+
+
+    const toggleEmployeesCreateModal = () => {
+        setIsEmployeesCreateOpen(!isEmployeesCreateOpen);
     };
 
     const openSuppliersEditModal = (supplier) => {
@@ -89,14 +98,32 @@ const Suppliers = () => {
         return <div>Error: {error}</div>;
     }
 
+
+
+
+
+
     return (
         <div className="p-4">
+           
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
                 <div className="p-4 text-center bg-white rounded-lg shadow">
                     <h2 className="text-zinc-600">Total Suppliers</h2>
                     <p className="text-3xl mt-2 text-[#00BDD6]">{suppliers.length}</p>
                 </div>
+
+                <button 
+                    className="p-4 text-center bg-white rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-opacity-50" 
+                    onClick={toggleSuppliersCreateModal}
+                >
+                    <h2 className="text-zinc-600">Total Employees</h2>
+                    <p className="text-3xl mt-2 text-[#00BDD6]">0</p>
+                </button>
+
             </div>
+
+          
+
             {userRole === 'manager' ? (
                 <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                     <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
@@ -106,11 +133,22 @@ const Suppliers = () => {
             ) : (
                 <p>You don't have permission to add suppliers.</p>
             )}
+
+
             <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
                     Add Supplier
                 </button>
+
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleEmployeesCreateModal}>
+                    Add Employee
+                </button>
+
             </div>
+
+            
+
+
             <div className="overflow-x-auto">
                 <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
@@ -161,6 +199,8 @@ const Suppliers = () => {
             {isSuppliersCreateOpen && <SuppliersCreate isOpen={isSuppliersCreateOpen} onClose={toggleSuppliersCreateModal} />}
             {isSuppliersEditOpen && <SuppliersEdit isOpen={isSuppliersEditOpen} onClose={closeSuppliersEditModal} supplier={selectedSupplier} />}
             {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={closeSupplierItemsModal} supplier={selectedSupplier} />}
+            {isEmployeesCreateOpen && <EmployeesCreate isOpen={isEmployeesCreateOpen} onClose={toggleEmployeesCreateModal} />}
+
         </div>
     );
 };

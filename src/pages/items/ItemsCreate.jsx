@@ -160,6 +160,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             ))}
                         </select>
                     </div>
+
                     <div className="mb-4">
                         <label htmlFor="capacity" className="block text-sm font-medium mb-1 text-[#424955]">Capacity</label>
                         <input
@@ -173,6 +174,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             required
                         />
                     </div>
+                    
                     <div className="mb-4">
                         <label htmlFor="unit" className="block text-sm font-medium mb-1 text-[#424955]">Unit</label>
                         <input

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useItemForm } from '../../hooks';
 
@@ -7,12 +7,12 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
-    const [productItems, setProductItems] = useState([]); // State for Product Items
+    const [productItems, setProductItems] = useState([]); 
 
     useEffect(() => {
         fetchCategories();
         fetchSuppliers();
-        fetchProductItems(); // Fetch Product Items
+        fetchProductItems(); 
         if (item.category_id) {
             fetchTypes(item.category_id);
         }
