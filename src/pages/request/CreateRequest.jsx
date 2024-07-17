@@ -25,9 +25,12 @@ const CreateRequest = ({ isOpen, onClose }) => {
                         </div>
                     </div>
                     <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="category">Quantity</label>
+                        <input className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground" type="text" id="category" placeholder="Input text" />
+                    </div>
+                    <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="category">Requester</label>
                         <input className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground" type="text" id="category" placeholder="Input text" />
-                        <p className="text-muted-foreground text-sm mt-1 text-[#424955]">Caption goes here</p>
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="category">Request From</label>
