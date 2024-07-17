@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import StockOutCreate from './Stockout/StockOutCreate';
+import { Link } from 'react-router-dom';
 
 const StockOut = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,14 +12,18 @@ const StockOut = () => {
   return (
     <div className="p-4">
       <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-        <div className="bg-card p-4 rounded-lg shadow-md text-center">
+       <Link to='/TotalRowMaterialOut'>
+       <div className="bg-card p-4 rounded-lg shadow-md text-center">
           <h2 className="text-muted-foreground">Total Row Material</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
         </div>
+       </Link>
+        <Link to="/">
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
           <h2 className="text-muted-foreground">Total Packaging</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">500</p>
         </div>
+        </Link>
         <div className="bg-card p-4 rounded-lg shadow-md text-center">
           <h2 className="text-muted-foreground">Total Packaging Out</h2>
           <p className="text-primary text-3xl text-[#00BDD6]">5</p>

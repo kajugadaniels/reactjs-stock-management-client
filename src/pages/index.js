@@ -9,6 +9,10 @@ import StockIn from "./StockIn";
 import StockOut from "./StockOut";
 import ProductStockIn from "./ProductStockIn";
 import ProductStockOut from "./ProductStockOut";
+import TotalRowmaterior from "./totalStockin/TotalRowMaterial";
+import TotalPackeging from "./totalStockin/TotalPackeging";
+import TotalPackegingOut from "./totalStockout/TotalPackegingOut";
+import TotalRowMaterialOut from "./totalStockout/TotalRowMaterialOut";
 
 export {
     Login,
@@ -22,4 +26,8 @@ export {
     StockOut,
     ProductStockIn,
     ProductStockOut,
+    TotalRowmaterior,
+    TotalPackeging,
+    TotalRowMaterialOut,
+    TotalPackegingOut,
 }
