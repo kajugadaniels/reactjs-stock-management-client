@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const { suppliers, getItemsBySupplier } = useStockIn();
+    const { suppliers, getItemsBySupplier } = useStockIn();  // Make sure suppliers is available here
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: '',
@@ -83,9 +83,8 @@ const StockInCreate = ({ isOpen, onClose }) => {
 
         setLoading(true);
         try {
-            const response = await getItemsBySupplier(supplierId);
-            const itemsData = await response.json();
-            setItems(itemsData.data);
+            const itemsData = await getItemsBySupplier(supplierId);
+            setItems(itemsData);
         } catch (error) {
             setError(error.message);
         } finally {
