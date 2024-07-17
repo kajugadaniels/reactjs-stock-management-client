@@ -7,10 +7,10 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
 
     useEffect(() => {
         if (supplier) {
-            fetch(`${import.meta.env.VITE_API_URL}/items/supplier/${supplier.id}`)
+            fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`)
                 .then((response) => response.json())
                 .then((data) => {
-                    setItems(data);
+                    setItems(Array.isArray(data.data) ? data.data : []);
                     setLoading(false);
                 })
                 .catch((error) => {
@@ -24,11 +24,11 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-md shadow-md">
-                <button onClick={onClose} className="text-red-500 hover:underline mb-4">
+            <div className="p-6 bg-white rounded-md shadow-md">
+                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
                     Close
                 </button>
-                <h2 className="text-xl font-semibold mb-4">Items for {supplier.name}</h2>
+                <h2 className="mb-4 text-xl font-semibold">Items for {supplier.name}</h2>
                 {loading ? (
                     <div>Loading...</div>
                 ) : error ? (
@@ -51,8 +51,8 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                                 <tr key={item.id}>
                                     <td className="px-10 py-5 border">{item.id}</td>
                                     <td className="px-10 py-5 border">{item.name}</td>
-                                    <td className="px-10 py-5 border">{item.category_name}</td>
-                                    <td className="px-10 py-5 border">{item.type_name}</td>
+                                    <td className="px-10 py-5 border">{item.category_id}</td>
+                                    <td className="px-10 py-5 border">{item.type_id}</td>
                                     <td className="px-10 py-5 border">{item.capacity} {item.unit}</td>
                                 </tr>
                             ))}

@@ -5,7 +5,6 @@ import SupplierItems from './suppliers/SupplierItems';
 import Swal from 'sweetalert2';
 import { useSupplier } from '../hooks';
 
-// Custom hook to get user role
 const useUserRole = () => {
     const [userRole, setUserRole] = useState(null);
 
@@ -97,15 +96,6 @@ const Suppliers = () => {
                     <p className="text-3xl mt-2 text-[#00BDD6]">{suppliers.length}</p>
                 </div>
             </div>
-            {userRole === 'manager' ? (
-                <div className="flex flex-col gap-4 mb-4 sm:flex-row">
-                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
-                        Add Supplier
-                    </button>
-                </div>
-            ) : (
-                <p>You don't have permission to add suppliers.</p>
-            )}
             <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
                     Add Supplier
@@ -130,22 +120,18 @@ const Suppliers = () => {
                                 <td className="px-10 py-4 border">{supplier.contact}</td>
                                 <td className="px-10 py-4 border">{supplier.address}</td>
                                 <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    {userRole === 'manager' && (
-                                        <>
-                                            <button
-                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
-                                                onClick={() => openSuppliersEditModal(supplier)}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></g></svg>
-                                            </button>
-                                            <button
-                                                className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                                                onClick={() => handleDeleteSupplier(supplier.id)}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
-                                            </button>
-                                        </>
-                                    )}
+                                    <button
+                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
+                                        onClick={() => openSuppliersEditModal(supplier)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></g></svg>
+                                    </button>
+                                    <button
+                                        className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
+                                        onClick={() => handleDeleteSupplier(supplier.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
+                                    </button>
                                     <button
                                         className="font-medium text-green-600 dark:text-green-500 hover:underline ms-3"
                                         onClick={() => openSupplierItemsModal(supplier)}
