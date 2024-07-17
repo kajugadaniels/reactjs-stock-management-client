@@ -111,7 +111,7 @@ const StockIn = () => {
                                 <td className="px-4 py-4 border">{stockIn.item.category.name}</td>
                                 <td className="px-4 py-4 border">{stockIn.item.type.name}</td>
                                 <td className="px-4 py-4 border">{stockIn.quantity}</td>
-                                <td className="px-4 py-4 border">{stockIn.user.name}</td>
+                                <td className="px-4 py-4 border">{stockIn.employee.name}</td>
                                 <td className="px-4 py-4 border">{stockIn.plate_number}</td>
                                 <td className="px-4 py-4 border">{stockIn.batch_number}</td>
                                 <td className="px-4 py-4 border">{stockIn.date}</td>

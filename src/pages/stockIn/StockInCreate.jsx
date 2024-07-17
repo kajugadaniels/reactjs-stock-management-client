@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const { suppliers, getItemsBySupplier } = useStockIn();  // Make sure suppliers is available here
+    const { suppliers, getItemsBySupplier } = useStockIn();
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: '',
@@ -11,14 +11,18 @@ const StockInCreate = ({ isOpen, onClose }) => {
         plate_number: '',
         batch_number: '',
         comment: '',
+        date: '',
+        registered_by: '',
+        loading_payment_status: false
     });
     const [items, setItems] = useState([]);
+    const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (isOpen) {
-            // Reset form data when modal opens
+            fetchEmployees();
             setFormData({
                 supplier_id: '',
                 item_id: '',
@@ -26,15 +30,32 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 plate_number: '',
                 batch_number: '',
                 comment: '',
+                date: '',
+                registered_by: '',
+                loading_payment_status: false
             });
         }
     }, [isOpen]);
 
+    const fetchEmployees = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch employees');
+            }
+            const data = await response.json();
+            setEmployees(data);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
+
     const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value, type, checked } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -46,12 +67,15 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(formData),
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Failed to create stock in record');
+                throw new Error(data.message || 'Failed to create stock in record');
             }
 
             Swal.fire({
@@ -60,9 +84,10 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 icon: 'success',
                 confirmButtonText: 'OK',
             }).then(() => {
-                onClose();  // Close the modal after successful creation
+                onClose();
             });
         } catch (error) {
+            console.error('Error creating stock in:', error);
             Swal.fire({
                 title: 'Error',
                 text: error.message,
@@ -76,10 +101,10 @@ const StockInCreate = ({ isOpen, onClose }) => {
 
     const handleSupplierChange = async (e) => {
         const supplierId = e.target.value;
-        setFormData({
-            ...formData,
+        setFormData(prevState => ({
+            ...prevState,
             supplier_id: supplierId,
-        });
+        }));
 
         setLoading(true);
         try {
@@ -183,6 +208,53 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             onChange={handleInputChange}
                             className="w-full p-2 border border-gray-300 rounded"
                         />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                            Date
+                        </label>
+                        <input
+                            type="date"
+                            id="date"
+                            name="date"
+                            value={formData.date}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
+                            Registered By
+                        </label>
+                        <select
+                            id="registered_by"
+                            name="registered_by"
+                            value={formData.registered_by}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
+                            required
+                        >
+                            <option value="">Select Employee</option>
+                            {employees && employees.map((employee) => (
+                                <option key={employee.id} value={employee.id}>
+                                    {employee.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 text-sm font-bold text-gray-700">
+                            Loading Payment Status
+                        </label>
+                        <input
+                            type="checkbox"
+                            id="loading_payment_status"
+                            name="loading_payment_status"
+                            checked={formData.loading_payment_status}
+                            onChange={handleInputChange}
+                            className="w-4 h-4"
+                        /> Paid
                     </div>
                     <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
