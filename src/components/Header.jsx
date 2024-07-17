@@ -31,7 +31,7 @@ const Header = () => {
                 <li>
                     <Link to="/items" className={`flex items-center space-x-2 ${location.pathname === '/items' ? activeLinkClass : inactiveLinkClass}`}>
                         <Icon icon="mdi:cart" width="1.2em" height="1.2em" />
-                        <span>Items</span>
+                        <span>Supplier Items</span>
                     </Link>
                 </li>
                 <li>
