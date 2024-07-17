@@ -78,7 +78,10 @@ const StockIn = () => {
                     <thead>
                         <tr>
                             <th scope='col' className="px-6 py-3 border">ID</th>
+                            <th scope='col' className="px-6 py-3 border">Supplier</th>
                             <th scope='col' className="px-6 py-3 border">Item</th>
+                            <th scope='col' className="px-6 py-3 border">Category</th>
+                            <th scope='col' className="px-6 py-3 border">Type</th>
                             <th scope='col' className="px-6 py-3 border">Quantity</th>
                             <th scope='col' className="px-6 py-3 border">Registered By</th>
                             <th scope='col' className="px-6 py-3 border">Plaque</th>
@@ -91,7 +94,10 @@ const StockIn = () => {
                         {stockIns.map((stockIn) => (
                             <tr className="border-t" key={stockIn.id}>
                                 <td className="px-4 py-4 border">{stockIn.id}</td>
+                                <td className="px-4 py-4 border">{stockIn.item.supplier.name}</td>
                                 <td className="px-4 py-2 border">{stockIn.item.product_item.name}</td>
+                                <td className="px-10 py-4 border">{stockIn.item.category.name}</td>
+                                <td className="px-10 py-4 border">{stockIn.item.type.name}</td>
                                 <td className="px-10 py-4 border">{stockIn.quantity}</td>
                                 <td className="px-10 py-4 border">{stockIn.registered_by}</td>
                                 <td className="px-10 py-4 border">{stockIn.plaque || 'N/A'}</td>
