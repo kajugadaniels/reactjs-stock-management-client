@@ -7,7 +7,7 @@ const useFetchItems = () => {
 
     const fetchItems = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
             if (!response.ok) {
                 throw new Error('Failed to fetch items');
             }

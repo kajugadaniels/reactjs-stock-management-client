@@ -4,31 +4,75 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const [types, setTypes] = useState([]);
 
     useEffect(() => {
+        // Fetch items for the supplier
+        const fetchItems = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`);
+                const data = await response.json();
+                console.log('Fetched items:', data); // Log fetched data
+                setItems(Array.isArray(data.data) ? data.data : []);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching items:', error);
+                setError(error.message);
+                setLoading(false);
+            }
+        };
+
+        // Fetch categories
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
+                const data = await response.json();
+                console.log('Fetched categories:', data); // Log fetched data
+                setCategories(data || []);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        // Fetch types
+        const fetchTypes = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
+                const data = await response.json();
+                console.log('Fetched types:', data); // Log fetched data
+                setTypes(data || []);
+            } catch (error) {
+                console.error('Error fetching types:', error);
+            }
+        };
+
         if (supplier) {
-            fetch(`${import.meta.env.VITE_API_URL}/items/supplier/${supplier.id}`)
-                .then((response) => response.json())
-                .then((data) => {
-                    setItems(data);
-                    setLoading(false);
-                })
-                .catch((error) => {
-                    setError(error.message);
-                    setLoading(false);
-                });
+            fetchItems();
         }
+        fetchCategories();
+        fetchTypes();
     }, [supplier]);
+
+    const getCategoryName = (categoryId) => {
+        const category = categories.find((cat) => cat.id === categoryId);
+        return category ? category.name : '';
+    };
+
+    const getTypeName = (typeId) => {
+        const type = types.find((typ) => typ.id === typeId);
+        return type ? type.name : '';
+    };
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-md shadow-md">
-                <button onClick={onClose} className="text-red-500 hover:underline mb-4">
+            <div className="p-6 bg-white rounded-md shadow-md">
+                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
                     Close
                 </button>
-                <h2 className="text-xl font-semibold mb-4">Items for {supplier.name}</h2>
+                <h2 className="mb-4 text-xl font-semibold">Items for {supplier.name}</h2>
                 {loading ? (
                     <div>Loading...</div>
                 ) : error ? (
@@ -51,8 +95,8 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                                 <tr key={item.id}>
                                     <td className="px-10 py-5 border">{item.id}</td>
                                     <td className="px-10 py-5 border">{item.name}</td>
-                                    <td className="px-10 py-5 border">{item.category_name}</td>
-                                    <td className="px-10 py-5 border">{item.type_name}</td>
+                                    <td className="px-10 py-5 border">{getCategoryName(item.category_id)}</td>
+                                    <td className="px-10 py-5 border">{getTypeName(item.type_id)}</td>
                                     <td className="px-10 py-5 border">{item.capacity} {item.unit}</td>
                                 </tr>
                             ))}
