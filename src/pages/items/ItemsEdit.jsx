@@ -187,7 +187,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             placeholder="Enter capacity"
-                            required
+                            // required
                         />
                     </div>
                     <div className="mb-4">
@@ -210,7 +210,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             value={formData.supplier_id}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
+                            // required
                         >
                             <option value="">Select supplier</option>
                             {suppliers.map((supplier) => (
