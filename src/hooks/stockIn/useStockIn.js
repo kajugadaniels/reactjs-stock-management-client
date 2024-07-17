@@ -29,7 +29,7 @@ const useStockIn = (initialData = {}) => {
     const fetchStockIns = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/products`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`);
             if (!response.ok) {
                 throw new Error('Failed to fetch stock ins');
             }
@@ -46,7 +46,7 @@ const useStockIn = (initialData = {}) => {
     const addStockIn = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/products`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ const useStockIn = (initialData = {}) => {
     const updateStockIn = async (id) => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/products/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const useStockIn = (initialData = {}) => {
 
     const deleteStockIn = async (id) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/products/${id}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
                 method: 'DELETE',
             });
 
