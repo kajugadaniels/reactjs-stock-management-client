@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 const Stock = () => {
     const { requests, loading, error, fetchRequests } = useFetchRequest();
+    const [items, setItems] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const toggleModal = () => {
@@ -13,7 +14,26 @@ const Stock = () => {
 
     useEffect(() => {
         fetchRequests();
+        fetchItems();
     }, []);
+
+    const fetchItems = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch items');
+            }
+            const data = await response.json();
+            setItems(data);
+        } catch (error) {
+            console.error('Error fetching items:', error);
+        }
+    };
+
+    const getItemNameById = (id) => {
+        const item = items.find(item => item.id === id);
+        return item ? item.name : 'Unknown Item';
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -112,7 +132,7 @@ const Stock = () => {
                         Request Item
                     </div>
                 </button>
-                <CreateRequest isOpen={isModalOpen} onClose={toggleModal} />
+                <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
                 <div className="flex items-center space-x-2">
                     <label>From</label>
                     <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-09" />
@@ -130,7 +150,7 @@ const Stock = () => {
                         <tr>
                             <th className="px-4 py-2 border-b">Check</th>
                             <th className="px-4 py-2 border-b">Req Id</th>
-                            <th className="px-4 py-2 border-b">Item Id</th>
+                            <th className="px-4 py-2 border-b">Item</th>
                             <th className="px-4 py-2 border-b">Contact_id</th>
                             <th className="px-4 py-2 border-b">Requester</th>
                             <th className="px-4 py-2 border-b">Request_from</th>
@@ -142,16 +162,16 @@ const Stock = () => {
                     </thead>
                     <tbody>
                         {Array.isArray(requests) && requests.length > 0 ? (
-                            requests.map((request) => (
+                            requests.sort((a, b) => a.id - b.id).map((request) => (
                                 <tr key={request.id}>
                                     <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
                                     <td className="px-4 py-2 border-b">{request.id}</td>
-                                    <td className="px-4 py-2 border-b">{request.item_id}</td>
+                                    <td className="px-4 py-2 border-b">{getItemNameById(request.item_id)}</td>
                                     <td className="px-4 py-2 border-b">{request.contact_id}</td>
                                     <td className="px-4 py-2 border-b">{request.requester}</td>
                                     <td className="px-4 py-2 border-b">{request.request_from}</td>
                                     <td className="px-4 py-2 border-b">{request.status}</td>
-                                    <td className="px-4 py-2 border-b">{request.request_for}</td>
+                                    <td className="px-4 py-2 border-b">{getItemNameById(request.item_id)}</td>
                                     <td className="px-4 py-2 border-b">{request.qty}</td>
                                     <td className="px-4 py-2 border-b">{request.note}</td>
                                 </tr>
