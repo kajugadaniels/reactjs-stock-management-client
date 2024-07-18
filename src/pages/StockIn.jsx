@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import StockInCreate from './stockIn/StockInCreate';
-import StockInEdit from './stockIn/StockInEdit';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useStockIn } from '../hooks';
-import { Link } from 'react-router-dom';
+import StockInCreate from './stockIn/StockInCreate';
+import StockInEdit from './stockIn/StockInEdit';
 
 const StockIn = () => {
     const { stockIns, loading, error, fetchStockIns, deleteStockIn } = useStockIn();
