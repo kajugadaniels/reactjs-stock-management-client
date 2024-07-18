@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CreateRequest from './request/CreateRequest';
+import useFetchRequest from '../hooks/request/useFetchRequest';
 import { Link } from 'react-router-dom';
 
 const Stock = () => {
+    const { requests, loading, error, fetchRequests } = useFetchRequest();
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
+
+    useEffect(() => {
+        fetchRequests();
+    }, []);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
     return (
         <div className="p-6">
-            <div className="flex space-x-4 mb-6 ">
+            <div className="flex space-x-4 mb-6">
                 <Link to='/products'>
                     <div className="bg-[rgba(78,189,214,255)] text-white p-2 rounded-lg h-30">
                         <div className="flex justify-between items-center">
@@ -82,7 +98,6 @@ const Stock = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <div className="flex items-center space-x-4 mb-6">
@@ -115,64 +130,42 @@ const Stock = () => {
                         <tr>
                             <th className="px-4 py-2 border-b">Check</th>
                             <th className="px-4 py-2 border-b">Req Id</th>
+                            <th className="px-4 py-2 border-b">Item Id</th>
+                            <th className="px-4 py-2 border-b">Contact_id</th>
                             <th className="px-4 py-2 border-b">Requester</th>
-                            <th className="px-4 py-2 border-b">Item</th>
-                            <th className="px-4 py-2 border-b">Type</th>
-                            <th className="px-4 py-2 border-b">Category</th>
+                            <th className="px-4 py-2 border-b">Request_from</th>
+                            <th className="px-4 py-2 border-b">Status</th>
+                            <th className="px-4 py-2 border-b">Request_for</th>
                             <th className="px-4 py-2 border-b">Quantity</th>
+                            <th className="px-4 py-2 border-b">Note</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                            <td className="px-4 py-2 border-b">REQ - 001</td>
-                            <td className="px-4 py-2 border-b">Product Manager</td>
-                            <td className="px-4 py-2 border-b">Ibigori</td>
-                            <td className="px-4 py-2 border-b">Umweru</td>
-                            <td className="px-4 py-2 border-b">Packeging</td>
-                            <td className="px-4 py-2 border-b">500</td>
-                        </tr>
-                        <tr>
-                            <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                            <td className="px-4 py-2 border-b">REQ - 001</td>
-                            <td className="px-4 py-2 border-b">Product Manager</td>
-                            <td className="px-4 py-2 border-b">Ibigori</td>
-                            <td className="px-4 py-2 border-b">Umweru</td>
-                            <td className="px-4 py-2 border-b">Packeging</td>
-                            <td className="px-4 py-2 border-b">500</td>
-                        </tr>
-                        <tr>
-                            <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                            <td className="px-4 py-2 border-b">REQ - 001</td>
-                            <td className="px-4 py-2 border-b">Product Manager</td>
-                            <td className="px-4 py-2 border-b">Ibigori</td>
-                            <td className="px-4 py-2 border-b">Umweru</td>
-                            <td className="px-4 py-2 border-b">Packeging</td>
-                            <td className="px-4 py-2 border-b">500</td>
-                        </tr>
-                        <tr>
-                            <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                            <td className="px-4 py-2 border-b">REQ - 001</td>
-                            <td className="px-4 py-2 border-b">Product Manager</td>
-                            <td className="px-4 py-2 border-b">Ibigori</td>
-                            <td className="px-4 py-2 border-b">Umweru</td>
-                            <td className="px-4 py-2 border-b">Packeging</td>
-                            <td className="px-4 py-2 border-b">500</td>
-                        </tr>
-                        <tr>
-                            <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                            <td className="px-4 py-2 border-b">REQ - 001</td>
-                            <td className="px-4 py-2 border-b">Product Manager</td>
-                            <td className="px-4 py-2 border-b">Ibigori</td>
-                            <td className="px-4 py-2 border-b">Umweru</td>
-                            <td className="px-4 py-2 border-b">Packeging</td>
-                            <td className="px-4 py-2 border-b">500</td>
-                        </tr>
+                        {Array.isArray(requests) && requests.length > 0 ? (
+                            requests.map((request) => (
+                                <tr key={request.id}>
+                                    <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
+                                    <td className="px-4 py-2 border-b">{request.id}</td>
+                                    <td className="px-4 py-2 border-b">{request.item_id}</td>
+                                    <td className="px-4 py-2 border-b">{request.contact_id}</td>
+                                    <td className="px-4 py-2 border-b">{request.requester}</td>
+                                    <td className="px-4 py-2 border-b">{request.request_from}</td>
+                                    <td className="px-4 py-2 border-b">{request.status}</td>
+                                    <td className="px-4 py-2 border-b">{request.request_for}</td>
+                                    <td className="px-4 py-2 border-b">{request.qty}</td>
+                                    <td className="px-4 py-2 border-b">{request.note}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="10" className="px-4 py-2 border-b">No requests found.</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
         </div>
     );
-}
+};
 
 export default Stock;

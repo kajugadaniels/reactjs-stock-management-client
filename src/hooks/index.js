@@ -1,13 +1,15 @@
 // Suppliers
-import useSupplier from './suppliers/useSupplier'
+import useSupplier from './suppliers/useSupplier';
 
 // Items
-import useFetchItems from './items/useFetchItems'
-import useItemForm from './items/useItemForm'
-import useFetchTypes from './items/useFetchTypes'
+import useFetchItems from './items/useFetchItems';
+import useItemForm from './items/useItemForm';
+import useFetchTypes from './items/useFetchTypes';
 
 // Stock In
-import useStockIn from './stockIn/useStockIn'
+import useStockIn from './stockIn/useStockIn';
+// request
+import useRequestForm from './request/useRequestForm';
 
 export {
     // Suppliers
@@ -19,5 +21,7 @@ export {
     useFetchTypes,
 
     // Stock In
-    useStockIn
-}
+    useStockIn,
+    // Request
+    useRequestForm,
+};
