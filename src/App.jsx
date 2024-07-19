@@ -1,8 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { LoginLayout, UserLayout } from './layouts';
-import { Dashboard, Login, Items, Suppliers, Stock, StockIn,StockOut, Inventory, Process, ProductStockIn, ProductStockOut } from './pages';
-import  TotalPackeging from './pages/totalStockin/TotalPackeging';
+import { Dashboard, Inventory, Items, Login, Process, ProductStockIn, ProductStockOut, Stock, StockIn, StockOut, Suppliers } from './pages';
+import TotalPackeging from './pages/totalStockin/TotalPackeging';
 import TotalRowMaterial from './pages/totalStockin/TotalRowMaterial';
 import TotalPackegingOut from './pages/totalStockout/TotalPackegingOut';
 import TotalRowMaterialOut from './pages/totalStockout/TotalRowMaterialOut';

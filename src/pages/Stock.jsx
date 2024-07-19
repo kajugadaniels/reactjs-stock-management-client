@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import CreateRequest from './request/CreateRequest';
-import useFetchRequest from '../hooks/request/useFetchRequest';
 import { Link } from 'react-router-dom';
+import useFetchRequest from '../hooks/request/useFetchRequest';
+import CreateRequest from './request/CreateRequest';
 
 const Stock = () => {
     const { requests, loading, error, fetchRequests } = useFetchRequest();
@@ -33,6 +33,29 @@ const Stock = () => {
     const getItemNameById = (id) => {
         const item = items.find(item => item.id === id);
         return item ? item.name : 'Unknown Item';
+    };
+
+    const handleEdit = (id) => {
+        // Logic for editing the request
+        console.log('Edit request with ID:', id);
+        // Redirect to an edit page or open an edit modal
+    };
+
+    const handleDelete = async (id) => {
+        // Logic for deleting the request
+        if (window.confirm('Are you sure you want to delete this request?')) {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/requests/${id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete request');
+                }
+                fetchRequests(); // Refresh the list after deletion
+            } catch (error) {
+                console.error('Error deleting request:', error);
+            }
+        }
     };
 
     if (loading) {
@@ -105,15 +128,16 @@ const Stock = () => {
                 <div className="bg-orange-200 text-zinc-800 p-2 rounded-lg h-30">
                     <div className="flex justify-between items-center">
                         <div>
-                            <div className='flex gap-1 ml-2 text-white'>
+                            <div className='flex gap-1 ml-2'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-                                    <path fill="white" d="M5 22q-.825 0-1.412-.587T3 20V8.725q-.45-.275-.725-.712T2 7V4q0-.825.588-1.412T4 2h16q.825 0 1.413.588T22 4v3q0 .575-.275 1.013T21 8.724V20q0 .825-.587 1.413T19 22zM4 7h16V4H4zm5 7h6v-2H9z"></path>
+                                    <path fill="none" d="M0 0h24v24H0z"></path>
+                                    <path d="M5 6a1 1 0 0 0-2 0v12a1 1 0 1 0 2 0zm7.703 10.95a1 1 0 0 0 0-1.415L10.167 13H20a1 1 0 1 0 0-2h-9.833l2.536-2.536a1 1 0 0 0-1.415-1.414l-4.242 4.243a1 1 0 0 0 0 1.414l4.242 4.243a1 1 0 0 0 1.415 0"></path>
                                 </svg>
-                                <div className="text-sm font-bold">View Inventory</div>
+                                <div className="text-sm font-bold">Inventory</div>
                             </div>
-                            <div className='bg-white px-6 py-4 mt-1'>
-                                <div className="text-2xl text-orange-200 font-bold">Report</div>
-                                <div className="text-xs text-gray-500 pr-1 pt-2">12 Today</div>
+                            <div className='bg-[#e7e7e7] px-6 py-4 mt-1'>
+                                <div className="text-2xl font-bold text-zinc-800">118 T</div>
+                                <div className="text-xs text-gray-500 pr-1 pt-2">4 Packages</div>
                             </div>
                         </div>
                     </div>
@@ -121,28 +145,28 @@ const Stock = () => {
             </div>
 
             <div className="flex items-center space-x-4 mb-6">
-                <button
-                    onClick={toggleModal}
-                    className="mb-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
-                >
-                    <div className='flex items-center'>
-                        <span className="mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
-                        </span>
-                        Request Item
-                    </div>
-                </button>
-                <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
-                <div className="flex items-center space-x-2">
-                    <label>From</label>
-                    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-09" />
-                </div>
-                <div className="flex items-center space-x-2">
-                    <label>To</label>
-                    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-20" />
-                </div>
-                <button className="bg-green-500 text-white px-4 py-2 rounded-lg">Today</button>
-            </div>
+<button
+    onClick={toggleModal}
+    className="mb-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
+>
+    <div className='flex items-center'>
+        <span className="mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
+        </span>
+        Request Item
+    </div>
+</button>
+<CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
+<div className="flex items-center space-x-2">
+    <label>From</label>
+    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-09" />
+</div>
+<div className="flex items-center space-x-2">
+    <label>To</label>
+    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-20" />
+</div>
+<button className="bg-green-500 text-white px-4 py-2 rounded-lg">Today</button>
+</div>
 
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-zinc-200">
@@ -158,6 +182,7 @@ const Stock = () => {
                             <th className="px-4 py-2 border-b">Request_for</th>
                             <th className="px-4 py-2 border-b">Quantity</th>
                             <th className="px-4 py-2 border-b">Note</th>
+                            <th className="px-4 py-2 border-b">Action</th> {/* Added Action column */}
                         </tr>
                     </thead>
                     <tbody>
@@ -174,16 +199,32 @@ const Stock = () => {
                                     <td className="px-4 py-2 border-b">{getItemNameById(request.item_id)}</td>
                                     <td className="px-4 py-2 border-b">{request.qty}</td>
                                     <td className="px-4 py-2 border-b">{request.note}</td>
+                                    <td className="px-4 py-2 border-b">
+                                        <button
+                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
+                                            onClick={() => handleEdit(request.id)}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            onClick={() => handleDelete(request.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="10" className="px-4 py-2 border-b">No requests found.</td>
+                                <td colSpan="11" className="px-4 py-2 border-b">No requests found.</td> {/* Adjusted colspan to 11 */}
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
+
+            <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
         </div>
     );
 };

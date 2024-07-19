@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useRequestForm } from '../../hooks';
+import useRequestForm from '../../hooks/request/useRequestForm'; // Make sure the path is correct
 
 const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     const { formData, handleChange, addRequest, loading } = useRequestForm();
     const [items, setItems] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [itemsError, setItemsError] = useState(null);
+    const [suppliersError, setSuppliersError] = useState(null);
 
     useEffect(() => {
         fetchItems();
+        fetchSuppliers();
     }, []);
 
     const fetchItems = async () => {
@@ -19,13 +23,29 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
             const data = await response.json();
             setItems(data);
         } catch (error) {
+            setItemsError(error.message);
             console.error('Error fetching items:', error);
+        }
+    };
+
+    const fetchSuppliers = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch suppliers');
+            }
+            const data = await response.json();
+            setSuppliers(data);
+        } catch (error) {
+            setSuppliersError(error.message);
+            console.error('Error fetching suppliers:', error);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            console.log('Form Data:', formData); // Log formData to check its content
             await addRequest();
             Swal.fire({
                 icon: 'success',
@@ -33,7 +53,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                 text: 'Request created successfully!',
             });
             onClose();
-            fetchRequests(); 
+            fetchRequests();
         } catch (error) {
             Swal.fire({
                 icon: 'error',
@@ -53,37 +73,67 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                 <form onSubmit={handleSubmit}>
                     <div className='flex gap-14'>
                         <div className="mb-4 w-full">
-                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="item_id">Item</label>
-                            <select
-                                className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
-                                id="item_id"
-                                name="item_id"
-                                value={formData.item_id}
-                                onChange={handleChange}
-                                required
-                            >
-                                <option value="">Select an item</option>
-                                {items.map((item) => (
-                                    <option key={item.id} value={item.id}>
-                                        {item.name}
-                                    </option>
-                                ))}
-                            </select>
+                            <label className="block mb-2 text-sm font-medium text-gray-600">Item</label>
+                            {loading ? (
+                                <div>Loading items...</div>
+                            ) : itemsError ? (
+                                <div>Error: {itemsError}</div>
+                            ) : (
+                                <select
+                                    name="item_id"
+                                    value={formData.item_id}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md"
+                                    required
+                                >
+                                    <option value="">Select an item</option>
+                                    {items.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {`${item.name} - Category: ${item.category_name}, Type: ${item.type_name}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
+
                         <div className="mb-4 w-full">
-                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="contact_id">Contact</label>
-                            <input
-                                className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                                type="text"
-                                id="contact_id"
-                                name="contact_id"
-                                placeholder="Input text"
-                                value={formData.contact_id}
-                                onChange={handleChange}
-                                required
-                            />
+                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="contact_id">Contact Person</label>
+                            {suppliersError ? (
+                                <div>Error: {suppliersError}</div>
+                            ) : (
+                                <select
+                                    className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
+                                    id="contact_id"
+                                    name="contact_id"
+                                    value={formData.contact_id}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select a supplier</option>
+                                    {suppliers.map((supplier) => (
+                                        <option key={supplier.id} value={supplier.id}>
+                                            {supplier.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     </div>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester">cfg</label>
+                        <input
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            type="text"
+                            id="contact_id"
+                            name="contact_id"
+                            placeholder="Input text"
+                            value={formData.contact_id}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester">Requester</label>
                         <input
@@ -97,6 +147,8 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             required
                         />
                     </div>
+
+
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_from">Request From</label>
                         <input
@@ -139,7 +191,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             <option value="">Request For</option>
                             {items.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                    {item.id}
+                                    {item.name}
                                 </option>
                             ))}
                         </select>

@@ -43,8 +43,8 @@ const StockIn = () => {
                     throw new Error('Network response was not ok');
                 }
                 let data = await response.json();
-                data = data.filter(stockIn => stockIn.item.name.toLowerCase() === 'maize'); // Filter items by name
-                setStockIns(aggregateStockIns(data)); // Process data with aggregation function
+                data = data.filter(stockIn => stockIn.item.name.toLowerCase() === 'maize');
+                setStockIns(aggregateStockIns(data)); 
             } catch (err) {
                 setError(`Failed to fetch data: ${err.message}`);
             } finally {

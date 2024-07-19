@@ -1,208 +1,219 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useSupplier } from '../hooks';
-import EmployeesCreate from './employees/EmployeesCreate';
-import SupplierItems from './suppliers/SupplierItems';
-import SuppliersCreate from './suppliers/SuppliersCreate';
-import SuppliersEdit from './suppliers/SuppliersEdit';
+import useRequestForm from '../../hooks/request/useRequestForm'; // Make sure the path is correct
 
-
-// Custom hook to get user role
-const useUserRole = () => {
-    const [userRole, setUserRole] = useState(null);
+const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
+    const { formData, handleChange, addRequest, loading } = useRequestForm();
+    const [items, setItems] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [itemsError, setItemsError] = useState(null);
+    const [suppliersError, setSuppliersError] = useState(null);
 
     useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from localStorage:', user); 
-        console.log('Current user role:', userRole);
-        if (user && user.role) {
-            setUserRole(user.role);
-        }
+        fetchItems();
+        fetchSuppliers();
     }, []);
 
-    return userRole;
-};
-
-const Suppliers = () => {
-    const { suppliers, deleteSupplier, loading, error } = useSupplier();
-    const [isSuppliersCreateOpen, setIsSuppliersCreateOpen] = useState(false);
-    const [isSuppliersEditOpen, setIsSuppliersEditOpen] = useState(false);
-    const [isSupplierItemsOpen, setIsSupplierItemsOpen] = useState(false);
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
-    const [isEmployeesCreateOpen, setIsEmployeesCreateOpen] = useState(false);
-    const userRole = useUserRole();
-
-    const toggleSuppliersCreateModal = () => {
-        setIsSuppliersCreateOpen(!isSuppliersCreateOpen);
-        setIsSuppliersEditOpen(false);
-        setIsSupplierItemsOpen(false);
-    };
-
-
-
-    const toggleEmployeesCreateModal = () => {
-        setIsEmployeesCreateOpen(!isEmployeesCreateOpen);
-    };
-
-    const openSuppliersEditModal = (supplier) => {
-        setSelectedSupplier(supplier);
-        setIsSuppliersEditOpen(true);
-        setIsSuppliersCreateOpen(false);
-        setIsSupplierItemsOpen(false);
-    };
-
-    const openSupplierItemsModal = (supplier) => {
-        setSelectedSupplier(supplier);
-        setIsSupplierItemsOpen(true);
-        setIsSuppliersCreateOpen(false);
-        setIsSuppliersEditOpen(false);
-    };
-
-    const closeSuppliersEditModal = () => {
-        setIsSuppliersEditOpen(false);
-        setSelectedSupplier(null);
-    };
-
-    const closeSupplierItemsModal = () => {
-        setIsSupplierItemsOpen(false);
-        setSelectedSupplier(null);
-    };
-
-    const handleDeleteSupplier = async (id) => {
-        const confirmed = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'You will not be able to recover this supplier!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, keep it'
-        });
-
-        if (confirmed.isConfirmed) {
-            try {
-                await deleteSupplier(id);
-                Swal.fire('Deleted!', 'Supplier has been deleted.', 'success').then(() => {
-                    window.location.reload();
-                });
-            } catch (error) {
-                Swal.fire('Error!', 'Failed to delete supplier.', 'error');
+    const fetchItems = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch items');
             }
+            const data = await response.json();
+            setItems(data);
+        } catch (error) {
+            setItemsError(error.message);
+            console.error('Error fetching items:', error);
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const fetchSuppliers = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch suppliers');
+            }
+            const data = await response.json();
+            setSuppliers(data);
+        } catch (error) {
+            setSuppliersError(error.message);
+            console.error('Error fetching suppliers:', error);
+        }
+    };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            console.log('Form Data:', formData); // Log formData to check its content
+            await addRequest();
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Request created successfully!',
+            });
+            onClose();
+            fetchRequests();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to create request',
+            });
+            console.error('Error creating request:', error);
+        }
+    };
 
-
-
-
-
+    if (!isOpen) return null;
 
     return (
-        <div className="p-4">
-           
-            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-                <div className="p-4 text-center bg-white rounded-lg shadow">
-                    <h2 className="text-zinc-600">Total Suppliers</h2>
-                    <p className="text-3xl mt-2 text-[#00BDD6]">{suppliers.length}</p>
-                </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="w-full max-w-lg mx-auto p-6 bg-card text-card-foreground rounded-lg shadow-md bg-white">
+                <h2 className="text-2xl font-semibold mb-4">Request Registration</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className='flex gap-14'>
+                        <div className="mb-4 w-full">
+                            <label className="block mb-2 text-sm font-medium text-gray-600">Item</label>
+                            {loading ? (
+                                <div>Loading items...</div>
+                            ) : itemsError ? (
+                                <div>Error: {itemsError}</div>
+                            ) : (
+                                <select
+                                    name="item_id"
+                                    value={formData.item_id}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md"
+                                    required
+                                >
+                                    <option value="">Select an item</option>
+                                    {items.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                            {`${item.name} - Category: ${item.category_name}, Type: ${item.type_name}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
 
-                <button 
-                    className="p-4 text-center bg-white rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-opacity-50" 
-                   onClick={toggleSuppliersCreateModal}
-                >
-                    <h2 className="text-zinc-600">Total Employees</h2>
-                    <p className="text-3xl mt-2 text-[#00BDD6]">0</p>
-                </button>
+                        <div className="mb-4 w-full">
+                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="contact_id">Contact Person</label>
+                            {suppliersError ? (
+                                <div>Error: {suppliersError}</div>
+                            ) : (
+                                <select
+                                    className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
+                                    id="contact_id"
+                                    name="contact_id"
+                                    value={formData.contact_id}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select a supplier</option>
+                                    {suppliers.map((supplier) => (
+                                        <option key={supplier.id} value={supplier.id}>
+                                            {supplier.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+                    </div>
 
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester">Requester</label>
+                        <input
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            type="text"
+                            id="requester"
+                            name="requester"
+                            placeholder="Input text"
+                            value={formData.requester}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_from">Request From</label>
+                        <input
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            type="text"
+                            id="request_from"
+                            name="request_from"
+                            placeholder="Input text"
+                            value={formData.request_from}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="status">Status</label>
+                        <select
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
+                            id="status"
+                            name="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Select Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_for">Request For</label>
+                        <select
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
+                            id="request_for"
+                            name="request_for"
+                            value={formData.request_for}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Request For</option>
+                            {items.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="qty">Quantity</label>
+                        <input
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            type="number"
+                            id="qty"
+                            name="qty"
+                            placeholder="Enter quantity"
+                            value={formData.qty}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="note">Note</label>
+                        <textarea
+                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            id="note"
+                            name="note"
+                            placeholder="Input text"
+                            value={formData.note}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                        <button type="button" className="text-gray-500" onClick={onClose}>Cancel</button>
+                        <button type="submit" className="bg-[#00BDD6] text-white hover:bg-primary/80 p-2 rounded" disabled={loading}>
+                            {loading ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </form>
             </div>
-
-          
-
-            {userRole === 'manager' ? (
-                <div className="flex flex-col gap-4 mb-4 sm:flex-row">
-                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
-                        Add Supplier
-                    </button>
-                </div>
-            ) : (
-                <p>You don't have permission to add suppliers.</p>
-            )}
-
-
-            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
-                    Add Supplier
-                </button>
-
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleEmployeesCreateModal}>
-                    Add Employee
-                </button>
-
-            </div>
-
-            
-
-
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-full bg-white rounded-lg shadow">
-                    <thead>
-                        <tr>
-                            <th scope='col' className="px-6 py-3 border">Supplier Id</th>
-                            <th scope='col' className="px-6 py-3 border">Names</th>
-                            <th scope='col' className="px-6 py-3 border">Contact</th>
-                            <th scope='col' className="px-6 py-3 border">Address</th>
-                            <th scope='col' className="px-6 py-3 border">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {suppliers.map((supplier) => (
-                            <tr className="border-t" key={supplier.id}>
-                                <td className="px-4 py-4 border">supplier-{supplier.id}</td>
-                                <td className="px-10 py-4 border">{supplier.name}</td>
-                                <td className="px-10 py-4 border">{supplier.contact}</td>
-                                <td className="px-10 py-4 border">{supplier.address}</td>
-                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    {userRole === 'manager' && (
-                                        <>
-                                            <button
-                                                className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
-                                                onClick={() => openSuppliersEditModal(supplier)}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></g></svg>
-                                            </button>
-                                            <button
-                                                className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                                                onClick={() => handleDeleteSupplier(supplier.id)}
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
-                                            </button>
-                                        </>
-                                    )}
-                                    <button
-                                        className="font-medium text-green-600 dark:text-green-500 hover:underline ms-3"
-                                        onClick={() => openSupplierItemsModal(supplier)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor"><path d="M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045" /><path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0" /></g></svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {isSuppliersCreateOpen && <SuppliersCreate isOpen={isSuppliersCreateOpen} onClose={toggleSuppliersCreateModal} />}
-            {isSuppliersEditOpen && <SuppliersEdit isOpen={isSuppliersEditOpen} onClose={closeSuppliersEditModal} supplier={selectedSupplier} />}
-            {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={closeSupplierItemsModal} supplier={selectedSupplier} />}
-            {isEmployeesCreateOpen && <EmployeesCreate isOpen={isEmployeesCreateOpen} onClose={toggleEmployeesCreateModal} />}
-
         </div>
     );
-};
+}
 
-export default Suppliers;
+export default CreateRequest;
