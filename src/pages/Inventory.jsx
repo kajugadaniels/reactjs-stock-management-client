@@ -1,26 +1,71 @@
-import React from 'react'
+import React, { useState } from 'react';
 
 const Inventory = () => {
+    const [selectedStock, setSelectedStock] = useState("Current Stock");
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 10;
+
+    const handleStockChange = (event) => {
+        setSelectedStock(event.target.value);
+        setCurrentPage(1);
+    };
+
+    const currentStockData = [
+        { item: 'Ibigori', type: 'Umweru', stockIn: '10 T', stockOut: '9 T', remaining: '1 T', percentage: '90 %' },
+        { item: 'Ibigori', type: 'Umuhondo', stockIn: '5 T', stockOut: '3 T', remaining: '2 T', percentage: '80 %' },
+        { item: 'Imifuka', type: 'SN 5 kg', stockIn: '1000', stockOut: '800', remaining: '200', percentage: '70 %' },
+        { item: 'Imifuka', type: 'Magic 25 kg', stockIn: '300', stockOut: '200', remaining: '100', percentage: '20 %' },
+        { item: 'Imifuka', type: 'Jabana 5 kg', stockIn: '400', stockOut: '400', remaining: '0', percentage: '0 %' },
+
+    ];
+
+    const productStockData = [
+        { item: 'Umuceri', type: 'Umweru', stockIn: '15 T', stockOut: '10 T', remaining: '5 T', percentage: '67 %' },
+        { item: 'Umunyu', type: 'Icyatsi', stockIn: '8 T', stockOut: '4 T', remaining: '4 T', percentage: '50 %' },
+        { item: 'Amavuta', type: 'Blue Band', stockIn: '500', stockOut: '300', remaining: '200', percentage: '40 %' },
+        { item: 'Isukari', type: 'Brown', stockIn: '700', stockOut: '500', remaining: '200', percentage: '28 %' },
+        { item: 'Icyayi', type: 'Green Tea', stockIn: '600', stockOut: '600', remaining: '0', percentage: '0 %' },
+    ];
+
+    const dataToDisplay = selectedStock === 'Current Stock' ? currentStockData : productStockData;
+
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentRows = dataToDisplay.slice(indexOfFirstRow, indexOfLastRow);
+
+    const totalPages = Math.ceil(dataToDisplay.length / rowsPerPage);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
+
     return (
         <div className="p-6">
-            <h1 className="text-xl font-bold mb-4 flex gap-3">Inventory:
+            <h1 className="text-xl font-bold mb-4 flex gap-3">
+                Inventory:
                 <div className="mb-6 flex gap-2">
                     <h2 className="text-lg font-semibold typing-demo">Jabana Industry</h2>
-                    <p className="text-[#93d3db] text-muted-foreground typing-demo" style={{ animationDelay: '2s' }}>Inventory Report</p>
+                    <p className="text-[#93d3db] text-muted-foreground typing-demo">Inventory Report</p>
                 </div>
             </h1>
-            <div className="flex  items-center mb-6 ml-60 ">
+            <div className="flex items-center ml-60">
                 <label className="block">
-                    <span className="text-zinc-700 ">Select Stock</span>
-                    <select className="mt-1 block w-full py-4 px-10 border border-zinc-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
-                        <option>Select Stock</option>
+                    <span className="text-zinc-700">Select Stock</span>
+                    <select
+                        className="mt-1 block w-full p-2 border border-zinc-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                        value={selectedStock}
+                        onChange={handleStockChange}
+                    >
+                        <option className='text-gray-500'>Select Stock</option>
+                        <option>Current Stock</option>
+                        <option>Product Stock</option>
                     </select>
                 </label>
             </div>
             <div className="flex items-center ml-40 gap-20 mb-6">
                 <label className="block">
                     <span className="text-zinc-700">From</span>
-                    <input type="date" className="mt-1 block w-full py-4 px-6 border border-zinc-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm " />
+                    <input type="date" className="mt-1 block w-full py-4 px-6 border border-zinc-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" />
                 </label>
                 <label className="block">
                     <span className="text-zinc-700">To</span>
@@ -40,51 +85,46 @@ const Inventory = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-zinc-200">
-                        <tr>
-                            <td className="px-6 py-4 whitespace-nowrap">Ibigori</td>
-                            <td className="px-6 py-4 whitespace-nowrap">Umweru</td>
-                            <td className="px-6 py-4 whitespace-nowrap">10 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">9 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">1 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">90 %</td>
-                        </tr>
-                        <tr>
-                            <td className="px-6 py-4 whitespace-nowrap">Ibigori</td>
-                            <td className="px-6 py-4 whitespace-nowrap">Umuhondo</td>
-                            <td className="px-6 py-4 whitespace-nowrap">5 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">3 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">2 T</td>
-                            <td className="px-6 py-4 whitespace-nowrap">80 %</td>
-                        </tr>
-                        <tr>
-                            <td className="px-6 py-4 whitespace-nowrap">Imifuka</td>
-                            <td className="px-6 py-4 whitespace-nowrap">SN 5 kg</td>
-                            <td className="px-6 py-4 whitespace-nowrap">1000</td>
-                            <td className="px-6 py-4 whitespace-nowrap">800</td>
-                            <td className="px-6 py-4 whitespace-nowrap">200</td>
-                            <td className="px-6 py-4 whitespace-nowrap">70 %</td>
-                        </tr>
-                        <tr>
-                            <td className="px-6 py-4 whitespace-nowrap">Imifuka</td>
-                            <td className="px-6 py-4 whitespace-nowrap">Magic 25 kg</td>
-                            <td className="px-6 py-4 whitespace-nowrap">300</td>
-                            <td className="px-6 py-4 whitespace-nowrap">200</td>
-                            <td className="px-6 py-4 whitespace-nowrap">100</td>
-                            <td className="px-6 py-4 whitespace-nowrap">20 %</td>
-                        </tr>
-                        <tr className="bg-orange-100">
-                            <td className="px-6 py-4 whitespace-nowrap">Imifuka</td>
-                            <td className="px-6 py-4 whitespace-nowrap">Jabana 5 kg</td>
-                            <td className="px-6 py-4 whitespace-nowrap">400</td>
-                            <td className="px-6 py-4 whitespace-nowrap">400</td>
-                            <td className="px-6 py-4 whitespace-nowrap">0</td>
-                            <td className="px-6 py-4 whitespace-nowrap">0 %</td>
-                        </tr>
+                        {currentRows.map((row, index) => (
+                            <tr key={index} className={index % 2 === 0 ? 'bg-orange-100' : ''}>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.item}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.type}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.stockIn}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.stockOut}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.remaining}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{row.percentage}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
+            <div className="flex justify-center mt-6">
+                <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 mx-1 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                {[...Array(totalPages)].map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => handlePageChange(index + 1)}
+                        className={`px-4 py-2 mx-1 rounded ${currentPage === index + 1 ? 'bg-[#00BDD6] text-white' : 'bg-gray-300'}`}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
+                <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 mx-1 bg-gray-300 rounded disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
         </div>
-    )
-}
+    );
+};
 
-export default Inventory
+export default Inventory;
