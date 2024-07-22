@@ -5,6 +5,7 @@ export const useStockOut = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isAvailable, setIsAvailable] = useState(false);
+    const [availableQuantity, setAvailableQuantity] = useState(0); // New state for available quantity
 
     const fetchStockOuts = async () => {
         setLoading(true);
@@ -33,9 +34,11 @@ export const useStockOut = () => {
             }
             const stockIn = await response.json();
             setIsAvailable(stockIn.quantity >= quantity);
+            setAvailableQuantity(stockIn.quantity); // Set the available quantity
         } catch (error) {
             setError(error.message);
             setIsAvailable(false);
+            setAvailableQuantity(0); // Reset available quantity on error
         } finally {
             setLoading(false);
         }
@@ -81,6 +84,7 @@ export const useStockOut = () => {
         loading,
         error,
         isAvailable,
+        availableQuantity, // Return available quantity
         setIsAvailable,
     };
 };

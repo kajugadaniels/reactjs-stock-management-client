@@ -3,8 +3,9 @@ import Swal from 'sweetalert2';
 import { useStockOut } from '../../hooks';
 
 const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
-    const { checkAvailability, approveStockOut, loading, error, isAvailable, setIsAvailable } = useStockOut();
+    const { checkAvailability, approveStockOut, loading, error, isAvailable, availableQuantity, setIsAvailable } = useStockOut();
     const [quantity, setQuantity] = useState(0);
+    const [itemId, setItemId] = useState(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -20,10 +21,17 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
             }
             const data = await response.json();
             setQuantity(data.quantity);
+            setItemId(data.item_id);
             checkAvailability(data.item_id, data.quantity);
         } catch (error) {
             console.error('Error fetching request details:', error);
         }
+    };
+
+    const handleQuantityChange = (event) => {
+        const newQuantity = event.target.value;
+        setQuantity(newQuantity);
+        checkAvailability(itemId, newQuantity);
     };
 
     const handleApprove = async () => {
@@ -66,11 +74,11 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                     <input
                         type="number"
                         value={quantity}
-                        readOnly
+                        onChange={handleQuantityChange}
                         className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
                     />
                     <span className={`text-sm ${isAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                        {isAvailable ? 'Available' : 'Not Available'}
+                        {isAvailable ? 'Available' : `Not Available, only ${availableQuantity} available`}
                     </span>
                 </div>
                 {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
