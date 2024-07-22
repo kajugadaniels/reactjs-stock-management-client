@@ -3,20 +3,20 @@ import { useState } from 'react';
 const useRequestForm = () => {
     const [formData, setFormData] = useState({
         item_id: '',
-        contact_id: '',
-        requester: '',
+        contact_person_id: '',
+        requester_name: '',
         request_from: '',
         status: '',
-        request_for: '',
-        qty: '',
+        request_for_id: '',
+        quantity: '',
         note: ''
     });
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({}); // New state for validation errors
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Convert specific fields to integers if necessary
-        const parsedValue = ['item_id', 'contact_id', 'request_for', 'qty'].includes(name) ? parseInt(value, 10) || '' : value;
+        const parsedValue = ['item_id', 'contact_person_id', 'request_for_id', 'quantity'].includes(name) ? parseInt(value, 10) || '' : value;
         setFormData({
             ...formData,
             [name]: parsedValue
@@ -25,8 +25,9 @@ const useRequestForm = () => {
 
     const addRequest = async () => {
         setLoading(true);
+        setErrors({}); // Clear previous errors
         try {
-            console.log('Form Data:', formData); // Log formData to check its content
+            console.log('Form Data:', formData);
             const response = await fetch(`${import.meta.env.VITE_API_URL}/requests`, {
                 method: 'POST',
                 headers: {
@@ -37,21 +38,22 @@ const useRequestForm = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Backend Error:', errorData); // Log error data for more information
+                console.error('Backend Error:', errorData);
+                setErrors(errorData.errors || {}); // Set validation errors
                 throw new Error(errorData.message || 'Validation Error');
             }
 
             const newRequest = await response.json();
             return newRequest;
         } catch (error) {
-            console.error('Error creating request:', error); // Log error to console
+            console.error('Error creating request:', error);
             throw error;
         } finally {
             setLoading(false);
         }
     };
 
-    return { formData, handleChange, addRequest, loading };
+    return { formData, handleChange, addRequest, loading, errors };
 };
 
 export default useRequestForm;

@@ -3,16 +3,33 @@ import Swal from 'sweetalert2';
 import useRequestForm from '../../hooks/request/useRequestForm'; // Make sure the path is correct
 
 const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
-    const { formData, handleChange, addRequest, loading } = useRequestForm();
+    const { formData, handleChange, addRequest, loading, errors } = useRequestForm();
+    const [stockIns, setStockIns] = useState([]);
     const [items, setItems] = useState([]);
-    const [suppliers, setSuppliers] = useState([]);
+    const [employees, setEmployees] = useState([]);
+    const [stockInsError, setStockInsError] = useState(null);
     const [itemsError, setItemsError] = useState(null);
-    const [suppliersError, setSuppliersError] = useState(null);
+    const [employeesError, setEmployeesError] = useState(null);
 
     useEffect(() => {
+        fetchStockIns();
         fetchItems();
-        fetchSuppliers();
+        fetchEmployees();
     }, []);
+
+    const fetchStockIns = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch stock-ins');
+            }
+            const data = await response.json();
+            setStockIns(data);
+        } catch (error) {
+            setStockInsError(error.message);
+            console.error('Error fetching stock-ins:', error);
+        }
+    };
 
     const fetchItems = async () => {
         try {
@@ -28,17 +45,17 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         }
     };
 
-    const fetchSuppliers = async () => {
+    const fetchEmployees = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/suppliers`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
             if (!response.ok) {
-                throw new Error('Failed to fetch suppliers');
+                throw new Error('Failed to fetch employees');
             }
             const data = await response.json();
-            setSuppliers(data);
+            setEmployees(data);
         } catch (error) {
-            setSuppliersError(error.message);
-            console.error('Error fetching suppliers:', error);
+            setEmployeesError(error.message);
+            console.error('Error fetching employees:', error);
         }
     };
 
@@ -67,17 +84,17 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="w-full max-w-lg mx-auto p-6 bg-card text-card-foreground rounded-lg shadow-md bg-white">
-                <h2 className="text-2xl font-semibold mb-4">Request Registration</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
+                <h2 className="mb-4 text-2xl font-semibold">Request Registration</h2>
                 <form onSubmit={handleSubmit}>
                     <div className='flex gap-14'>
-                        <div className="mb-4 w-full">
+                        <div className="w-full mb-4">
                             <label className="block mb-2 text-sm font-medium text-gray-600">Item</label>
                             {loading ? (
                                 <div>Loading items...</div>
-                            ) : itemsError ? (
-                                <div>Error: {itemsError}</div>
+                            ) : stockInsError ? (
+                                <div>Error: {stockInsError}</div>
                             ) : (
                                 <select
                                     name="item_id"
@@ -87,67 +104,55 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     required
                                 >
                                     <option value="">Select an item</option>
-                                    {items.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {`${item.name} - Category: ${item.category_name}, Type: ${item.type_name}`}
+                                    {stockIns.map((stockIn) => (
+                                        <option key={stockIn.id} value={stockIn.id}>
+                                            {`${stockIn.item.name} - Category: ${stockIn.item.category.name}, Type: ${stockIn.item.type.name}`}
                                         </option>
                                     ))}
                                 </select>
                             )}
+                            {errors.item_id && <p className="mt-1 text-xs text-red-500">{errors.item_id[0]}</p>}
                         </div>
 
-                        <div className="mb-4 w-full">
-                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="contact_id">Contact Person</label>
-                            {suppliersError ? (
-                                <div>Error: {suppliersError}</div>
+                        <div className="w-full mb-4">
+                            <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="contact_person_id">Contact Person</label>
+                            {employeesError ? (
+                                <div>Error: {employeesError}</div>
                             ) : (
                                 <select
                                     className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
-                                    id="contact_id"
-                                    name="contact_id"
-                                    value={formData.contact_id}
+                                    id="contact_person_id"
+                                    name="contact_person_id"
+                                    value={formData.contact_person_id}
                                     onChange={handleChange}
                                     required
                                 >
-                                    <option value="">Select a supplier</option>
-                                    {suppliers.map((supplier) => (
-                                        <option key={supplier.id} value={supplier.id}>
-                                            {supplier.name}
+                                    <option value="">Select a contact person</option>
+                                    {employees.map((employee) => (
+                                        <option key={employee.id} value={employee.id}>
+                                            {employee.name}
                                         </option>
                                     ))}
                                 </select>
                             )}
+                            {errors.contact_person_id && <p className="mt-1 text-xs text-red-500">{errors.contact_person_id[0]}</p>}
                         </div>
                     </div>
 
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester">cfg</label>
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester_name">Requester Name</label>
                         <input
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             type="text"
-                            id="contact_id"
-                            name="contact_id"
+                            id="requester_name"
+                            name="requester_name"
                             placeholder="Input text"
-                            value={formData.contact_id}
+                            value={formData.requester_name}
                             onChange={handleChange}
                             required
                         />
+                        {errors.requester_name && <p className="mt-1 text-xs text-red-500">{errors.requester_name[0]}</p>}
                     </div>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="requester">Requester</label>
-                        <input
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            type="text"
-                            id="requester"
-                            name="requester"
-                            placeholder="Input text"
-                            value={formData.requester}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
 
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_from">Request From</label>
@@ -161,6 +166,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             onChange={handleChange}
                             required
                         />
+                        {errors.request_from && <p className="mt-1 text-xs text-red-500">{errors.request_from[0]}</p>}
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="status">Status</label>
@@ -177,37 +183,46 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             <option value="Approved">Approved</option>
                             <option value="Rejected">Rejected</option>
                         </select>
+                        {errors.status && <p className="mt-1 text-xs text-red-500">{errors.status[0]}</p>}
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_for">Request For</label>
-                        <select
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
-                            id="request_for"
-                            name="request_for"
-                            value={formData.request_for}
-                            onChange={handleChange}
-                            required
-                        >
-                            <option value="">Request For</option>
-                            {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_for_id">Request For</label>
+                        {loading ? (
+                            <div>Loading items...</div>
+                        ) : itemsError ? (
+                            <div>Error: {itemsError}</div>
+                        ) : (
+                            <select
+                                className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
+                                id="request_for_id"
+                                name="request_for_id"
+                                value={formData.request_for_id}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Request For</option>
+                                {items.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
+                        {errors.request_for_id && <p className="mt-1 text-xs text-red-500">{errors.request_for_id[0]}</p>}
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="qty">Quantity</label>
+                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="quantity">Quantity</label>
                         <input
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             type="number"
-                            id="qty"
-                            name="qty"
+                            id="quantity"
+                            name="quantity"
                             placeholder="Enter quantity"
-                            value={formData.qty}
+                            value={formData.quantity}
                             onChange={handleChange}
                             required
                         />
+                        {errors.quantity && <p className="mt-1 text-xs text-red-500">{errors.quantity[0]}</p>}
                     </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="note">Note</label>
@@ -219,6 +234,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             value={formData.note}
                             onChange={handleChange}
                         />
+                        {errors.note && <p className="mt-1 text-xs text-red-500">{errors.note[0]}</p>}
                     </div>
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="text-gray-500" onClick={onClose}>Cancel</button>
