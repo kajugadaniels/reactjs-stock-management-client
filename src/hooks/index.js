@@ -14,6 +14,9 @@ import useRequests from './request/useRequests';
 // Stock Out
 import { useStockOut } from './stockOut/useStockOut';
 
+// Process
+import { useProcess } from './process/useProcess';
+
 export {
     // Suppliers
     useSupplier,
@@ -30,5 +33,8 @@ export {
     useRequests,
 
     // StockOut
-    useStockOut
+    useStockOut,
+
+    // Process
+    useProcess
 };
