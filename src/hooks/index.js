@@ -9,7 +9,7 @@ import useFetchTypes from './items/useFetchTypes';
 // Stock In
 import useStockIn from './stockIn/useStockIn';
 // request
-import useRequestForm from './request/useRequestForm';
+import useRequests from './request/useRequests';
 
 export {
     // Suppliers
@@ -22,6 +22,7 @@ export {
 
     // Stock In
     useStockIn,
+
     // Request
-    useRequestForm,
+    useRequests,
 };

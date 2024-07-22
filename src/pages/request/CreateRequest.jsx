@@ -1,15 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Swal from 'sweetalert2';
-import useRequestForm from '../../hooks/request/useRequestForm'; // Make sure the path is correct
+import { useRequests } from '../../hooks';
 
 const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
-    const { formData, handleChange, addRequest, loading, errors } = useRequestForm();
-    const [stockIns, setStockIns] = useState([]);
-    const [items, setItems] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [stockInsError, setStockInsError] = useState(null);
-    const [itemsError, setItemsError] = useState(null);
-    const [employeesError, setEmployeesError] = useState(null);
+    const { 
+        formData, 
+        handleChange, 
+        addRequest, 
+        loading, 
+        errors, 
+        stockIns, 
+        items, 
+        employees, 
+        stockInsError, 
+        itemsError, 
+        employeesError,
+        fetchStockIns,
+        fetchItems,
+        fetchEmployees
+    } = useRequests();
 
     useEffect(() => {
         fetchStockIns();
@@ -17,52 +26,9 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         fetchEmployees();
     }, []);
 
-    const fetchStockIns = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch stock-ins');
-            }
-            const data = await response.json();
-            setStockIns(data);
-        } catch (error) {
-            setStockInsError(error.message);
-            console.error('Error fetching stock-ins:', error);
-        }
-    };
-
-    const fetchItems = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-            const data = await response.json();
-            setItems(data);
-        } catch (error) {
-            setItemsError(error.message);
-            console.error('Error fetching items:', error);
-        }
-    };
-
-    const fetchEmployees = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch employees');
-            }
-            const data = await response.json();
-            setEmployees(data);
-        } catch (error) {
-            setEmployeesError(error.message);
-            console.error('Error fetching employees:', error);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log('Form Data:', formData); // Log formData to check its content
             await addRequest();
             Swal.fire({
                 icon: 'success',

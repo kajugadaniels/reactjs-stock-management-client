@@ -1,68 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import useFetchRequest from '../hooks/request/useFetchRequest';
 import CreateRequest from './request/CreateRequest';
+import { useRequests } from '../hooks';
 
 const Stock = () => {
-    const { requests, loading, error, fetchRequests } = useFetchRequest();
-    const [items, setItems] = useState([]);
+    const { 
+        requests, 
+        loading, 
+        error, 
+        fetchRequests, 
+        handleDelete 
+    } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
-
-    useEffect(() => {
-        fetchRequests();
-        fetchItems();
-    }, []);
-
-    const fetchItems = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-            const data = await response.json();
-            setItems(data);
-        } catch (error) {
-            console.error('Error fetching items:', error);
-        }
-    };
-
-    const getItemNameById = (id) => {
-        const item = items.find(item => item.id === id);
-        return item ? item.name : 'Unknown Item';
-    };
-
-    const handleEdit = (id) => {
-        // Logic for editing the request
-        console.log('Edit request with ID:', id);
-        // Redirect to an edit page or open an edit modal
-    };
-
-    const handleDelete = async (id) => {
-        // Logic for deleting the request
-        if (window.confirm('Are you sure you want to delete this request?')) {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/requests/${id}`, {
-                    method: 'DELETE',
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to delete request');
-                }
-                fetchRequests(); // Refresh the list after deletion
-            } catch (error) {
-                console.error('Error deleting request:', error);
-            }
-        }
-    };
-
-    useEffect(() => {
-        console.log('Loading:', loading);
-        console.log('Error:', error);
-        console.log('Requests:', requests);
-    }, [loading, error, requests]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -197,18 +150,32 @@ const Stock = () => {
                                     <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
                                     <td className="px-4 py-2 border-b">{request.id}</td>
                                     <td className="px-4 py-2 border-b">{request.item?.item?.name || 'Unknown Item'}</td>
-                                    <td className="px-4 py-2 border-b">{request.contact_person.name || 'Unknown Person'}</td>
+                                    <td className="px-4 py-2 border-b">{request.contact_person?.name || 'Unknown Person'}</td>
                                     <td className="px-4 py-2 border-b">{request.requester_name}</td>
                                     <td className="px-4 py-2 border-b">{request.request_from}</td>
                                     <td className="px-4 py-2 border-b">{request.status}</td>
-                                    <td className="px-4 py-2 border-b">{request.request_for.name || 'Unknown Item'}</td>
+                                    <td className="px-4 py-2 border-b">{request.request_for?.name || 'Unknown Item'}</td>
                                     <td className="px-4 py-2 border-b">{request.quantity}</td>
                                     <td className="px-4 py-2 border-b">{request.note}</td>
+                                    <td className="px-4 py-2 border-b">
+                                        <button
+                                            className="px-2 py-1 mr-2 text-white bg-blue-500 rounded"
+                                            onClick={() => handleEdit(request.id)}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="px-2 py-1 text-white bg-red-500 rounded"
+                                            onClick={() => handleDelete(request.id)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="11" className="px-4 py-2 border-b">No requests found.</td> {/* Adjusted colspan to 11 */}
+                                <td colSpan="11" className="px-4 py-2 border-b">No requests found.</td>
                             </tr>
                         )}
                     </tbody>
