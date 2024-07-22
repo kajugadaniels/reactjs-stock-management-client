@@ -54,7 +54,6 @@ const Process = () => {
                     <thead className="bg-gray-200">
                         <tr>
                             <th className="px-6 py-3 text-left text-gray-700">Check</th>
-                            <th className="px-6 py-3 text-left text-gray-700">Production Process ID</th>
                             <th className="px-6 py-3 text-left text-gray-700">Item Name</th>
                             <th className="px-6 py-3 text-left text-gray-700">Stockout Item</th>
                             <th className="px-6 py-3 text-left text-gray-700">Category</th>
@@ -70,7 +69,6 @@ const Process = () => {
                                 <td className="px-6 py-4">
                                     <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
                                 </td>
-                                <td className="px-6 py-4 text-gray-700">{process.id}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.request_for.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.category?.name}</td>
