@@ -87,10 +87,10 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ">
             <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
                 <h2 className="mb-4 text-2xl font-semibold">Edit Item</h2>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className='p-3'>
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-sm font-medium mb-1 text-[#424955]">Item Name</label>
                         <input
@@ -99,7 +99,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-96 p-3 border border-input rounded bg-input text-foreground"
                             placeholder="Enter item name"
                             required
                         />
@@ -111,7 +111,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             name="category_id"
                             value={formData.category_id}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
                             required
                         >
                             <option value="">Select category</option>
@@ -129,7 +129,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             name="type_id"
                             value={formData.type_id}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
                             required
                         >
                             <option value="">Select type</option>
@@ -148,7 +148,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             name="capacity"
                             value={formData.capacity}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
                             placeholder="Enter capacity"
                             required
                         />
@@ -161,13 +161,13 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             name="unit"
                             value={formData.unit}
                             onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
+                            className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
                             placeholder="Enter unit"
                         />
                     </div>
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                        <button type="submit" className="bg-[#00BDD6] p-2 text-white rounded-xl" disabled={loading}>
                             {loading ? 'Updating...' : 'Update Item'}
                         </button>
                     </div>

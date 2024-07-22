@@ -126,47 +126,49 @@ const StockInCreate = ({ isOpen, onClose }) => {
                     Close
                 </button>
                 <h2 className="mb-4 text-xl font-semibold">Create Stock In</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
-                            Supplier
-                        </label>
-                        <select
-                            id="supplier_id"
-                            name="supplier_id"
-                            value={formData.supplier_id}
-                            onChange={handleSupplierChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                        >
-                            <option value="">Select Supplier</option>
-                            {suppliers && suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
-                            Item
-                        </label>
-                        <select
-                            id="item_id"
-                            name="item_id"
-                            value={formData.item_id}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                            disabled={loading || !formData.supplier_id}
-                        >
-                            <option value="">Select Item</option>
-                            {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
-                                </option>
-                            ))}
-                        </select>
+                <form onSubmit={handleSubmit} className='p-10'>
+                    <div className='flex gap-10'>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
+                                Supplier
+                            </label>
+                            <select
+                                id="supplier_id"
+                                name="supplier_id"
+                                value={formData.supplier_id}
+                                onChange={handleSupplierChange}
+                                className="w-52 p-3 border border-gray-300 rounded "
+                                required
+                            >
+                                <option value="">Select Supplier</option>
+                                {suppliers && suppliers.map((supplier) => (
+                                    <option key={supplier.id} value={supplier.id}>
+                                        {supplier.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
+                                Item
+                            </label>
+                            <select
+                                id="item_id"
+                                name="item_id"
+                                value={formData.item_id}
+                                onChange={handleInputChange}
+                                className="w-52 p-3 border border-gray-300 rounded"
+                                required
+                                disabled={loading || !formData.supplier_id}
+                            >
+                                <option value="">Select Item</option>
+                                {items.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
@@ -209,39 +211,41 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
-                            Date
-                        </label>
-                        <input
-                            type="date"
-                            id="date"
-                            name="date"
-                            value={formData.date}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
-                            Registered By
-                        </label>
-                        <select
-                            id="registered_by"
-                            name="registered_by"
-                            value={formData.registered_by}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                        >
-                            <option value="">Select Employee</option>
-                            {employees && employees.map((employee) => (
-                                <option key={employee.id} value={employee.id}>
-                                    {employee.name}
-                                </option>
-                            ))}
-                        </select>
+                    <div className='flex gap-10'>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                                Date
+                            </label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleInputChange}
+                                className="w-52 p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
+                                Registered By
+                            </label>
+                            <select
+                                id="registered_by"
+                                name="registered_by"
+                                value={formData.registered_by}
+                                onChange={handleInputChange}
+                                className="w-52 p-3 border border-gray-300 rounded"
+                                required
+                            >
+                                <option value="">Select Employee</option>
+                                {employees && employees.map((employee) => (
+                                    <option key={employee.id} value={employee.id}>
+                                        {employee.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700">
