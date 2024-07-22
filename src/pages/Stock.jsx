@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CreateRequest from './request/CreateRequest';
+import StockOutApproval from './Stockout/StockOutApproval';
 import { useRequests } from '../hooks';
 
 const Stock = () => {
@@ -12,9 +13,21 @@ const Stock = () => {
         handleDelete
     } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isStockOutModalOpen, setIsStockOutModalOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState(null);
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
+    };
+
+    const openStockOutModal = (requestId) => {
+        setSelectedRequestId(requestId);
+        setIsStockOutModalOpen(true);
+    };
+
+    const closeStockOutModal = () => {
+        setSelectedRequestId(null);
+        setIsStockOutModalOpen(false);
     };
 
     if (loading) {
@@ -166,10 +179,16 @@ const Stock = () => {
                                             Edit
                                         </button>
                                         <button
-                                            className="px-3 py-1 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            className="px-3 py-1 mr-2 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                                             onClick={() => handleDelete(request.id)}
                                         >
                                             Delete
+                                        </button>
+                                        <button
+                                            className="px-3 py-1 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            onClick={() => openStockOutModal(request.id)}
+                                        >
+                                            Approve Stock Out
                                         </button>
                                     </td>
                                 </tr>
@@ -181,10 +200,10 @@ const Stock = () => {
                         )}
                     </tbody>
                 </table>
-
             </div>
 
             <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
+            <StockOutApproval isOpen={isStockOutModalOpen} onClose={closeStockOutModal} requestId={selectedRequestId} fetchRequests={fetchRequests} />
         </div>
     );
 };
