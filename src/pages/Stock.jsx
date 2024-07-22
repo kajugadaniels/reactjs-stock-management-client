@@ -4,12 +4,12 @@ import CreateRequest from './request/CreateRequest';
 import { useRequests } from '../hooks';
 
 const Stock = () => {
-    const { 
-        requests, 
-        loading, 
-        error, 
-        fetchRequests, 
-        handleDelete 
+    const {
+        requests,
+        loading,
+        error,
+        fetchRequests,
+        handleDelete
     } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -128,44 +128,45 @@ const Stock = () => {
             </div>
 
             <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-zinc-200">
-                    <thead>
+                <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+                    <thead className="bg-gray-200">
                         <tr>
-                            <th className="px-4 py-2 border-b">Check</th>
-                            <th className="px-4 py-2 border-b">Req Id</th>
-                            <th className="px-4 py-2 border-b">Item</th>
-                            <th className="px-4 py-2 border-b">Contact Person</th>
-                            <th className="px-4 py-2 border-b">Requester</th>
-                            <th className="px-4 py-2 border-b">Request From</th>
-                            <th className="px-4 py-2 border-b">Status</th>
-                            <th className="px-4 py-2 border-b">Request For</th>
-                            <th className="px-4 py-2 border-b">Quantity</th>
-                            <th className="px-4 py-2 border-b">Note</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Check</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Req Id</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Item</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Contact Person</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Requester</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request From</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Status</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request For</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Quantity</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Note</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-200">
                         {Array.isArray(requests) && requests.length > 0 ? (
                             requests.sort((a, b) => a.id - b.id).map((request) => (
-                                <tr key={request.id}>
-                                    <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
-                                    <td className="px-4 py-2 border-b">{request.id}</td>
-                                    <td className="px-4 py-2 border-b">{request.item?.item?.name || 'Unknown Item'}</td>
-                                    <td className="px-4 py-2 border-b">{request.contact_person?.name || 'Unknown Person'}</td>
-                                    <td className="px-4 py-2 border-b">{request.requester_name}</td>
-                                    <td className="px-4 py-2 border-b">{request.request_from}</td>
-                                    <td className="px-4 py-2 border-b">{request.status}</td>
-                                    <td className="px-4 py-2 border-b">{request.request_for?.name || 'Unknown Item'}</td>
-                                    <td className="px-4 py-2 border-b">{request.quantity}</td>
-                                    <td className="px-4 py-2 border-b">{request.note}</td>
-                                    <td className="px-4 py-2 border-b">
+                                <tr key={request.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
+                                    <td className="px-6 py-4 border-b border-gray-300"><input type="checkbox" /></td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.id}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.item?.item?.name || 'Unknown Item'}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.contact_person?.name || 'Unknown Person'}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.requester_name}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_from}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.status}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_for?.name || 'Unknown Item'}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.quantity}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.note}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">
                                         <button
-                                            className="px-2 py-1 mr-2 text-white bg-blue-500 rounded"
+                                            className="px-3 py-1 mr-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             onClick={() => handleEdit(request.id)}
                                         >
                                             Edit
                                         </button>
                                         <button
-                                            className="px-2 py-1 text-white bg-red-500 rounded"
+                                            className="px-3 py-1 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                                             onClick={() => handleDelete(request.id)}
                                         >
                                             Delete
@@ -175,11 +176,12 @@ const Stock = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="11" className="px-4 py-2 border-b">No requests found.</td>
+                                <td colSpan="11" className="px-6 py-4 text-sm text-center text-gray-600 border-b border-gray-300">No requests found.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
+
             </div>
 
             <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
