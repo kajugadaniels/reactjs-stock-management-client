@@ -10,7 +10,8 @@ const Stock = () => {
         loading,
         error,
         fetchRequests,
-        handleDelete
+        handleDelete,
+        handleApproveStockOut,
     } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isStockOutModalOpen, setIsStockOutModalOpen] = useState(false);
@@ -167,7 +168,11 @@ const Stock = () => {
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.contact_person?.name || 'Unknown Person'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.requester_name}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_from}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.status}</td>
+                                    <td
+                                        className={`px-6 py-4 text-sm text-gray-600 border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+                                    >
+                                        {request.status}
+                                    </td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_for?.name || 'Unknown Item'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.quantity}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.note}</td>
@@ -184,12 +189,14 @@ const Stock = () => {
                                         >
                                             Delete
                                         </button>
-                                        <button
-                                            className="px-3 py-1 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                            onClick={() => openStockOutModal(request.id)}
-                                        >
-                                            Approve Stock Out
-                                        </button>
+                                        {request.status === 'Pending' && (
+                                            <button
+                                                className="px-3 py-1 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                onClick={() => openStockOutModal(request.id)}
+                                            >
+                                                Approve Stock Out
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))
@@ -203,7 +210,13 @@ const Stock = () => {
             </div>
 
             <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
-            <StockOutApproval isOpen={isStockOutModalOpen} onClose={closeStockOutModal} requestId={selectedRequestId} fetchRequests={fetchRequests} />
+            <StockOutApproval
+                isOpen={isStockOutModalOpen}
+                onClose={closeStockOutModal}
+                requestId={selectedRequestId}
+                fetchRequests={fetchRequests}
+                handleApproveStockOut={handleApproveStockOut}
+            />
         </div>
     );
 };
