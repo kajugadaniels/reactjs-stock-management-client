@@ -14,6 +14,7 @@ const useFetchRequest = () => {
                 throw new Error(`Failed to fetch requests: ${response.statusText}`);
             }
             const data = await response.json();
+            console.log('Fetched requests:', data);
             setRequests(data);
         } catch (error) {
             console.error('Fetch requests error:', error);

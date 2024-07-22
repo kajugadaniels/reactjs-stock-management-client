@@ -58,6 +58,12 @@ const Stock = () => {
         }
     };
 
+    useEffect(() => {
+        console.log('Loading:', loading);
+        console.log('Error:', error);
+        console.log('Requests:', requests);
+    }, [loading, error, requests]);
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -68,10 +74,10 @@ const Stock = () => {
 
     return (
         <div className="p-6">
-            <div className="flex space-x-4 mb-6">
+            <div className="flex mb-6 space-x-4">
                 <Link to='/products'>
                     <div className="bg-[rgba(78,189,214,255)] text-white p-2 rounded-lg h-30">
-                        <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <div className='flex gap-1 ml-2'>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16">
@@ -79,17 +85,17 @@ const Stock = () => {
                                     </svg>
                                     <div className="text-sm font-bold">Stock In</div>
                                 </div>
-                                <div className='bg-white px-6 py-4 mt-1'>
+                                <div className='px-6 py-4 mt-1 bg-white'>
                                     <div className="text-2xl font-bold text-[rgba(78,189,214,255)]">29 T</div>
-                                    <div className="text-xs text-gray-500 pr-1 pt-2">230 Packaging</div>
+                                    <div className="pt-2 pr-1 text-xs text-gray-500">230 Packaging</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </Link>
                 <Link to='/StockOut'>
-                    <div className="bg-purple-500 text-white p-2 rounded-lg h-30">
-                        <div className="flex justify-between items-center">
+                    <div className="p-2 text-white bg-purple-500 rounded-lg h-30">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <div className='flex gap-1 ml-2'>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
@@ -102,14 +108,14 @@ const Stock = () => {
                                 </div>
                                 <div className='bg-[#ebfdfe] px-6 py-4 mt-1'>
                                     <div className="text-2xl font-bold text-purple-500">79 T</div>
-                                    <div className="text-xs text-gray-500 pr-1 pt-2">100 Packaging</div>
+                                    <div className="pt-2 pr-1 text-xs text-gray-500">100 Packaging</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </Link>
-                <div className="bg-blue-500 text-white p-2 rounded-lg h-30">
-                    <div className="flex justify-between items-center">
+                <div className="p-2 text-white bg-blue-500 rounded-lg h-30">
+                    <div className="flex items-center justify-between">
                         <div>
                             <div className='flex gap-1 ml-2'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 512 512">
@@ -117,16 +123,16 @@ const Stock = () => {
                                 </svg>
                                 <div className="text-sm font-bold">Request</div>
                             </div>
-                            <div className='bg-white px-6 py-4 mt-1'>
-                                <div className="text-2xl text-blue-500 font-bold">12</div>
-                                <div className="text-xs text-gray-500 pr-1 pt-2">12 Today</div>
+                            <div className='px-6 py-4 mt-1 bg-white'>
+                                <div className="text-2xl font-bold text-blue-500">12</div>
+                                <div className="pt-2 pr-1 text-xs text-gray-500">12 Today</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-orange-200 text-zinc-800 p-2 rounded-lg h-30">
-                    <div className="flex justify-between items-center">
+                <div className="p-2 bg-orange-200 rounded-lg text-zinc-800 h-30">
+                    <div className="flex items-center justify-between">
                         <div>
                             <div className='flex gap-1 ml-2'>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
@@ -137,36 +143,36 @@ const Stock = () => {
                             </div>
                             <div className='bg-[#e7e7e7] px-6 py-4 mt-1'>
                                 <div className="text-2xl font-bold text-zinc-800">118 T</div>
-                                <div className="text-xs text-gray-500 pr-1 pt-2">4 Packages</div>
+                                <div className="pt-2 pr-1 text-xs text-gray-500">4 Packages</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center space-x-4 mb-6">
-<button
-    onClick={toggleModal}
-    className="mb-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
->
-    <div className='flex items-center'>
-        <span className="mr-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
-        </span>
-        Request Item
-    </div>
-</button>
-<CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
-<div className="flex items-center space-x-2">
-    <label>From</label>
-    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-09" />
-</div>
-<div className="flex items-center space-x-2">
-    <label>To</label>
-    <input type="date" className="border border-zinc-300 rounded-lg p-2" defaultValue="2024-02-20" />
-</div>
-<button className="bg-green-500 text-white px-4 py-2 rounded-lg">Today</button>
-</div>
+            <div className="flex items-center mb-6 space-x-4">
+                <button
+                    onClick={toggleModal}
+                    className="mb-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
+                >
+                    <div className='flex items-center'>
+                        <span className="mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
+                        </span>
+                        Request Item
+                    </div>
+                </button>
+                <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
+                <div className="flex items-center space-x-2">
+                    <label>From</label>
+                    <input type="date" className="p-2 border rounded-lg border-zinc-300" defaultValue="2024-02-09" />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <label>To</label>
+                    <input type="date" className="p-2 border rounded-lg border-zinc-300" defaultValue="2024-02-20" />
+                </div>
+                <button className="px-4 py-2 text-white bg-green-500 rounded-lg">Today</button>
+            </div>
 
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-zinc-200">
@@ -175,14 +181,13 @@ const Stock = () => {
                             <th className="px-4 py-2 border-b">Check</th>
                             <th className="px-4 py-2 border-b">Req Id</th>
                             <th className="px-4 py-2 border-b">Item</th>
-                            <th className="px-4 py-2 border-b">Contact_id</th>
+                            <th className="px-4 py-2 border-b">Contact Person</th>
                             <th className="px-4 py-2 border-b">Requester</th>
-                            <th className="px-4 py-2 border-b">Request_from</th>
+                            <th className="px-4 py-2 border-b">Request From</th>
                             <th className="px-4 py-2 border-b">Status</th>
-                            <th className="px-4 py-2 border-b">Request_for</th>
+                            <th className="px-4 py-2 border-b">Request For</th>
                             <th className="px-4 py-2 border-b">Quantity</th>
                             <th className="px-4 py-2 border-b">Note</th>
-                            <th className="px-4 py-2 border-b">Action</th> {/* Added Action column */}
                         </tr>
                     </thead>
                     <tbody>
@@ -191,28 +196,14 @@ const Stock = () => {
                                 <tr key={request.id}>
                                     <td className="px-4 py-2 border-b"><input type="checkbox" /></td>
                                     <td className="px-4 py-2 border-b">{request.id}</td>
-                                    <td className="px-4 py-2 border-b">{getItemNameById(request.item_id)}</td>
-                                    <td className="px-4 py-2 border-b">{request.contact_id}</td>
-                                    <td className="px-4 py-2 border-b">{request.requester}</td>
+                                    <td className="px-4 py-2 border-b">{request.item?.item?.name || 'Unknown Item'}</td>
+                                    <td className="px-4 py-2 border-b">{request.contact_person.name || 'Unknown Person'}</td>
+                                    <td className="px-4 py-2 border-b">{request.requester_name}</td>
                                     <td className="px-4 py-2 border-b">{request.request_from}</td>
                                     <td className="px-4 py-2 border-b">{request.status}</td>
-                                    <td className="px-4 py-2 border-b">{getItemNameById(request.item_id)}</td>
-                                    <td className="px-4 py-2 border-b">{request.qty}</td>
+                                    <td className="px-4 py-2 border-b">{request.request_for.name || 'Unknown Item'}</td>
+                                    <td className="px-4 py-2 border-b">{request.quantity}</td>
                                     <td className="px-4 py-2 border-b">{request.note}</td>
-                                    <td className="px-4 py-2 border-b">
-                                        <button
-                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                                            onClick={() => handleEdit(request.id)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
-                                            onClick={() => handleDelete(request.id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
                                 </tr>
                             ))
                         ) : (
