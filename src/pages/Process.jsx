@@ -78,7 +78,7 @@ const Process = () => {
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.category?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.type?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.quantity}</td>
-                                <td className="px-6 py-4 text-gray-700">{process.request.status}</td>
+                                <td className="px-6 py-4 text-gray-700">{process.status}</td>
                                 <td className="px-6 py-4 space-x-2">
                                     <button className="px-4 py-2 text-white bg-yellow-500 rounded hover:bg-yellow-600" onClick={handleApprove}>
                                         Approve

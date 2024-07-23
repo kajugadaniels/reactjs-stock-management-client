@@ -36,7 +36,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
 
     const handleApprove = async () => {
         try {
-            await approveStockOut(requestId, quantity);
+            await approveStockOut(requestId, quantity, itemId);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',

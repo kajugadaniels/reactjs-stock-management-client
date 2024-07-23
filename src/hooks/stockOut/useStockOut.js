@@ -44,7 +44,7 @@ export const useStockOut = () => {
         }
     };
 
-    const approveStockOut = async (requestId, quantity) => {
+    const approveStockOut = async (requestId, quantity, itemId) => {
         setLoading(true);
         setError(null);
         try {
@@ -56,7 +56,9 @@ export const useStockOut = () => {
                 body: JSON.stringify({
                     request_id: requestId,
                     quantity,
+                    item_id: itemId, // Ensure item_id is included
                     date: new Date().toISOString().split('T')[0],
+                    status: 'Approved', // Add status field
                 }),
             });
 

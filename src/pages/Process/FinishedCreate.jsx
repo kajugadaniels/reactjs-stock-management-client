@@ -33,7 +33,7 @@ const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to add finished product. Please try again.',
+                text: error.message || 'Failed to add finished product. Please try again.',
             });
         }
     };
