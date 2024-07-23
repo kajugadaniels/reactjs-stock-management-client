@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 
-const useFinishedProducts = () => {
+export const useFinishedProducts = () => {
     const [finishedProducts, setFinishedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const fetchFinishedProducts = async () => {
-        setLoading(true);
-        setError(null);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/finished-products`);
             if (!response.ok) {
@@ -26,7 +24,32 @@ const useFinishedProducts = () => {
         fetchFinishedProducts();
     }, []);
 
-    return { finishedProducts, loading, error };
-};
+    const addFinishedProduct = async (finishedProduct) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/finished-products`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(finishedProduct)
+            });
 
-export default useFinishedProducts;
+            if (!response.ok) {
+                throw new Error('Failed to create finished product');
+            }
+
+            fetchFinishedProducts(); // Refresh the list of finished products
+        } catch (error) {
+            setError(error.message);
+            throw error; // Re-throw the error for further handling
+        }
+    };
+
+    return {
+        finishedProducts,
+        loading,
+        error,
+        fetchFinishedProducts,
+        addFinishedProduct
+    };
+};

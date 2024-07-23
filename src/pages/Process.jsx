@@ -6,9 +6,11 @@ import { useProcess } from '../hooks';
 const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
     const [isPackegingModalOpen, setIsPackegingModalOpen] = useState(false);
+    const [currentStockOutId, setCurrentStockOutId] = useState(null); // Add state to hold current stock_out_id
     const { processes, loading, error } = useProcess();
 
-    const toggleFinishedCreateModal = () => {
+    const toggleFinishedCreateModal = (stockOutId = null) => {
+        setCurrentStockOutId(stockOutId); // Set the stock_out_id when opening the modal
         setIsFinishedModalOpen(!isFinishedModalOpen);
     };
 
@@ -54,6 +56,7 @@ const Process = () => {
                     <thead className="bg-gray-200">
                         <tr>
                             <th className="px-6 py-3 text-left text-gray-700">Check</th>
+                            <th className="px-6 py-3 text-left text-gray-700">ID</th>
                             <th className="px-6 py-3 text-left text-gray-700">Item Name</th>
                             <th className="px-6 py-3 text-left text-gray-700">Stockout Item</th>
                             <th className="px-6 py-3 text-left text-gray-700">Category</th>
@@ -69,6 +72,7 @@ const Process = () => {
                                 <td className="px-6 py-4">
                                     <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
                                 </td>
+                                <td className="px-6 py-4 text-gray-700">{process.id}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.request_for.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.category?.name}</td>
@@ -79,7 +83,7 @@ const Process = () => {
                                     <button className="px-4 py-2 text-white bg-yellow-500 rounded hover:bg-yellow-600" onClick={handleApprove}>
                                         Approve
                                     </button>
-                                    <button className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600" onClick={toggleFinishedCreateModal}>
+                                    <button className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600" onClick={() => toggleFinishedCreateModal(process.id)}>
                                         Finished
                                     </button>
                                     <button className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600" onClick={togglePackegingCreateModal}>
@@ -91,7 +95,7 @@ const Process = () => {
                     </tbody>
                 </table>
             </div>
-            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} />
+            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} stockOutId={currentStockOutId} />
             <PackegingCreate isOpen={isPackegingModalOpen} onClose={togglePackegingCreateModal} />
         </div>
     );

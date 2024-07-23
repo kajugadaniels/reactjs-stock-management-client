@@ -6,7 +6,7 @@ import useStockIn from './stockIn/useStockIn';
 import useRequests from './request/useRequests';
 import { useStockOut } from './stockOut/useStockOut';
 import { useProcess } from './process/useProcess';
-import useFinishedProducts from './finishedProducts/useFinishedProducts';
+import { useFinishedProducts } from './finishedProducts/useFinishedProducts';
 
 export {
     useSupplier,
