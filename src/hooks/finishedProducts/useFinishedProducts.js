@@ -41,6 +41,8 @@ export const useFinishedProducts = () => {
             await updateStockOutStatus(finishedProduct.stock_out_id, 'finished'); // Update the stock_out status
 
             fetchFinishedProducts(); // Refresh the list of finished products
+
+            window.location.reload(); // Reload the page
         } catch (error) {
             setError(error.message);
             throw error; // Re-throw the error for further handling

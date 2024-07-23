@@ -33,7 +33,7 @@ const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'Failed to add finished product. Please try again.',
+                text: 'Failed to add finished product. Please try again.',
             });
         }
     };
@@ -45,6 +45,7 @@ const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
             <div className="max-w-md p-10 mx-auto bg-white rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold text-zinc-800">Add Finished Product</h2>
                 <p className="mb-4 text-zinc-600">Record All Finished Product Here</p>
+                {error && <p className="text-red-500">{error}</p>}
                 <form className='w-96' onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block mb-2 font-medium text-zinc-700">Item Quantity</label>

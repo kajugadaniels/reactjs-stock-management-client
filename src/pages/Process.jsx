@@ -6,11 +6,11 @@ import { useProcess } from '../hooks';
 const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
     const [isPackegingModalOpen, setIsPackegingModalOpen] = useState(false);
-    const [currentStockOutId, setCurrentStockOutId] = useState(null); // Add state to hold current stock_out_id
+    const [selectedProcessId, setSelectedProcessId] = useState(null);
     const { processes, loading, error } = useProcess();
 
-    const toggleFinishedCreateModal = (stockOutId = null) => {
-        setCurrentStockOutId(stockOutId); // Set the stock_out_id when opening the modal
+    const toggleFinishedCreateModal = (processId) => {
+        setSelectedProcessId(processId);
         setIsFinishedModalOpen(!isFinishedModalOpen);
     };
 
@@ -83,9 +83,15 @@ const Process = () => {
                                     <button className="px-4 py-2 text-white bg-yellow-500 rounded hover:bg-yellow-600" onClick={handleApprove}>
                                         Approve
                                     </button>
-                                    <button className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600" onClick={() => toggleFinishedCreateModal(process.id)}>
-                                        Finished
-                                    </button>
+                                    {process.status === 'finished' ? (
+                                        <button className="px-4 py-2 text-white bg-gray-400 rounded cursor-not-allowed" disabled>
+                                            Already Finished
+                                        </button>
+                                    ) : (
+                                        <button className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600" onClick={() => toggleFinishedCreateModal(process.id)}>
+                                            Finished
+                                        </button>
+                                    )}
                                     <button className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600" onClick={togglePackegingCreateModal}>
                                         Packaging
                                     </button>
@@ -95,7 +101,7 @@ const Process = () => {
                     </tbody>
                 </table>
             </div>
-            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} stockOutId={currentStockOutId} />
+            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} stockOutId={selectedProcessId} />
             <PackegingCreate isOpen={isPackegingModalOpen} onClose={togglePackegingCreateModal} />
         </div>
     );
