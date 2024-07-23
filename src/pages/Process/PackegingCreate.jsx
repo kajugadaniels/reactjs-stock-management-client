@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import { useProductStockIn } from '../../hooks';
 
 const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
+    const [itemName, setItemName] = useState('');
     const [quantity, setQuantity] = useState('');
     const [itemQty, setItemQty] = useState('');
     const [packageType, setPackageType] = useState('');
@@ -20,7 +21,9 @@ const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
     const fetchFinishedProductDetails = async () => {
         try {
             const data = await fetchFinishedProductById(finishedProductId);
-            setQuantity(data.item_qty);
+            setItemName(data.stock_out.request.item.item.name);
+            setItemQty(data.item_qty);
+            setQuantity(data.item_qty); // Ensure quantity is set for further calculations
         } catch (error) {
             console.error('Error fetching finished product details:', error);
         }
@@ -39,7 +42,7 @@ const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
         try {
             await addProductStockIn({
                 finished_product_id: finishedProductId,
-                item_name: '', // Fetch the item name if needed
+                item_name: itemName,
                 item_qty: itemQty,
                 package_type: packageType,
                 quantity: numberOfPackages,
@@ -80,6 +83,16 @@ const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
                             type="text"
                             placeholder="Input Finished Product ID"
                             value={finishedProductId}
+                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            readOnly
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block mb-2 font-medium text-zinc-700">Item Name</label>
+                        <input
+                            type="text"
+                            placeholder="Item Name"
+                            value={itemName}
                             className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                             readOnly
                         />
