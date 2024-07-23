@@ -14,7 +14,8 @@ const Process = () => {
         setIsFinishedModalOpen(!isFinishedModalOpen);
     };
 
-    const togglePackegingCreateModal = () => {
+    const togglePackegingCreateModal = (processId) => {
+        setSelectedProcessId(processId);
         setIsPackegingModalOpen(!isPackegingModalOpen);
     };
 
@@ -78,21 +79,24 @@ const Process = () => {
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.category?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.request.item?.item?.type?.name}</td>
                                 <td className="px-6 py-4 text-gray-700">{process.quantity}</td>
-                                <td className="px-6 py-4 text-gray-700">{process.status}</td>
+                                <td className="px-6 py-4 text-gray-700">
+                                    <span className={`px-2 py-1 rounded ${process.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
+                                        {process.status}
+                                    </span>
+                                </td>
                                 <td className="px-6 py-4 space-x-2">
-                                    <button className="px-4 py-2 text-white bg-yellow-500 rounded hover:bg-yellow-600" onClick={handleApprove}>
-                                        Approve
+                                    <button
+                                        className={`px-4 py-2 text-white rounded ${process.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
+                                        onClick={() => toggleFinishedCreateModal(process.id)}
+                                        disabled={process.status === 'Finished'}
+                                    >
+                                        {process.status === 'Finished' ? 'Already Finished' : 'Finished'}
                                     </button>
-                                    {process.status === 'finished' ? (
-                                        <button className="px-4 py-2 text-white bg-gray-400 rounded cursor-not-allowed" disabled>
-                                            Already Finished
-                                        </button>
-                                    ) : (
-                                        <button className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600" onClick={() => toggleFinishedCreateModal(process.id)}>
-                                            Finished
-                                        </button>
-                                    )}
-                                    <button className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600" onClick={togglePackegingCreateModal}>
+                                    <button
+                                        className={`px-4 py-2 text-white rounded ${process.status === 'Pending' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
+                                        onClick={() => togglePackegingCreateModal(process.id)}
+                                        disabled={process.status === 'Pending'}
+                                    >
                                         Packaging
                                     </button>
                                 </td>

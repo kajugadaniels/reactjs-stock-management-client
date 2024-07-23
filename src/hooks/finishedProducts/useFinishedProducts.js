@@ -38,7 +38,7 @@ export const useFinishedProducts = () => {
                 throw new Error('Failed to create finished product');
             }
 
-            await updateStockOutStatus(finishedProduct.stock_out_id, 'finished'); // Update the stock_out status
+            await updateStockOutStatus(finishedProduct.stock_out_id, 'Finished'); // Update the stock_out status
 
             fetchFinishedProducts(); // Refresh the list of finished products
 
