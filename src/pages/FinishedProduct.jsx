@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFinishedProducts } from '../hooks';
+import PackegingCreate from './Process/PackegingCreate';
 
 const FinishedProduct = () => {
     const { finishedProducts, loading, error } = useFinishedProducts();
+    const [isPackegingModalOpen, setIsPackegingModalOpen] = useState(false);
+    const [selectedFinishedProductId, setSelectedFinishedProductId] = useState(null);
+
+    const togglePackegingCreateModal = (finishedProductId) => {
+        setSelectedFinishedProductId(finishedProductId);
+        setIsPackegingModalOpen(!isPackegingModalOpen);
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -26,6 +34,7 @@ const FinishedProduct = () => {
                             <th className="px-6 py-3 text-left text-gray-700">Brand Quantity</th>
                             <th className="px-6 py-3 text-left text-gray-700">Dechet Quantity</th>
                             <th className="px-6 py-3 text-left text-gray-700">Comment</th>
+                            <th className="px-6 py-3 text-left text-gray-700">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -40,11 +49,20 @@ const FinishedProduct = () => {
                                 <td className="px-6 py-4 text-gray-700">{product.brand_qty} KG</td>
                                 <td className="px-6 py-4 text-gray-700">{product.dechet_qty} KG</td>
                                 <td className="px-6 py-4 text-gray-700">{product.comment}</td>
+                                <td className="px-6 py-4 space-x-2">
+                                    <button
+                                        className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                                        onClick={() => togglePackegingCreateModal(product.id)}
+                                    >
+                                        Packaging
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+            <PackegingCreate isOpen={isPackegingModalOpen} onClose={togglePackegingCreateModal} finishedProductId={selectedFinishedProductId} />
         </div>
     );
 };

@@ -12,25 +12,25 @@ const ProductStockIn = () => {
         <div className="p-4">
 
             <div className="grid grid-cols-4 gap-4 mb-4">
-                <div className="bg-card text-card-foreground p-6 rounded-lg shadow">
+                <div className="p-6 rounded-lg shadow bg-card text-card-foreground">
                     <div className="text-muted-foreground">Total Packeging In Stock</div>
-                    <div className="text-primary mt-5 text-2xl">600</div>
+                    <div className="mt-5 text-2xl text-primary">600</div>
                 </div>
-                <div className="bg-card text-card-foreground p-6 rounded-lg shadow">
+                <div className="p-6 rounded-lg shadow bg-card text-card-foreground">
                     <div className="text-muted-foreground">Total 5 Kg</div>
-                    <div className="text-primary mt-5 text-2xl">500</div>
+                    <div className="mt-5 text-2xl text-primary">500</div>
                 </div>
-                <div className="bg-gray-300 text-card-foreground p-6 rounded-lg shadow">
+                <div className="p-6 bg-gray-300 rounded-lg shadow text-card-foreground">
                     <div className="text-muted-foreground">Total 10 kg</div>
-                    <div className="text-primary mt-5 text-2xl">400</div>
+                    <div className="mt-5 text-2xl text-primary">400</div>
                 </div>
                 <div className="bg-[#f9d8c0] text-card-foreground p-6 rounded-lg shadow">
                     <div className="text-muted-foreground">Total 25 kg</div>
-                    <div className="text-primary mt-5 text-2xl">250</div>
+                    <div className="mt-5 text-2xl text-primary">250</div>
                 </div>
             </div>
 
-            <div className="flex space-x-2 mb-4">
+            <div className="flex mb-4 space-x-2">
             <div className="mb-4">
                     <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleProductStockInCreateModal}>
                         Product stockIn

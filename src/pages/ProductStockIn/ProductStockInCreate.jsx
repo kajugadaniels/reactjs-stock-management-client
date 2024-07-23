@@ -3,9 +3,9 @@ import React from 'react';
 const ProductStockInCreate = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="w-full max-w-lg mx-auto p-6 bg-card text-card-foreground rounded-lg shadow-md bg-white">
-                <h2 className="text-2xl font-semibold mb-4">Product Stock In</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
+                <h2 className="mb-4 text-2xl font-semibold">Product Stock In</h2>
                 <p className="text-muted-foreground mb-6 text-[#424955]">Product Stock In Record Form</p>
                 <form>
                     <div className="mb-4">

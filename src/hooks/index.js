@@ -7,6 +7,7 @@ import useRequests from './request/useRequests';
 import { useStockOut } from './stockOut/useStockOut';
 import { useProcess } from './process/useProcess';
 import { useFinishedProducts } from './finishedProducts/useFinishedProducts';
+import { useProductStockIn } from './productStockIn/useProductStockIn';
 
 export {
     useSupplier,
@@ -17,5 +18,6 @@ export {
     useRequests,
     useStockOut,
     useProcess,
-    useFinishedProducts
+    useFinishedProducts,
+    useProductStockIn
 };

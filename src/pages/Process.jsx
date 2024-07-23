@@ -1,26 +1,15 @@
 import React, { useState } from 'react';
 import FinishedCreate from './Process/FinishedCreate';
-import PackegingCreate from './Process/PackegingCreate';
 import { useProcess } from '../hooks';
 
 const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
-    const [isPackegingModalOpen, setIsPackegingModalOpen] = useState(false);
     const [selectedProcessId, setSelectedProcessId] = useState(null);
     const { processes, loading, error } = useProcess();
 
     const toggleFinishedCreateModal = (processId) => {
         setSelectedProcessId(processId);
         setIsFinishedModalOpen(!isFinishedModalOpen);
-    };
-
-    const togglePackegingCreateModal = (processId) => {
-        setSelectedProcessId(processId);
-        setIsPackegingModalOpen(!isPackegingModalOpen);
-    };
-
-    const handleApprove = () => {
-        setStatus('Approved');
     };
 
     if (loading) {
@@ -33,7 +22,7 @@ const Process = () => {
 
     return (
         <div className="min-h-screen p-8 bg-gray-100">
-            <h1 className="mb-6 text-3xl font-semibold text-gray-800">Production Process, Finished Product, and Packaging</h1>
+            <h1 className="mb-6 text-3xl font-semibold text-gray-800">Production Process and Finished Product</h1>
             <div className="grid grid-cols-4 gap-6 mb-8">
                 <div className="p-6 bg-white rounded-lg shadow-lg">
                     <h2 className="text-gray-500">Total Requested</h2>
@@ -92,13 +81,6 @@ const Process = () => {
                                     >
                                         {process.status === 'Finished' ? 'Already Finished' : 'Finished'}
                                     </button>
-                                    <button
-                                        className={`px-4 py-2 text-white rounded ${process.status === 'Pending' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
-                                        onClick={() => togglePackegingCreateModal(process.id)}
-                                        disabled={process.status === 'Pending'}
-                                    >
-                                        Packaging
-                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -106,7 +88,6 @@ const Process = () => {
                 </table>
             </div>
             <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} stockOutId={selectedProcessId} />
-            <PackegingCreate isOpen={isPackegingModalOpen} onClose={togglePackegingCreateModal} />
         </div>
     );
 };
