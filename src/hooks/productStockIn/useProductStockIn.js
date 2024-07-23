@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 export const useProductStockIn = () => {
     const [finishedProducts, setFinishedProducts] = useState([]);
+    const [productStockIns, setProductStockIns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -33,6 +34,29 @@ export const useProductStockIn = () => {
         }
     };
 
+    const fetchProductStockIns = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch product stock ins');
+            }
+            const data = await response.json();
+            const filteredData = data.map(stockIn => ({
+                id: stockIn.id,
+                item_name: stockIn.item_name,
+                package_type: stockIn.package_type,
+                quantity: stockIn.quantity,
+                comment: stockIn.comment,
+                created_at: stockIn.created_at
+            }));
+            setProductStockIns(filteredData);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const addProductStockIn = async (productStockIn) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
@@ -56,13 +80,16 @@ export const useProductStockIn = () => {
 
     useEffect(() => {
         fetchFinishedProducts();
+        fetchProductStockIns();
     }, []);
 
     return {
         finishedProducts,
+        productStockIns,
         loading,
         error,
         fetchFinishedProductById,
+        fetchProductStockIns,
         addProductStockIn,
     };
 };
