@@ -13,6 +13,7 @@ import TotalRowmaterior from "./totalStockin/TotalRowMaterial";
 import TotalPackeging from "./totalStockin/TotalPackeging";
 import TotalPackegingOut from "./totalStockout/TotalPackegingOut";
 import TotalRowMaterialOut from "./totalStockout/TotalRowMaterialOut";
+import FinishedProduct from "./FinishedProduct";
 
 export {
     Login,
@@ -30,4 +31,5 @@ export {
     TotalPackeging,
     TotalRowMaterialOut,
     TotalPackegingOut,
+    FinishedProduct
 }
