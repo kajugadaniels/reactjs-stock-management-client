@@ -17,9 +17,11 @@ const StockIn = () => {
         type: '',
         startDate: '',
         endDate: '',
+        loading_payment_status: '',
     });
 
     useEffect(() => {
+        console.log('Filters changed:', filters);
         fetchStockIns(filters);
     }, [filters]);
 
@@ -80,14 +82,6 @@ const StockIn = () => {
         setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
     return (
         <div className="p-4">
             <div className='flex gap-10 p-4'>
@@ -121,9 +115,12 @@ const StockIn = () => {
                         className="p-2 border border-gray-300 rounded w-52"
                     >
                         <option value="">All Categories</option>
-                        {categories.map((category) => (
-                            <option key={category.id} value={category.id}>{category.name}</option>
-                        ))}
+                        {categories
+                            .filter((category) => category.name !== 'Finished')
+                            .map((category) => (
+                                <option key={category.id} value={category.id}>{category.name}</option>
+                            ))
+                        }
                     </select>
                 </div>
                 <div>
@@ -160,9 +157,26 @@ const StockIn = () => {
                         className="p-2 border border-gray-300 rounded w-52"
                     />
                 </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Payment Status</label>
+                    <select
+                        name="loading_payment_status"
+                        value={filters.loading_payment_status}
+                        onChange={handleFilterChange}
+                        className="p-2 border border-gray-300 rounded w-52"
+                    >
+                        <option value="">All</option>
+                        <option value="true">Paid</option>
+                        <option value="false">Not Paid</option>
+                    </select>
+                </div>
             </div>
 
-            {stockIns.length === 0 ? (
+            {loading ? (
+                <div>Loading...</div>
+            ) : error ? (
+                <div>Error: {error}</div>
+            ) : stockIns.length === 0 ? (
                 <div className="text-center text-gray-500">No data found for the selected filters.</div>
             ) : (
                 <div className="overflow-x-auto">
