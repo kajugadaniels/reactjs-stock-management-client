@@ -3,26 +3,45 @@ import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
 const StockInEdit = ({ isOpen, onClose, stockIn }) => {
-    const { suppliers, categories, types, employees, formData, setFormData, loading, handleChange, updateStockIn, fetchItems } = useStockIn(stockIn);
+    const { suppliers, employees, getItemsBySupplier, updateStockIn, loading, formData, setFormData } = useStockIn(stockIn);
     const [items, setItems] = useState([]);
 
     useEffect(() => {
         if (stockIn) {
             setFormData({
+                supplier_id: stockIn.supplier_id,
                 item_id: stockIn.item_id,
                 quantity: stockIn.quantity,
-                registered_by: stockIn.registered_by,
-                plaque: stockIn.plaque,
-                batch: stockIn.batch,
-                status: stockIn.status,
+                plate_number: stockIn.plate_number,
+                batch_number: stockIn.batch_number,
                 comment: stockIn.comment,
+                date: stockIn.date,
+                registered_by: stockIn.registered_by,
+                loading_payment_status: stockIn.loading_payment_status,
             });
         }
     }, [stockIn, setFormData]);
 
     useEffect(() => {
-        fetchItems();
-    }, []);
+        if (formData.supplier_id) {
+            (async () => {
+                try {
+                    const itemsData = await getItemsBySupplier(formData.supplier_id);
+                    setItems(itemsData);
+                } catch (error) {
+                    setError(error.message);
+                }
+            })();
+        }
+    }, [formData.supplier_id, getItemsBySupplier]);
+
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData((prevState) => ({
+            ...prevState,
+            [name]: type === 'checkbox' ? checked : value,
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,19 +51,19 @@ const StockInEdit = ({ isOpen, onClose, stockIn }) => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    text: 'Product updated successfully!',
+                    text: 'Stock In updated successfully!',
                 }).then(() => {
                     onClose();
                     window.location.reload();
                 });
             } else {
-                throw new Error('Failed to update product');
+                throw new Error('Failed to update stock in');
             }
         } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'Failed to update product',
+                text: error.message || 'Failed to update stock in',
             });
         }
     };
@@ -52,111 +71,165 @@ const StockInEdit = ({ isOpen, onClose, stockIn }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md bg-card text-card-foreground">
-                <h2 className="mb-4 text-2xl font-semibold">Edit Stock In Record</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="item_id" className="block text-sm font-medium mb-1 text-[#424955]">Item</label>
-                        <select
-                            id="item_id"
-                            name="item_id"
-                            value={formData.item_id}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
-                        >
-                            <option value="">Select item</option>
-                            {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name}
-                                </option>
-                            ))}
-                        </select>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="p-6 bg-white rounded-md shadow-md">
+                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
+                    Close
+                </button>
+                <h2 className="mb-4 text-xl font-semibold">Edit Stock In</h2>
+                <form onSubmit={handleSubmit} className="p-10">
+                    <div className="flex gap-10">
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
+                                Supplier
+                            </label>
+                            <select
+                                id="supplier_id"
+                                name="supplier_id"
+                                value={formData.supplier_id}
+                                onChange={handleInputChange}
+                                className="p-3 border border-gray-300 rounded w-52"
+                                required
+                            >
+                                <option value="">Select Supplier</option>
+                                {suppliers && suppliers.map((supplier) => (
+                                    <option key={supplier.id} value={supplier.id}>
+                                        {supplier.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
+                                Item
+                            </label>
+                            <select
+                                id="item_id"
+                                name="item_id"
+                                value={formData.item_id}
+                                onChange={handleInputChange}
+                                className="p-3 border border-gray-300 rounded w-52"
+                                required
+                                disabled={!formData.supplier_id || loading}
+                            >
+                                <option value="">Select Item</option>
+                                {items.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="quantity" className="block text-sm font-medium mb-1 text-[#424955]">Quantity</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
+                            Quantity
+                        </label>
                         <input
                             type="number"
                             id="quantity"
                             name="quantity"
                             value={formData.quantity}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter quantity"
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="registered_by" className="block text-sm font-medium mb-1 text-[#424955]">Registered By</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
+                            Plate Number
+                        </label>
                         <input
                             type="text"
-                            id="registered_by"
-                            name="registered_by"
-                            value={formData.registered_by}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter name"
+                            id="plate_number"
+                            name="plate_number"
+                            value={formData.plate_number}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="plaque" className="block text-sm font-medium mb-1 text-[#424955]">Plaque</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="batch_number">
+                            Batch Number
+                        </label>
                         <input
                             type="text"
-                            id="plaque"
-                            name="plaque"
-                            value={formData.plaque}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter plaque"
+                            id="batch_number"
+                            name="batch_number"
+                            value={formData.batch_number}
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
+                    <div className="flex gap-10">
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                                Date
+                            </label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleInputChange}
+                                className="p-2 border border-gray-300 rounded w-52"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
+                                Registered By
+                            </label>
+                            <select
+                                id="registered_by"
+                                name="registered_by"
+                                value={formData.registered_by}
+                                onChange={handleInputChange}
+                                className="p-3 border border-gray-300 rounded w-52"
+                                required
+                            >
+                                <option value="">Select Employee</option>
+                                {employees && employees.map((employee) => (
+                                    <option key={employee.id} value={employee.id}>
+                                        {employee.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                     <div className="mb-4">
-                        <label htmlFor="batch" className="block text-sm font-medium mb-1 text-[#424955]">Batch</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700">
+                            Loading Payment Status
+                        </label>
                         <input
-                            type="text"
-                            id="batch"
-                            name="batch"
-                            value={formData.batch}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter batch"
-                            required
-                        />
+                            type="checkbox"
+                            id="loading_payment_status"
+                            name="loading_payment_status"
+                            checked={formData.loading_payment_status}
+                            onChange={handleInputChange}
+                            className="w-4 h-4"
+                        /> Paid
                     </div>
                     <div className="mb-4">
-                        <label htmlFor="status" className="block text-sm font-medium mb-1 text-[#424955]">Status</label>
-                        <select
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            required
-                        >
-                            <option value="">Select status</option>
-                            <option value="Complete">Complete</option>
-                            <option value="Pending">Pending</option>
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="comment" className="block text-sm font-medium mb-1 text-[#424955]">Comment</label>
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
+                            Comment
+                        </label>
                         <textarea
                             id="comment"
                             name="comment"
                             value={formData.comment}
-                            onChange={handleChange}
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter comment"
+                            onChange={handleInputChange}
+                            className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-                    <div className="flex justify-end space-x-4">
-                        <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                            {loading ? 'Updating...' : 'Update Stock In'}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                        disabled={loading || !formData.supplier_id || !formData.item_id}
+                    >
+                        {loading ? 'Updating...' : 'Update Stock In'}
+                    </button>
                 </form>
             </div>
         </div>
