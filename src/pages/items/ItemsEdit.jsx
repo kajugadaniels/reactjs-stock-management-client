@@ -142,28 +142,33 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                     </div>
                     <div className="mb-4">
                         <label htmlFor="capacity" className="block text-sm font-medium mb-1 text-[#424955]">Capacity</label>
-                        <input
-                            type="number"
+                        <select
                             id="capacity"
                             name="capacity"
                             value={formData.capacity}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter capacity"
-                            required
-                        />
+                            // required
+                        >
+                            <option value="">Select capacity</option>
+                            <option value="5">5 kg</option>
+                            <option value="10">10 kg</option>
+                            <option value="25">25 kg</option>
+                        </select>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="unit" className="block text-sm font-medium mb-1 text-[#424955]">Unit</label>
-                        <input
-                            type="text"
+                        <select
                             id="unit"
                             name="unit"
                             value={formData.unit}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
-                            placeholder="Enter unit"
-                        />
+                            // required
+                        >
+                            <option value="">Select unit</option>
+                            <option value="kg">Kg</option>
+                        </select>
                     </div>
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
