@@ -1,6 +1,5 @@
+import useItems from './items/useItems';
 import useSupplier from './suppliers/useSupplier';
-import useFetchItems from './items/useFetchItems';
-import useItemForm from './items/useItemForm';
 import useFetchTypes from './items/useFetchTypes';
 import useStockIn from './stockIn/useStockIn';
 import useRequests from './request/useRequests';
@@ -10,9 +9,8 @@ import { useFinishedProducts } from './finishedProducts/useFinishedProducts';
 import { useProductStockIn } from './productStockIn/useProductStockIn';
 
 export {
+    useItems,
     useSupplier,
-    useFetchItems,
-    useItemForm,
     useFetchTypes,
     useStockIn,
     useRequests,

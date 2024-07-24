@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useFetchItems, useItemForm } from '../hooks';
 import CategoryCreate from './categories/CategoryCreate';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import TypesCreate from './types/TypesCreate';
+import { useItems } from '../hooks';
 
 const Items = () => {
-    const { items, loading, error, fetchItems } = useFetchItems();
-    const { deleteItem } = useItemForm();
+    const { items, loading, error, fetchItems } = useItems();
+    const { deleteItem } = useItems();
     const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
     const [isCategoryCreateOpen, setIsCategoryCreateOpen] = useState(false);
     const [isTypesCreateOpen, setIsTypesCreateOpen] = useState(false);

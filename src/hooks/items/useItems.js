@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 
 const useItems = () => {
     const [items, setItems] = useState([]);
-    const [types, setTypes] = useState([]);
-    const [formData, setFormData] = useState(initialData);
+    const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Fetch items
     const fetchItems = async () => {
         setLoading(true);
         try {
@@ -17,10 +15,10 @@ const useItems = () => {
             }
             const data = await response.json();
             setItems(data);
-            setLoading(false);
         } catch (error) {
             console.error('Fetch items error:', error);
             setError('Failed to fetch items. Please try again later.');
+        } finally {
             setLoading(false);
         }
     };
@@ -29,30 +27,11 @@ const useItems = () => {
         fetchItems();
     }, []);
 
-    // Fetch types by category ID
-    const fetchTypes = async (categoryId) => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/types/category/${categoryId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch types');
-            }
-            const data = await response.json();
-            setTypes(data);
-            setLoading(false);
-        } catch (error) {
-            setError(error.message);
-            setLoading(false);
-        }
-    };
-
-    // Handle form change
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Add item
     const addItem = async () => {
         setLoading(true);
         try {
@@ -70,16 +49,16 @@ const useItems = () => {
             }
 
             const data = await response.json();
-            setLoading(false);
+            setItems((prevItems) => [...prevItems, data]);
             return data;
         } catch (error) {
-            setLoading(false);
             console.error('Error adding item:', error);
             throw new Error(error.message || 'Failed to add item');
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Update item
     const updateItem = async (id) => {
         setLoading(true);
         try {
@@ -96,16 +75,16 @@ const useItems = () => {
             }
 
             const data = await response.json();
-            setLoading(false);
+            setItems((prevItems) => prevItems.map((item) => (item.id === id ? data : item)));
             return data;
         } catch (error) {
-            setLoading(false);
             console.error('Error updating item:', error);
             throw new Error(error.message || 'Failed to update item');
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Delete item
     const deleteItem = async (id) => {
         setLoading(true);
         try {
@@ -118,24 +97,24 @@ const useItems = () => {
                 throw new Error(errorData.message || 'Failed to delete item');
             }
 
-            setLoading(false);
+            setItems((prevItems) => prevItems.filter((item) => item.id !== id));
             return true;
         } catch (error) {
-            setLoading(false);
             console.error('Error deleting item:', error);
             throw new Error(error.message || 'Failed to delete item');
+        } finally {
+            setLoading(false);
         }
     };
 
     return {
         items,
-        types,
         formData,
+        setFormData,
         loading,
         error,
-        fetchItems,
-        fetchTypes,
         handleChange,
+        fetchItems,
         addItem,
         updateItem,
         deleteItem,

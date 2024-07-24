@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useItemForm } from '../../hooks';
+import { useItems } from '../../hooks';
 
 const ItemsEdit = ({ isOpen, onClose, item }) => {
-    const { formData, setFormData, loading, handleChange, updateItem } = useItemForm(item);
+    const { formData, setFormData, loading, handleChange, updateItem } = useItems(item);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
 

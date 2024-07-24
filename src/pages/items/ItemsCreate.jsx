@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useItemForm } from '../../hooks';
+import { useItems } from '../../hooks';
 
 const ItemsCreate = ({ isOpen, onClose }) => {
-    const { formData, loading, handleChange, addItem } = useItemForm();
+    const { formData, loading, handleChange, addItem } = useItems();
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -151,7 +151,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
                             // required
                         >
-                            <option value="">Select capacity</option>
+                            <option value="">Select Unit</option>
                             <option value="kg">Kg</option>
                         </select>
                     </div>
