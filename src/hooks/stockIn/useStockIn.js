@@ -1,23 +1,14 @@
 import { useState, useEffect } from 'react';
 
-const useStockIn = (initialFormData = {}) => {
+const useStockIn = (initialData = {}) => {
     const [stockIns, setStockIns] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
-    const [items, setItems] = useState([]);
     const [employees, setEmployees] = useState([]);
-    const [formData, setFormData] = useState(initialFormData);
-    const [loading, setLoading] = useState(true);
+    const [formData, setFormData] = useState(initialData);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    useEffect(() => {
-        fetchStockIns();
-        fetchSuppliers();
-        fetchCategories();
-        fetchTypes();
-        fetchEmployees();
-    }, []);
 
     const fetchStockIns = async () => {
         setLoading(true);
@@ -28,9 +19,9 @@ const useStockIn = (initialFormData = {}) => {
             }
             const data = await response.json();
             setStockIns(data);
-            setLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -44,9 +35,9 @@ const useStockIn = (initialFormData = {}) => {
             }
             const data = await response.json();
             setSuppliers(data);
-            setLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -60,9 +51,9 @@ const useStockIn = (initialFormData = {}) => {
             }
             const data = await response.json();
             setCategories(data);
-            setLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -76,9 +67,9 @@ const useStockIn = (initialFormData = {}) => {
             }
             const data = await response.json();
             setTypes(data);
-            setLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -92,9 +83,9 @@ const useStockIn = (initialFormData = {}) => {
             }
             const data = await response.json();
             setEmployees(data);
-            setLoading(false);
         } catch (error) {
             setError(error.message);
+        } finally {
             setLoading(false);
         }
     };
@@ -117,85 +108,87 @@ const useStockIn = (initialFormData = {}) => {
                 throw new Error('Failed to fetch items for supplier');
             }
             const data = await response.json();
-            setLoading(false);
             return data.data;
         } catch (error) {
             setError(error.message);
-            setLoading(false);
             throw error;
+        } finally {
+            setLoading(false);
         }
     };
 
-    const addStockIn = async (formData) => {
+    const addStockIn = async () => {
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(formData),
             });
-
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Failed to create stock in record');
+                const errorData = await response.json();
+                throw new Error(`Failed to add stock in: ${errorData.message}`);
             }
-
-            await fetchStockIns(); // Reload data after successful creation
-            setLoading(false);
-            return true;
+            const data = await response.json();
+            return data;
         } catch (error) {
-            setError(error.message);
-            setLoading(false);
+            setError(`Error adding stock in: ${error.message}`);
             throw error;
+        } finally {
+            setLoading(false);
         }
     };
 
-    const updateStockIn = async (id, formData) => {
+    const updateStockIn = async (id) => {
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
                 },
                 body: JSON.stringify(formData),
             });
-
             if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Failed to update stock in record');
+                const errorData = await response.json();
+                throw new Error(`Failed to update stock in: ${errorData.message}`);
             }
-
-            await fetchStockIns(); // Reload data after successful update
-            setLoading(false);
-            return true;
+            const data = await response.json();
+            return data;
         } catch (error) {
-            setError(error.message);
-            setLoading(false);
+            setError(`Error updating stock in: ${error.message}`);
             throw error;
+        } finally {
+            setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchStockIns();
+        fetchSuppliers();
+        fetchCategories();
+        fetchTypes();
+        fetchEmployees();
+    }, []);
 
     return {
         stockIns,
         suppliers,
         categories,
         types,
-        items,
         employees,
         formData,
         setFormData,
         loading,
         error,
-        fetchStockIns,
-        deleteStockIn,
-        getItemsBySupplier,
+        handleChange: (e) => setFormData({ ...formData, [e.target.name]: e.target.value }),
         addStockIn,
         updateStockIn,
+        deleteStockIn,
+        getItemsBySupplier,
+        fetchStockIns,
     };
 };
 

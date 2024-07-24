@@ -1,27 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
 const StockInEdit = ({ isOpen, onClose, stockIn }) => {
-    const { formData, setFormData, loading, handleChange, updateStockIn } = useStockIn(stockIn);
+    const { suppliers, categories, types, employees, formData, setFormData, loading, handleChange, updateStockIn, fetchItems } = useStockIn(stockIn);
     const [items, setItems] = useState([]);
-
-    useEffect(() => {
-        fetchItems();
-    }, []);
-
-    const fetchItems = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-            const data = await response.json();
-            setItems(data);
-        } catch (error) {
-            console.error('Error fetching items:', error);
-        }
-    };
 
     useEffect(() => {
         if (stockIn) {
@@ -36,6 +19,10 @@ const StockInEdit = ({ isOpen, onClose, stockIn }) => {
             });
         }
     }, [stockIn, setFormData]);
+
+    useEffect(() => {
+        fetchItems();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
