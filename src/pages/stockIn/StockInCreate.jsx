@@ -3,7 +3,14 @@ import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
 const StockInCreate = ({ isOpen, onClose }) => {
-    const { suppliers, getItemsBySupplier } = useStockIn();
+    const {
+        suppliers,
+        employees,
+        getItemsBySupplier,
+        addStockIn,
+        loading,
+        error,
+    } = useStockIn();
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: '',
@@ -13,16 +20,13 @@ const StockInCreate = ({ isOpen, onClose }) => {
         comment: '',
         date: '',
         registered_by: '',
-        loading_payment_status: false
+        loading_payment_status: false,
     });
     const [items, setItems] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            fetchEmployees();
             setFormData({
                 supplier_id: '',
                 item_id: '',
@@ -32,27 +36,14 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 comment: '',
                 date: '',
                 registered_by: '',
-                loading_payment_status: false
+                loading_payment_status: false,
             });
         }
     }, [isOpen]);
 
-    const fetchEmployees = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch employees');
-            }
-            const data = await response.json();
-            setEmployees(data);
-        } catch (error) {
-            setError(error.message);
-        }
-    };
-
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
             ...prevState,
             [name]: type === 'checkbox' ? checked : value,
         }));
@@ -60,24 +51,9 @@ const StockInCreate = ({ isOpen, onClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-
+        setIsAdding(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to create stock in record');
-            }
-
+            await addStockIn(formData);
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In created successfully',
@@ -85,9 +61,9 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 confirmButtonText: 'OK',
             }).then(() => {
                 onClose();
+                window.location.reload();
             });
         } catch (error) {
-            console.error('Error creating stock in:', error);
             Swal.fire({
                 title: 'Error',
                 text: error.message,
@@ -95,25 +71,22 @@ const StockInCreate = ({ isOpen, onClose }) => {
                 confirmButtonText: 'OK',
             });
         } finally {
-            setLoading(false);
+            setIsAdding(false);
         }
     };
 
     const handleSupplierChange = async (e) => {
         const supplierId = e.target.value;
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
             ...prevState,
             supplier_id: supplierId,
         }));
 
-        setLoading(true);
         try {
             const itemsData = await getItemsBySupplier(supplierId);
             setItems(itemsData);
         } catch (error) {
             setError(error.message);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -126,8 +99,8 @@ const StockInCreate = ({ isOpen, onClose }) => {
                     Close
                 </button>
                 <h2 className="mb-4 text-xl font-semibold">Create Stock In</h2>
-                <form onSubmit={handleSubmit} className='p-10'>
-                    <div className='flex gap-10'>
+                <form onSubmit={handleSubmit} className="p-10">
+                    <div className="flex gap-10">
                         <div className="mb-4">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
                                 Supplier
@@ -137,7 +110,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="supplier_id"
                                 value={formData.supplier_id}
                                 onChange={handleSupplierChange}
-                                className="w-52 p-3 border border-gray-300 rounded "
+                                className="p-3 border border-gray-300 rounded w-52"
                                 required
                             >
                                 <option value="">Select Supplier</option>
@@ -157,9 +130,9 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="item_id"
                                 value={formData.item_id}
                                 onChange={handleInputChange}
-                                className="w-52 p-3 border border-gray-300 rounded"
+                                className="p-3 border border-gray-300 rounded w-52"
                                 required
-                                disabled={loading || !formData.supplier_id}
+                                disabled={!formData.supplier_id || loading}
                             >
                                 <option value="">Select Item</option>
                                 {items.map((item) => (
@@ -211,7 +184,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             className="w-full p-2 border border-gray-300 rounded"
                         />
                     </div>
-                    <div className='flex gap-10'>
+                    <div className="flex gap-10">
                         <div className="mb-4">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
                                 Date
@@ -222,7 +195,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="date"
                                 value={formData.date}
                                 onChange={handleInputChange}
-                                className="w-52 p-2 border border-gray-300 rounded"
+                                className="p-2 border border-gray-300 rounded w-52"
                                 required
                             />
                         </div>
@@ -235,7 +208,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="registered_by"
                                 value={formData.registered_by}
                                 onChange={handleInputChange}
-                                className="w-52 p-3 border border-gray-300 rounded"
+                                className="p-3 border border-gray-300 rounded w-52"
                                 required
                             >
                                 <option value="">Select Employee</option>
@@ -277,7 +250,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                         className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
                         disabled={loading || !formData.supplier_id || !formData.item_id}
                     >
-                        {loading ? 'Creating...' : 'Create Stock In'}
+                        {isAdding ? 'Creating...' : 'Create Stock In'}
                     </button>
                 </form>
             </div>

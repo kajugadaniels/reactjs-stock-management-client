@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 
-const useStockIn = () => {
+const useStockIn = (initialFormData = {}) => {
     const [stockIns, setStockIns] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
+    const [items, setItems] = useState([]);
+    const [employees, setEmployees] = useState([]);
+    const [formData, setFormData] = useState(initialFormData);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -13,6 +16,7 @@ const useStockIn = () => {
         fetchSuppliers();
         fetchCategories();
         fetchTypes();
+        fetchEmployees();
     }, []);
 
     const fetchStockIns = async () => {
@@ -79,6 +83,22 @@ const useStockIn = () => {
         }
     };
 
+    const fetchEmployees = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch employees');
+            }
+            const data = await response.json();
+            setEmployees(data);
+            setLoading(false);
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
+        }
+    };
+
     const deleteStockIn = async (id) => {
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
@@ -106,16 +126,76 @@ const useStockIn = () => {
         }
     };
 
+    const addStockIn = async (formData) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to create stock in record');
+            }
+
+            await fetchStockIns(); // Reload data after successful creation
+            setLoading(false);
+            return true;
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
+            throw error;
+        }
+    };
+
+    const updateStockIn = async (id, formData) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to update stock in record');
+            }
+
+            await fetchStockIns(); // Reload data after successful update
+            setLoading(false);
+            return true;
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
+            throw error;
+        }
+    };
+
     return {
         stockIns,
         suppliers,
         categories,
         types,
+        items,
+        employees,
+        formData,
+        setFormData,
         loading,
         error,
         fetchStockIns,
         deleteStockIn,
         getItemsBySupplier,
+        addStockIn,
+        updateStockIn,
     };
 };
 
