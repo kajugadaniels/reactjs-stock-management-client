@@ -4,11 +4,13 @@ import Swal from 'sweetalert2';
 import { useStockIn } from '../hooks';
 import StockInCreate from './stockIn/StockInCreate';
 import StockInEdit from './stockIn/StockInEdit';
+import StockInDetails from './stockIn/StockInDetails';
 
 const StockIn = () => {
     const { stockIns, loading, error, fetchStockIns, deleteStockIn } = useStockIn();
     const [isStockInCreateOpen, setIsStockInCreateOpen] = useState(false);
     const [isStockInEditOpen, setIsStockInEditOpen] = useState(false);
+    const [isStockInDetailsOpen, setIsStockInDetailsOpen] = useState(false);
     const [selectedStockIn, setSelectedStockIn] = useState(null);
 
     useEffect(() => {
@@ -18,16 +20,30 @@ const StockIn = () => {
     const toggleStockInCreateModal = () => {
         setIsStockInCreateOpen(!isStockInCreateOpen);
         setIsStockInEditOpen(false);
+        setIsStockInDetailsOpen(false);
     };
 
     const openStockInEditModal = (stockIn) => {
         setSelectedStockIn(stockIn);
         setIsStockInEditOpen(true);
         setIsStockInCreateOpen(false);
+        setIsStockInDetailsOpen(false);
+    };
+
+    const openStockInDetailsModal = (stockInId) => {
+        setSelectedStockIn(stockInId);
+        setIsStockInDetailsOpen(true);
+        setIsStockInEditOpen(false);
+        setIsStockInCreateOpen(false);
     };
 
     const closeStockInEditModal = () => {
         setIsStockInEditOpen(false);
+        setSelectedStockIn(null);
+    };
+
+    const closeStockInDetailsModal = () => {
+        setIsStockInDetailsOpen(false);
         setSelectedStockIn(null);
     };
 
@@ -129,6 +145,17 @@ const StockIn = () => {
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
                                     </button>
+                                    <button
+                                        className="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ms-3"
+                                        onClick={() => openStockInDetailsModal(stockIn.id)}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
+                                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor">
+                                                <path d="M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045" />
+                                                <path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0" />
+                                            </g>
+                                        </svg>
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -137,6 +164,7 @@ const StockIn = () => {
             </div>
             {isStockInCreateOpen && <StockInCreate isOpen={isStockInCreateOpen} onClose={toggleStockInCreateModal} />}
             {isStockInEditOpen && <StockInEdit isOpen={isStockInEditOpen} onClose={closeStockInEditModal} stockIn={selectedStockIn} />}
+            {isStockInDetailsOpen && <StockInDetails isOpen={isStockInDetailsOpen} onClose={closeStockInDetailsModal} stockInId={selectedStockIn} />}
         </div>
     );
 };
