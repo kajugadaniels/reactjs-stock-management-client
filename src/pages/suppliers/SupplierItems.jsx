@@ -11,12 +11,20 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         const fetchItems = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`);
+                if (response.status === 404) {
+                    setError('No items found for this supplier');
+                    setLoading(false);
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error('Failed to fetch supplier items');
+                }
                 const data = await response.json();
                 console.log('Fetched items:', data);
-                
+
                 // Filter out items with the category "Finished"
                 const filteredItems = data.data.filter(item => item.category_name !== 'Finished');
-                setItems(Array.isArray(filteredItems) ? filteredItems : []);
+                setItems(filteredItems);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching items:', error);
@@ -28,6 +36,9 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         const fetchCategories = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch categories');
+                }
                 const data = await response.json();
                 console.log('Fetched categories:', data);
                 setCategories(data || []);
@@ -39,6 +50,9 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         const fetchTypes = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch types');
+                }
                 const data = await response.json();
                 console.log('Fetched types:', data);
                 setTypes(data || []);
@@ -76,7 +90,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                 {loading ? (
                     <div>Loading...</div>
                 ) : error ? (
-                    <div>Error: {error}</div>
+                    <div>{error}</div>
                 ) : items.length === 0 ? (
                     <div>No items yet.</div>
                 ) : (
