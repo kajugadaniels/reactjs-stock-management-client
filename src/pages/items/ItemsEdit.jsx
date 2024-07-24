@@ -3,12 +3,9 @@ import Swal from 'sweetalert2';
 import { useItems } from '../../hooks';
 
 const ItemsEdit = ({ isOpen, onClose, item }) => {
-    const { formData, setFormData, loading, handleChange, updateItem } = useItems(item);
-    const [categories, setCategories] = useState([]);
-    const [types, setTypes] = useState([]);
+    const { formData, setFormData, loading, handleChange, updateItem, fetchTypes, categories, types } = useItems(item);
 
     useEffect(() => {
-        fetchCategories();
         if (item.category_id) {
             fetchTypes(item.category_id);
         }
@@ -19,32 +16,6 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
             fetchTypes(formData.category_id);
         }
     }, [formData.category_id, item.category_id]);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
-            const data = await response.json();
-            setCategories(data);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
-
-    const fetchTypes = async (categoryId) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/types/category/${categoryId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch types');
-            }
-            const data = await response.json();
-            setTypes(data);
-        } catch (error) {
-            console.error('Error fetching types:', error);
-        }
-    };
 
     useEffect(() => {
         if (item) {
@@ -148,7 +119,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             value={formData.capacity}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
-                            // required
+                            required
                         >
                             <option value="">Select capacity</option>
                             <option value="5">5 kg</option>
@@ -164,7 +135,7 @@ const ItemsEdit = ({ isOpen, onClose, item }) => {
                             value={formData.unit}
                             onChange={handleChange}
                             className="bg-[#f3f4f6] w-full p-3 border border-input rounded bg-input text-foreground"
-                            // required
+                            required
                         >
                             <option value="">Select unit</option>
                             <option value="kg">Kg</option>

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 
-const useItems = () => {
+const useItems = (initialData = {}) => {
     const [items, setItems] = useState([]);
-    const [formData, setFormData] = useState({});
+    const [categories, setCategories] = useState([]);
+    const [types, setTypes] = useState([]);
+    const [formData, setFormData] = useState(initialData);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -16,16 +18,43 @@ const useItems = () => {
             const data = await response.json();
             setItems(data);
         } catch (error) {
-            console.error('Fetch items error:', error);
             setError('Failed to fetch items. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        fetchItems();
-    }, []);
+    const fetchCategories = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch categories');
+            }
+            const data = await response.json();
+            setCategories(data);
+        } catch (error) {
+            setError('Failed to fetch categories. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchTypes = async (categoryId) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types/category/${categoryId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch types');
+            }
+            const data = await response.json();
+            setTypes(data);
+        } catch (error) {
+            setError('Failed to fetch types. Please try again later.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -49,11 +78,10 @@ const useItems = () => {
             }
 
             const data = await response.json();
-            setItems((prevItems) => [...prevItems, data]);
             return data;
         } catch (error) {
-            console.error('Error adding item:', error);
-            throw new Error(error.message || 'Failed to add item');
+            setError(error.message || 'Failed to add item');
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -75,11 +103,10 @@ const useItems = () => {
             }
 
             const data = await response.json();
-            setItems((prevItems) => prevItems.map((item) => (item.id === id ? data : item)));
             return data;
         } catch (error) {
-            console.error('Error updating item:', error);
-            throw new Error(error.message || 'Failed to update item');
+            setError(error.message || 'Failed to update item');
+            throw error;
         } finally {
             setLoading(false);
         }
@@ -97,27 +124,34 @@ const useItems = () => {
                 throw new Error(errorData.message || 'Failed to delete item');
             }
 
-            setItems((prevItems) => prevItems.filter((item) => item.id !== id));
             return true;
         } catch (error) {
-            console.error('Error deleting item:', error);
-            throw new Error(error.message || 'Failed to delete item');
+            setError(error.message || 'Failed to delete item');
+            throw error;
         } finally {
             setLoading(false);
         }
     };
 
+    useEffect(() => {
+        fetchItems();
+        fetchCategories();
+    }, []);
+
     return {
         items,
+        categories,
+        types,
         formData,
         setFormData,
         loading,
         error,
         handleChange,
-        fetchItems,
         addItem,
         updateItem,
         deleteItem,
+        fetchTypes,
+        fetchItems,
     };
 };
 

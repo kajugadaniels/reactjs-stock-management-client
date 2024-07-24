@@ -7,8 +7,7 @@ import TypesCreate from './types/TypesCreate';
 import { useItems } from '../hooks';
 
 const Items = () => {
-    const { items, loading, error, fetchItems } = useItems();
-    const { deleteItem } = useItems();
+    const { items, loading, error, fetchItems, deleteItem } = useItems();
     const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
     const [isCategoryCreateOpen, setIsCategoryCreateOpen] = useState(false);
     const [isTypesCreateOpen, setIsTypesCreateOpen] = useState(false);
@@ -39,7 +38,6 @@ const Items = () => {
         setIsItemsEditOpen(false);
         setIsCategoryCreateOpen(false);
     };
-    
 
     const openItemsEditModal = (item) => {
         setSelectedItem(item);
@@ -121,7 +119,7 @@ const Items = () => {
             </div>
 
             <div className="overflow-x-auto">
-            <table className="w-full min-w-full bg-white rounded-lg shadow">
+                <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
                         <tr>
                             <th scope='col' className="px-6 py-3 border">Item Id</th>
@@ -132,8 +130,6 @@ const Items = () => {
                             <th scope='col' className="px-6 py-3 border">Action</th>
                         </tr>
                     </thead>
-
-
                     <tbody>
                         {items.map((item) => (
                             <tr className="border-t" key={item.id}>
@@ -159,8 +155,6 @@ const Items = () => {
                             </tr>
                         ))}
                     </tbody>
-
-
                 </table>
             </div>
             {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} />}
