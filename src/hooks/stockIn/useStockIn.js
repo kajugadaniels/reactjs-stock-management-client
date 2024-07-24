@@ -6,6 +6,7 @@ const useStockIn = (initialData = {}) => {
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [items, setItems] = useState([]);
     const [formData, setFormData] = useState(initialData);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -91,6 +92,22 @@ const useStockIn = (initialData = {}) => {
         }
     };
 
+    const fetchItems = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch items');
+            }
+            const data = await response.json();
+            setItems(data);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const deleteStockIn = async (id) => {
         try {
             await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${id}`, {
@@ -118,7 +135,7 @@ const useStockIn = (initialData = {}) => {
         }
     };
 
-    const addStockIn = async () => {
+    const addStockIn = async (formData) => {
         setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`, {
@@ -129,8 +146,8 @@ const useStockIn = (initialData = {}) => {
                 body: JSON.stringify(formData),
             });
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`Failed to add stock in: ${errorData.message}`);
+                const errorData = await response.text(); // Changed to text to handle non-JSON errors
+                throw new Error(`Failed to add stock in: ${errorData}`);
             }
             const data = await response.json();
             return data;
@@ -172,6 +189,7 @@ const useStockIn = (initialData = {}) => {
         fetchCategories();
         fetchTypes();
         fetchEmployees();
+        fetchItems(); // Added to ensure items are fetched
     }, []);
 
     return {
@@ -180,6 +198,7 @@ const useStockIn = (initialData = {}) => {
         categories,
         types,
         employees,
+        items, // Ensure items are returned
         formData,
         setFormData,
         loading,
@@ -190,6 +209,7 @@ const useStockIn = (initialData = {}) => {
         deleteStockIn,
         getItemsBySupplier,
         fetchStockIns,
+        fetchItems, // Ensure fetchItems is returned
     };
 };
 
