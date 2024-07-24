@@ -1,52 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2';
+import { useItems } from '../../hooks';
 
 const CategoryCreate = ({ isOpen, onClose }) => {
-    const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const { addCategory, loading } = useItems();
     const [categoryName, setCategoryName] = useState('');
-
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
-            const data = await response.json();
-            setCategories(data);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: categoryName })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create category');
-            }
-
-            await response.json(); // Assuming you want to do something with the response here
+            await addCategory(categoryName);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
                 text: 'Category created successfully!',
             }).then(() => {
-                onClose(); // Close the modal
-                fetchCategories(); // Refetch categories list
+                onClose();
             });
         } catch (error) {
             Swal.fire({
@@ -54,8 +23,6 @@ const CategoryCreate = ({ isOpen, onClose }) => {
                 title: 'Error',
                 text: error.message || 'Failed to create category',
             });
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -79,7 +46,6 @@ const CategoryCreate = ({ isOpen, onClose }) => {
                             required
                         />
                     </div>
-
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
                         <button type="submit" className="bg-[#00BDD6] p-2 text-white rounded-xl" disabled={loading}>

@@ -13,12 +13,13 @@ const useItems = (initialData = {}) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
             if (!response.ok) {
-                throw new Error('Failed to fetch items');
+                const errorData = await response.json();
+                throw new Error(`Failed to fetch items: ${errorData.message}`);
             }
             const data = await response.json();
             setItems(data);
         } catch (error) {
-            setError('Failed to fetch items. Please try again later.');
+            setError(`Error fetching items: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -29,12 +30,13 @@ const useItems = (initialData = {}) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
             if (!response.ok) {
-                throw new Error('Failed to fetch categories');
+                const errorData = await response.json();
+                throw new Error(`Failed to fetch categories: ${errorData.message}`);
             }
             const data = await response.json();
             setCategories(data);
         } catch (error) {
-            setError('Failed to fetch categories. Please try again later.');
+            setError(`Error fetching categories: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -45,12 +47,13 @@ const useItems = (initialData = {}) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/types/category/${categoryId}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch types');
+                const errorData = await response.json();
+                throw new Error(`Failed to fetch types: ${errorData.message}`);
             }
             const data = await response.json();
             setTypes(data);
         } catch (error) {
-            setError('Failed to fetch types. Please try again later.');
+            setError(`Error fetching types: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -74,13 +77,13 @@ const useItems = (initialData = {}) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to add item');
+                throw new Error(`Failed to add item: ${errorData.message}`);
             }
 
             const data = await response.json();
             return data;
         } catch (error) {
-            setError(error.message || 'Failed to add item');
+            setError(`Error adding item: ${error.message}`);
             throw error;
         } finally {
             setLoading(false);
@@ -99,13 +102,14 @@ const useItems = (initialData = {}) => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update item');
+                const errorData = await response.json();
+                throw new Error(`Failed to update item: ${errorData.message}`);
             }
 
             const data = await response.json();
             return data;
         } catch (error) {
-            setError(error.message || 'Failed to update item');
+            setError(`Error updating item: ${error.message}`);
             throw error;
         } finally {
             setLoading(false);
@@ -121,12 +125,64 @@ const useItems = (initialData = {}) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to delete item');
+                throw new Error(`Failed to delete item: ${errorData.message}`);
             }
 
             return true;
         } catch (error) {
-            setError(error.message || 'Failed to delete item');
+            setError(`Error deleting item: ${error.message}`);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addCategory = async (categoryName) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: categoryName }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Failed to create category: ${errorData.message}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            setError(`Error creating category: ${error.message}`);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addType = async (typeName, categoryId) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/types`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: typeName, category_id: categoryId }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Failed to create type: ${errorData.message}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            setError(`Error creating type: ${error.message}`);
             throw error;
         } finally {
             setLoading(false);
@@ -152,6 +208,9 @@ const useItems = (initialData = {}) => {
         deleteItem,
         fetchTypes,
         fetchItems,
+        fetchCategories,
+        addCategory,
+        addType,
     };
 };
 

@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { useItems } from '../../hooks';
 
 const TypesCreate = ({ isOpen, onClose }) => {
-    const [categories, setCategories] = useState([]);
-    const [types, setTypes] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const { categories, addType, fetchCategories, loading } = useItems();
     const [typeName, setTypeName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -12,43 +11,16 @@ const TypesCreate = ({ isOpen, onClose }) => {
         fetchCategories();
     }, []);
 
-    const fetchCategories = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
-            const data = await response.json();
-            setCategories(data);
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
-
     const handleCreateType = async (e) => {
         e.preventDefault();
-        setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/types`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: typeName, category_id: selectedCategory })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create type');
-            }
-
-            await response.json();
+            await addType(typeName, selectedCategory);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
                 text: 'Type created successfully!',
             }).then(() => {
                 onClose();
-                fetchCategories(); 
             });
         } catch (error) {
             Swal.fire({
@@ -56,8 +28,6 @@ const TypesCreate = ({ isOpen, onClose }) => {
                 title: 'Error',
                 text: error.message || 'Failed to create type',
             });
-        } finally {
-            setLoading(false);
         }
     };
 
