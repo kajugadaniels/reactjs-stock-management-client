@@ -8,13 +8,12 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Fetch available items
-        const fetchItems = async () => {
+        const fetchAvailableItems = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/available-items`);
                 const data = await response.json();
                 console.log('Fetched items:', data); // Log fetched data
-                setItems(data || []);
+                setItems(data.data || []);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching items:', error);
@@ -23,7 +22,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
             }
         };
 
-        fetchItems();
+        fetchAvailableItems();
     }, []);
 
     const handleAddItem = async () => {

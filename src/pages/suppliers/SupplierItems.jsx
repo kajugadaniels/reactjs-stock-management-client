@@ -8,13 +8,15 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const [types, setTypes] = useState([]);
 
     useEffect(() => {
-        // Fetch items for the supplier
         const fetchItems = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`);
                 const data = await response.json();
-                console.log('Fetched items:', data); // Log fetched data
-                setItems(Array.isArray(data.data) ? data.data : []);
+                console.log('Fetched items:', data);
+                
+                // Filter out items with the category "Finished"
+                const filteredItems = data.data.filter(item => item.category_name !== 'Finished');
+                setItems(Array.isArray(filteredItems) ? filteredItems : []);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching items:', error);
@@ -23,24 +25,22 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
             }
         };
 
-        // Fetch categories
         const fetchCategories = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
                 const data = await response.json();
-                console.log('Fetched categories:', data); // Log fetched data
+                console.log('Fetched categories:', data);
                 setCategories(data || []);
             } catch (error) {
                 console.error('Error fetching categories:', error);
             }
         };
 
-        // Fetch types
         const fetchTypes = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
                 const data = await response.json();
-                console.log('Fetched types:', data); // Log fetched data
+                console.log('Fetched types:', data);
                 setTypes(data || []);
             } catch (error) {
                 console.error('Error fetching types:', error);
