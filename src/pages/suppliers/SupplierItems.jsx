@@ -1,38 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useSupplierItem } from '../../hooks';
 
 const SupplierItems = ({ isOpen, onClose, supplier }) => {
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { items, loading, error, fetchSupplierItems } = useSupplierItem();
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
 
     useEffect(() => {
-        const fetchItems = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`);
-                if (response.status === 404) {
-                    setError('No items found for this supplier');
-                    setLoading(false);
-                    return;
-                }
-                if (!response.ok) {
-                    throw new Error('Failed to fetch supplier items');
-                }
-                const data = await response.json();
-                console.log('Fetched items:', data);
-
-                // Filter out items with the category "Finished"
-                const filteredItems = data.data.filter(item => item.category_name !== 'Finished');
-                setItems(filteredItems);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching items:', error);
-                setError(error.message);
-                setLoading(false);
-            }
-        };
-
         const fetchCategories = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
@@ -40,7 +14,6 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                     throw new Error('Failed to fetch categories');
                 }
                 const data = await response.json();
-                console.log('Fetched categories:', data);
                 setCategories(data || []);
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -54,7 +27,6 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                     throw new Error('Failed to fetch types');
                 }
                 const data = await response.json();
-                console.log('Fetched types:', data);
                 setTypes(data || []);
             } catch (error) {
                 console.error('Error fetching types:', error);
@@ -62,7 +34,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         };
 
         if (supplier) {
-            fetchItems();
+            fetchSupplierItems(supplier.id);
         }
         fetchCategories();
         fetchTypes();

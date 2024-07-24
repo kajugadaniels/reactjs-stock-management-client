@@ -1,69 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+import { useSupplierItem } from '../../hooks';
 
 const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
-    const [items, setItems] = useState([]);
+    const { items, loading, error, isAdding, fetchAvailableItems, addItemToSupplier } = useSupplierItem();
     const [selectedItem, setSelectedItem] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
-        const fetchAvailableItems = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/available-items`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch available items');
-                }
-                const data = await response.json();
-                setItems(data.data || []);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching items:', error);
-                setError(error.message);
-                setLoading(false);
-            }
-        };
-
         fetchAvailableItems();
     }, []);
 
-    const handleAddItem = async () => {
+    const handleAddItem = () => {
         if (!selectedItem) {
             Swal.fire('Error', 'Please select an item.', 'error');
             return;
         }
 
-        setIsAdding(true);
-
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    supplier_id: supplier.id,
-                    item_id: selectedItem,
-                }),
-            });
-
-            if (response.ok) {
-                Swal.fire('Success', 'Item added to supplier successfully.', 'success');
-                onClose();
-            } else {
-                const errorData = await response.json();
-                if (response.status === 400 && errorData.message === 'This supplier already supplies this item') {
-                    Swal.fire('Error', 'This supplier already supplies this item.', 'error');
-                } else {
-                    Swal.fire('Error', 'Failed to add item to supplier.', 'error');
-                }
-            }
-        } catch (error) {
-            Swal.fire('Error', 'An error occurred while adding the item.', 'error');
-        } finally {
-            setIsAdding(false); // End loading state
-        }
+        addItemToSupplier(supplier.id, selectedItem, onClose, () => setSelectedItem(''));
     };
 
     if (!isOpen) return null;
