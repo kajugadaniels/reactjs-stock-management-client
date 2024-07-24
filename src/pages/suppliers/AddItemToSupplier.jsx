@@ -6,6 +6,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
     const [selectedItem, setSelectedItem] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
 
     useEffect(() => {
         const fetchAvailableItems = async () => {
@@ -33,6 +34,8 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
             return;
         }
 
+        setIsAdding(true);
+
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/supplier-items`, {
                 method: 'POST',
@@ -50,14 +53,16 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 onClose();
             } else {
                 const errorData = await response.json();
-                if (response.status === 400 && errorData.message === 'Supplier already supplies an item') {
-                    Swal.fire('Error', 'This supplier already supplies an item.', 'error');
+                if (response.status === 400 && errorData.message === 'This supplier already supplies this item') {
+                    Swal.fire('Error', 'This supplier already supplies this item.', 'error');
                 } else {
                     Swal.fire('Error', 'Failed to add item to supplier.', 'error');
                 }
             }
         } catch (error) {
             Swal.fire('Error', 'An error occurred while adding the item.', 'error');
+        } finally {
+            setIsAdding(false); // End loading state
         }
     };
 
@@ -103,8 +108,9 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 <button
                     onClick={handleAddItem}
                     className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                    disabled={isAdding}
                 >
-                    Add Item
+                    {isAdding ? 'Adding...' : 'Add Item'}
                 </button>
             </div>
         </div>
