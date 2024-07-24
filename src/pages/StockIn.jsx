@@ -7,15 +7,21 @@ import StockInEdit from './stockIn/StockInEdit';
 import StockInDetails from './stockIn/StockInDetails';
 
 const StockIn = () => {
-    const { stockIns, loading, error, fetchStockIns, deleteStockIn } = useStockIn();
+    const { stockIns, loading, error, fetchStockIns, deleteStockIn, categories, types } = useStockIn();
     const [isStockInCreateOpen, setIsStockInCreateOpen] = useState(false);
     const [isStockInEditOpen, setIsStockInEditOpen] = useState(false);
     const [isStockInDetailsOpen, setIsStockInDetailsOpen] = useState(false);
     const [selectedStockIn, setSelectedStockIn] = useState(null);
+    const [filters, setFilters] = useState({
+        category: '',
+        type: '',
+        startDate: '',
+        endDate: '',
+    });
 
     useEffect(() => {
-        fetchStockIns();
-    }, []);
+        fetchStockIns(filters);
+    }, [filters]);
 
     const toggleStockInCreateModal = () => {
         setIsStockInCreateOpen(!isStockInCreateOpen);
@@ -61,12 +67,17 @@ const StockIn = () => {
             try {
                 await deleteStockIn(id);
                 Swal.fire('Deleted!', 'Stock in record has been deleted.', 'success').then(() => {
-                    fetchStockIns();
+                    fetchStockIns(filters);
                 });
             } catch (error) {
                 Swal.fire('Error!', 'Failed to delete stock in record.', 'error');
             }
         }
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
     };
 
     if (loading) {
@@ -100,6 +111,57 @@ const StockIn = () => {
                 </button>
             </div>
 
+            <div className="flex flex-wrap gap-4 mb-4">
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Category</label>
+                    <select
+                        name="category"
+                        value={filters.category}
+                        onChange={handleFilterChange}
+                        className="p-2 border border-gray-300 rounded w-52"
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>{category.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
+                    <select
+                        name="type"
+                        value={filters.type}
+                        onChange={handleFilterChange}
+                        className="p-2 border border-gray-300 rounded w-52"
+                    >
+                        <option value="">All Types</option>
+                        {types.map((type) => (
+                            <option key={type.id} value={type.id}>{type.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
+                    <input
+                        type="date"
+                        name="startDate"
+                        value={filters.startDate}
+                        onChange={handleFilterChange}
+                        className="p-2 border border-gray-300 rounded w-52"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">End Date</label>
+                    <input
+                        type="date"
+                        name="endDate"
+                        value={filters.endDate}
+                        onChange={handleFilterChange}
+                        className="p-2 border border-gray-300 rounded w-52"
+                    />
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
@@ -130,7 +192,7 @@ const StockIn = () => {
                                 <td className="px-4 py-4 border">{stockIn.employee.name}</td>
                                 <td className="px-4 py-4 border">{stockIn.plate_number}</td>
                                 <td className="px-4 py-4 border">{stockIn.batch_number}</td>
-                                <td className="px-4 py-4 border">{stockIn.date}</td>
+                                <td className="px-4 py-4 border">{new Date(stockIn.date).toLocaleDateString()}</td>
                                 <td className="px-4 py-4 border">{stockIn.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
                                 <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <button
@@ -150,7 +212,7 @@ const StockIn = () => {
                                         onClick={() => openStockInDetailsModal(stockIn.id)}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor">
+                                            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" color="currentColor">
                                                 <path d="M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045" />
                                                 <path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0" />
                                             </g>

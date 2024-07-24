@@ -10,10 +10,11 @@ const useStockIn = (initialData = {}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchStockIns = async () => {
+    const fetchStockIns = async (filters = {}) => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins`);
+            const query = new URLSearchParams(filters).toString();
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins?${query}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
             }
