@@ -11,8 +11,10 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
         const fetchAvailableItems = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/available-items`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch available items');
+                }
                 const data = await response.json();
-                console.log('Fetched items:', data); // Log fetched data
                 setItems(data.data || []);
                 setLoading(false);
             } catch (error) {
@@ -47,10 +49,15 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 Swal.fire('Success', 'Item added to supplier successfully.', 'success');
                 onClose();
             } else {
-                Swal.fire('Error', 'Failed to add item to supplier.', 'error');
+                const errorData = await response.json();
+                if (response.status === 400 && errorData.message === 'Supplier already supplies an item') {
+                    Swal.fire('Error', 'This supplier already supplies an item.', 'error');
+                } else {
+                    Swal.fire('Error', 'Failed to add item to supplier.', 'error');
+                }
             }
         } catch (error) {
-            Swal.fire('Error', 'An error occurred.', 'error');
+            Swal.fire('Error', 'An error occurred while adding the item.', 'error');
         }
     };
 
