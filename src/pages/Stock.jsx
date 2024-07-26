@@ -1,3 +1,4 @@
+// Stock.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CreateRequest from './request/CreateRequest';
@@ -11,7 +12,6 @@ const Stock = () => {
         error,
         fetchRequests,
         handleDelete,
-        handleApproveStockOut,
     } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isStockOutModalOpen, setIsStockOutModalOpen] = useState(false);
@@ -97,7 +97,6 @@ const Stock = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="p-2 bg-orange-200 rounded-lg text-zinc-800 h-30">
                     <div className="flex items-center justify-between">
                         <div>
@@ -129,7 +128,6 @@ const Stock = () => {
                         Request Item
                     </div>
                 </button>
-                <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
                 <div className="flex items-center space-x-2">
                     <label>From</label>
                     <input type="date" className="p-2 border rounded-lg border-zinc-300" defaultValue="2024-02-09" />
@@ -159,18 +157,18 @@ const Stock = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {Array.isArray(requests) && requests.length > 0 ? (
-                            requests.sort((a, b) => a.id - b.id).map((request) => (
+                        {requests.length > 0 ? (
+                            requests.map((request) => (
                                 <tr key={request.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
                                     <td className="px-6 py-4 border-b border-gray-300"><input type="checkbox" /></td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.id}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.item?.item?.name || 'Unknown Item'}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">
+                                        {request.items.map(item => item.item?.name).join(', ') || 'Unknown Item'}
+                                    </td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.contact_person?.name || 'Unknown Person'}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.requester_name}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_from}</td>
-                                    <td
-                                        className={`px-6 py-4 text-sm text-gray-600 border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
-                                    >
+                                    <td className={`px-6 py-4 text-sm text-white border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600' : 'bg-green-600'}`}>
                                         {request.status}
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{request.request_for?.name || 'Unknown Item'}</td>
@@ -209,13 +207,16 @@ const Stock = () => {
                 </table>
             </div>
 
-            <CreateRequest isOpen={isModalOpen} onClose={toggleModal} fetchRequests={fetchRequests} />
+            <CreateRequest
+                isOpen={isModalOpen}
+                onClose={toggleModal}
+                fetchRequests={fetchRequests}
+            />
             <StockOutApproval
                 isOpen={isStockOutModalOpen}
                 onClose={closeStockOutModal}
                 requestId={selectedRequestId}
                 fetchRequests={fetchRequests}
-                handleApproveStockOut={handleApproveStockOut}
             />
         </div>
     );
