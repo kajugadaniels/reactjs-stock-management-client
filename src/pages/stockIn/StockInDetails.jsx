@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import React, { useEffect, useState } from 'react';
 
 const StockInDetails = ({ isOpen, onClose, stockInId }) => {
     const [stockInDetails, setStockInDetails] = useState(null);
@@ -29,15 +29,48 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
         }
     };
 
+
     const downloadInvoice = () => {
         const input = document.getElementById('invoice');
-        html2canvas(input).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF();
-            pdf.addImage(imgData, 'PNG', 0, 0);
+        const scale = window.devicePixelRatio; 
+    
+        const downloadButton = document.getElementById('download-button');
+        downloadButton.style.visibility = 'hidden'; 
+    
+        html2canvas(input, {
+            scale: scale,
+            useCORS: true,
+            logging: true,
+            width: input.offsetWidth,
+            height: input.offsetHeight
+        }).then((canvas) => {
+            const imgWidth = 210; 
+            const pageHeight = 295; 
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            let heightLeft = imgHeight;
+    
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            let position = 0;
+    
+            // Add image to PDF
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+    
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+    
             pdf.save('invoice.pdf');
+            downloadButton.style.visibility = 'visible'; 
         });
     };
+    
+    
+    
+    
 
     if (!isOpen) return null;
 
@@ -135,12 +168,14 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                             </div>
                             <div className="mt-4 text-right">
                                 <button
+                                    id="download-button"  // Add this id here
                                     onClick={downloadInvoice}
                                     className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
                                 >
                                     Download as PDF
                                 </button>
                             </div>
+
                         </div>
                     )
                 )}
