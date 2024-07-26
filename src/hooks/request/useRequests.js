@@ -1,4 +1,3 @@
-// useRequests.js
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
@@ -7,13 +6,10 @@ const useRequests = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
-        item_id: '',
         contact_person_id: '',
         requester_name: '',
         request_from: '',
         status: '',
-        request_for_id: '',
-        quantity: '',
         note: ''
     });
     const [errors, setErrors] = useState({});
@@ -101,14 +97,13 @@ const useRequests = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const parsedValue = ['item_id', 'contact_person_id', 'request_for_id', 'quantity'].includes(name) ? parseInt(value, 10) || '' : value;
         setFormData({
             ...formData,
-            [name]: parsedValue
+            [name]: value
         });
     };
 
-    const addRequest = async () => {
+    const addRequest = async (requestData) => {
         setLoading(true);
         setErrors({});
         try {
@@ -117,15 +112,15 @@ const useRequests = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(requestData)
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 setErrors(errorData.errors || {});
                 throw new Error(errorData.message || 'Validation Error');
             }
-
+    
             const newRequest = await response.json();
             setRequests([...requests, newRequest]);
             return newRequest;
@@ -134,27 +129,6 @@ const useRequests = () => {
             throw error;
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleSubmit = async (e, onClose, fetchRequests) => {
-        e.preventDefault();
-        try {
-            await addRequest();
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Request created successfully!',
-            });
-            onClose();
-            fetchRequests();
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Failed to create request',
-            });
-            console.error('Error creating request:', error);
         }
     };
 
@@ -179,9 +153,9 @@ const useRequests = () => {
         loading,
         error,
         formData,
+        setFormData,
         handleChange,
         addRequest,
-        handleSubmit,
         errors,
         stockIns,
         items,
