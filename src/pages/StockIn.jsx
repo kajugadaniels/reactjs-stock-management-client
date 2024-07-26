@@ -64,23 +64,42 @@ const StockIn = () => {
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'No, keep it'
         });
-
+    
         if (confirmed.isConfirmed) {
             try {
-                await deleteStockIn(id);
-                Swal.fire('Deleted!', 'Stock in record has been deleted.', 'success').then(() => {
-                    fetchStockIns(filters);
-                });
+                const response = await deleteStockIn(id);  
+                if (response.status === 204) {  
+                    Swal.fire('Deleted!', 'Stock in record has been deleted.', 'success').then(() => {
+                        fetchStockIns(filters);
+                    });
+                } else {
+                    throw new Error('Unexpected status code received.');  
+                }
             } catch (error) {
-                Swal.fire('Error!', 'Failed to delete stock in record.', 'error');
+                let errorMessage = 'Failed to delete stock in record.';  
+                if (error.response && error.response.status === 400) {  
+                    errorMessage = error.response.data.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                Swal.fire('Stop!', 'You cannot delete the record because it is used in request.', 'error');
             }
         }
     };
+    
+    
+    
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
+        // Assuming the backend expects true, false, or '' for "All"
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [name]: value
+        }));
     };
+    
+    
 
     return (
         <div className="p-4">
@@ -114,7 +133,7 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="true">All Categories</option>
+                        <option value="">All Categories</option>
                         {categories
                             .filter((category) => category.name !== 'Finished')
                             .map((category) => (
@@ -123,8 +142,6 @@ const StockIn = () => {
                         }
                     </select>
                 </div>
-
-                
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
                     <select
@@ -133,12 +150,13 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="true">All Types</option>
+                        <option value="">All Types</option>
                         {types.map((type) => (
                             <option key={type.id} value={type.id}>{type.name}</option>
                         ))}
                     </select>
                 </div>
+
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
                     <input
@@ -149,6 +167,7 @@ const StockIn = () => {
                         className="p-2 border border-gray-300 rounded w-52"
                     />
                 </div>
+                
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">End Date</label>
                     <input
@@ -160,7 +179,6 @@ const StockIn = () => {
                     />
                 </div>
 
-
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Payment Status</label>
                     <select
@@ -169,12 +187,12 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="true">All</option>
+                        <option value="">All</option>
                         <option value="true">Paid</option>
                         <option value="false">Not Paid</option>
                     </select>
                 </div>
-                
+
             </div>
 
             {loading ? (
@@ -223,12 +241,15 @@ const StockIn = () => {
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" /><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></g></svg>
                                         </button>
+
                                         <button
                                             className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                                             onClick={() => handleDeleteStockIn(stockIn.id)}
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
                                         </button>
+
+                                        
                                         <button
                                             className="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ms-3"
                                             onClick={() => openStockInDetailsModal(stockIn.id)}
