@@ -1,3 +1,4 @@
+// useRequests.js
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
@@ -24,6 +25,7 @@ const useRequests = () => {
     const [employeesError, setEmployeesError] = useState(null);
 
     const fetchRequests = async () => {
+        setLoading(true);
         try {
             const url = `${import.meta.env.VITE_API_URL}/requests`;
             const response = await fetch(url);
@@ -31,10 +33,18 @@ const useRequests = () => {
                 throw new Error(`Failed to fetch requests: ${response.statusText}`);
             }
             const data = await response.json();
-            setRequests(data);
+            
+            const processedRequests = data.map(request => ({
+                ...request,
+                contact_person: request.contact_person || { name: 'Unknown Person' },
+                request_for: request.request_for || { name: 'Unknown Item' },
+                items: request.items || [],
+            }));
+
+            setRequests(processedRequests);
         } catch (error) {
             console.error('Fetch requests error:', error);
-            setError('Failed to fetch. Please try again.');
+            setError('Failed to fetch requests. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -181,7 +191,7 @@ const useRequests = () => {
         employeesError,
         handleDelete,
         fetchRequests,
-        fetchStockIns,  // Ensure these functions are returned
+        fetchStockIns,
         fetchItems,
         fetchEmployees,
     };
