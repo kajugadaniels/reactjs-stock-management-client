@@ -72,7 +72,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     <option value="">Select an item</option>
                                     {stockIns.map((stockIn) => (
                                         <option key={stockIn.id} value={stockIn.id}>
-                                            {`${stockIn.item.name} - Category: ${stockIn.item.category.name}, Type: ${stockIn.item.type.name}`}
+                                            {`${stockIn.item.name} ${stockIn.item.type.name} - Supplier: ${stockIn.supplier.name}, Quantity: ${stockIn.quantity}`}
                                         </option>
                                     ))}
                                 </select>

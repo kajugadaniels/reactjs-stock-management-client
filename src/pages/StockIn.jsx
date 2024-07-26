@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useStockIn } from '../hooks';
 import StockInCreate from './stockIn/StockInCreate';
-import StockInEdit from './stockIn/StockInEdit';
 import StockInDetails from './stockIn/StockInDetails';
+import StockInEdit from './stockIn/StockInEdit';
 
 const StockIn = () => {
     const { stockIns, loading, error, fetchStockIns, deleteStockIn, categories, types } = useStockIn();
@@ -114,7 +114,7 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="">All Categories</option>
+                        <option value="true">All Categories</option>
                         {categories
                             .filter((category) => category.name !== 'Finished')
                             .map((category) => (
@@ -123,6 +123,8 @@ const StockIn = () => {
                         }
                     </select>
                 </div>
+
+                
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
                     <select
@@ -131,7 +133,7 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="">All Types</option>
+                        <option value="true">All Types</option>
                         {types.map((type) => (
                             <option key={type.id} value={type.id}>{type.name}</option>
                         ))}
@@ -157,6 +159,8 @@ const StockIn = () => {
                         className="p-2 border border-gray-300 rounded w-52"
                     />
                 </div>
+
+
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Payment Status</label>
                     <select
@@ -165,11 +169,12 @@ const StockIn = () => {
                         onChange={handleFilterChange}
                         className="p-2 border border-gray-300 rounded w-52"
                     >
-                        <option value="">All</option>
+                        <option value="true">All</option>
                         <option value="true">Paid</option>
                         <option value="false">Not Paid</option>
                     </select>
                 </div>
+                
             </div>
 
             {loading ? (
