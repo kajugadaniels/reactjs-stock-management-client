@@ -5,7 +5,7 @@ export const useStockOut = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isAvailable, setIsAvailable] = useState(false);
-    const [availableQuantity, setAvailableQuantity] = useState(0); // New state for available quantity
+    const [availableQuantities, setAvailableQuantities] = useState({}); // Updated state for available quantities
 
     const fetchStockOuts = async () => {
         setLoading(true);
@@ -24,27 +24,39 @@ export const useStockOut = () => {
         }
     };
 
-    const checkAvailability = async (itemId, quantity) => {
+    const checkAvailability = async (items) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${itemId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch stock details');
-            }
-            const stockIn = await response.json();
-            setIsAvailable(stockIn.quantity >= quantity);
-            setAvailableQuantity(stockIn.quantity); // Set the available quantity
+            const results = await Promise.all(
+                items.map(async (item) => {
+                    const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${item.item_id}`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch stock details for item ID ${item.item_id}`);
+                    }
+                    const stockIn = await response.json();
+                    return { item_id: item.item_id, available: stockIn.quantity >= item.pivot.quantity, availableQuantity: stockIn.quantity };
+                })
+            );
+
+            const allAvailable = results.every(result => result.available);
+            const quantities = results.reduce((acc, result) => {
+                acc[result.item_id] = result.availableQuantity;
+                return acc;
+            }, {});
+
+            setIsAvailable(allAvailable);
+            setAvailableQuantities(quantities);
         } catch (error) {
             setError(error.message);
             setIsAvailable(false);
-            setAvailableQuantity(0); // Reset available quantity on error
+            setAvailableQuantities({});
         } finally {
             setLoading(false);
         }
     };
 
-    const approveStockOut = async (requestId, quantity, itemId) => {
+    const approveStockOut = async (requestId, items) => {
         setLoading(true);
         setError(null);
         try {
@@ -55,10 +67,9 @@ export const useStockOut = () => {
                 },
                 body: JSON.stringify({
                     request_id: requestId,
-                    quantity,
-                    item_id: itemId, // Ensure item_id is included
+                    items: items.map(item => ({ item_id: item.item_id, quantity: item.pivot.quantity })),
                     date: new Date().toISOString().split('T')[0],
-                    status: 'Approved', // Add status field
+                    status: 'Pending',
                 }),
             });
 
@@ -86,7 +97,7 @@ export const useStockOut = () => {
         loading,
         error,
         isAvailable,
-        availableQuantity, // Return available quantity
+        availableQuantities, // Updated to return available quantities
         setIsAvailable,
     };
 };

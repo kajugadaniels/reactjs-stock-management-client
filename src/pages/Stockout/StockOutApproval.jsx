@@ -3,9 +3,8 @@ import Swal from 'sweetalert2';
 import { useStockOut } from '../../hooks';
 
 const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
-    const { checkAvailability, approveStockOut, loading, error, isAvailable, availableQuantity, setIsAvailable } = useStockOut();
-    const [quantity, setQuantity] = useState(0);
-    const [itemId, setItemId] = useState(null);
+    const { checkAvailability, approveStockOut, loading, error, isAvailable, availableQuantities, setIsAvailable } = useStockOut();
+    const [items, setItems] = useState([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -20,23 +19,24 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 throw new Error('Failed to fetch request details');
             }
             const data = await response.json();
-            setQuantity(data.quantity);
-            setItemId(data.item_id);
-            checkAvailability(data.item_id, data.quantity);
+            setItems(data.items);
+            checkAvailability(data.items);
         } catch (error) {
             console.error('Error fetching request details:', error);
         }
     };
 
-    const handleQuantityChange = (event) => {
-        const newQuantity = event.target.value;
-        setQuantity(newQuantity);
-        checkAvailability(itemId, newQuantity);
+    const handleQuantityChange = (event, index) => {
+        const newQuantity = parseInt(event.target.value, 10);
+        const updatedItems = [...items];
+        updatedItems[index].pivot.quantity = newQuantity;
+        setItems(updatedItems);
+        checkAvailability(updatedItems);
     };
 
     const handleApprove = async () => {
         try {
-            await approveStockOut(requestId, quantity, itemId);
+            await approveStockOut(requestId, items);
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -69,18 +69,22 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                         className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
                     />
                 </div>
-                <div className="mb-4">
-                    <label className="block mb-2 text-sm font-medium text-gray-600">Quantity</label>
-                    <input
-                        type="number"
-                        value={quantity}
-                        onChange={handleQuantityChange}
-                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
-                    />
-                    <span className={`text-sm ${isAvailable ? 'text-green-500' : 'text-red-500'}`}>
-                        {isAvailable ? 'Available' : `Not Available, only ${availableQuantity} available`}
-                    </span>
-                </div>
+                {items.map((item, index) => (
+                    <div key={item.item_id} className="mb-4">
+                        <label className="block mb-2 text-sm font-medium text-gray-600">
+                            {item.item.name} - Supplier: {item.supplier.name}
+                        </label>
+                        <input
+                            type="number"
+                            value={item.pivot.quantity}
+                            onChange={(event) => handleQuantityChange(event, index)}
+                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                        />
+                        <span className={`text-sm ${availableQuantities[item.item_id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
+                            {availableQuantities[item.item_id] >= item.pivot.quantity ? 'Available' : `Not Available, only ${availableQuantities[item.item_id]} available`}
+                        </span>
+                    </div>
+                ))}
                 {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
                 <div className="flex justify-end space-x-4">
                     <button type="button" className="text-gray-500" onClick={onClose}>
