@@ -1,8 +1,9 @@
-// Stock.js
+// Stock.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CreateRequest from './request/CreateRequest';
 import StockOutApproval from './Stockout/StockOutApproval';
+import RequestDetails from './request/RequestDetails';
 import { useRequests } from '../hooks';
 
 const Stock = () => {
@@ -12,10 +13,12 @@ const Stock = () => {
         error,
         fetchRequests,
         handleDelete,
+        fetchRequestDetails,
     } = useRequests();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isStockOutModalOpen, setIsStockOutModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState(null);
+    const [requestDetails, setRequestDetails] = useState(null);
 
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
@@ -29,6 +32,21 @@ const Stock = () => {
     const closeStockOutModal = () => {
         setSelectedRequestId(null);
         setIsStockOutModalOpen(false);
+    };
+
+    const openDetailsModal = async (requestId) => {
+        try {
+            const details = await fetchRequestDetails(requestId);
+            setRequestDetails(details);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching request details:', error);
+        }
+    };
+
+    const closeDetailsModal = () => {
+        setRequestDetails(null);
+        setIsModalOpen(false);
     };
 
     if (loading) {
@@ -177,9 +195,9 @@ const Stock = () => {
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">
                                         <button
                                             className="px-3 py-1 mr-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            onClick={() => handleEdit(request.id)}
+                                            onClick={() => openDetailsModal(request.id)}
                                         >
-                                            Edit
+                                            View Details
                                         </button>
                                         <button
                                             className="px-3 py-1 mr-2 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -217,6 +235,11 @@ const Stock = () => {
                 onClose={closeStockOutModal}
                 requestId={selectedRequestId}
                 fetchRequests={fetchRequests}
+            />
+            <RequestDetails
+                isOpen={isModalOpen}
+                onClose={closeDetailsModal}
+                details={requestDetails}
             />
         </div>
     );

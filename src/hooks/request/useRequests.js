@@ -105,6 +105,19 @@ const useRequests = () => {
         }
     };
 
+    const fetchRequestDetails = async (id) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/requests/${id}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch request details');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch request details error:', error);
+            throw error;
+        }
+    };
+
     useEffect(() => {
         fetchRequests();
         fetchStockIns();
@@ -189,6 +202,7 @@ const useRequests = () => {
         fetchFinishedItems,
         fetchRawMaterialItems,
         fetchEmployees,
+        fetchRequestDetails,
     };
 };
 
