@@ -12,25 +12,31 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         errors, 
         stockIns, 
         finishedItems, 
-        rawMaterialItems, // Add this line
+        rawMaterialItems,
         employees, 
         stockInsError, 
         finishedItemsError, 
-        rawMaterialItemsError, // Add this line
+        rawMaterialItemsError,
         employeesError,
         fetchStockIns,
         fetchFinishedItems,
-        fetchRawMaterialItems, // Add this line
+        fetchRawMaterialItems,
         fetchEmployees
     } = useRequests();
 
     const [selectedItems, setSelectedItems] = useState([{ item_id: '', quantity: '' }]);
+    const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
+    const [otherRequestFrom, setOtherRequestFrom] = useState(formData.request_from === 'Others' ? '' : formData.request_from);
 
     useEffect(() => {
         fetchStockIns();
         fetchFinishedItems();
-        fetchRawMaterialItems(); // Add this line
+        fetchRawMaterialItems();
         fetchEmployees();
+        setFormData({
+            ...formData,
+            status: 'Pending'
+        });
     }, []);
 
     const handleSubmit = async (e) => {
@@ -38,6 +44,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         try {
             const requestData = {
                 ...formData,
+                request_from: requestFrom === 'Others' ? otherRequestFrom : requestFrom,
                 items: selectedItems.filter(item => item.item_id && item.quantity)
             };
             await addRequest(requestData);
@@ -72,6 +79,14 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     const removeItemField = (index) => {
         const updatedItems = selectedItems.filter((_, i) => i !== index);
         setSelectedItems(updatedItems);
+    };
+
+    const handleRequestFromChange = (e) => {
+        const value = e.target.value;
+        setRequestFrom(value);
+        if (value !== 'Others') {
+            setOtherRequestFrom('');
+        }
     };
 
     if (!isOpen) return null;
@@ -118,35 +133,32 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
 
                     <div className="mb-4">
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_from">Request From</label>
-                        <input
-                            className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground"
-                            type="text"
-                            id="request_from"
-                            name="request_from"
-                            placeholder="Input text"
-                            value={formData.request_from}
-                            onChange={handleChange}
-                            required
-                        />
-                        {errors.request_from && <p className="mt-1 text-xs text-red-500">{errors.request_from}</p>}
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="status">Status</label>
                         <select
                             className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
+                            id="request_from"
+                            name="request_from"
+                            value={requestFrom}
+                            onChange={handleRequestFromChange}
                             required
                         >
-                            <option value="">Select Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
+                            <option value="">Select Request From</option>
+                            <option value="Production">Production</option>
+                            <option value="Outside Clients">Outside Clients</option>
+                            <option value="Others">Others</option>
                         </select>
-                        {errors.status && <p className="mt-1 text-xs text-red-500">{errors.status}</p>}
+                        {requestFrom === 'Others' && (
+                            <input
+                                className="bg-[#f3f4f6] w-full p-2 mt-2 border border-input rounded bg-input text-foreground"
+                                type="text"
+                                id="other_request_from"
+                                name="other_request_from"
+                                placeholder="Specify other source"
+                                value={otherRequestFrom}
+                                onChange={(e) => setOtherRequestFrom(e.target.value)}
+                                required
+                            />
+                        )}
+                        {errors.request_from && <p className="mt-1 text-xs text-red-500">{errors.request_from}</p>}
                     </div>
 
                     <div className="mb-4">

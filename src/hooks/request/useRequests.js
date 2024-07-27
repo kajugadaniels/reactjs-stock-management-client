@@ -9,18 +9,18 @@ const useRequests = () => {
         contact_person_id: '',
         requester_name: '',
         request_from: '',
-        status: '',
+        status: 'Pending',
         note: '',
-        request_for_id: '',
+        request_for_id: ''
     });
     const [errors, setErrors] = useState({});
     const [stockIns, setStockIns] = useState([]);
     const [finishedItems, setFinishedItems] = useState([]);
-    const [rawMaterialItems, setRawMaterialItems] = useState([]); // Add this line
+    const [rawMaterialItems, setRawMaterialItems] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [stockInsError, setStockInsError] = useState(null);
     const [finishedItemsError, setFinishedItemsError] = useState(null);
-    const [rawMaterialItemsError, setRawMaterialItemsError] = useState(null); // Add this line
+    const [rawMaterialItemsError, setRawMaterialItemsError] = useState(null);
     const [employeesError, setEmployeesError] = useState(null);
 
     const fetchRequests = async () => {
@@ -56,7 +56,7 @@ const useRequests = () => {
                 throw new Error('Failed to fetch stock-ins');
             }
             const data = await response.json();
-            setStockIns(data);
+            setStockIns(data.filter(stockIn => stockIn.quantity > 0)); // Filter out items with quantity 0
         } catch (error) {
             setStockInsError(error.message);
             console.error('Error fetching stock-ins:', error);
@@ -84,7 +84,7 @@ const useRequests = () => {
                 throw new Error('Failed to fetch raw material items');
             }
             const data = await response.json();
-            setRawMaterialItems(data);
+            setRawMaterialItems(data.filter(stockIn => stockIn.quantity > 0)); // Filter out items with quantity 0
         } catch (error) {
             setRawMaterialItemsError(error.message);
             console.error('Error fetching raw material items:', error);
@@ -109,7 +109,7 @@ const useRequests = () => {
         fetchRequests();
         fetchStockIns();
         fetchFinishedItems();
-        fetchRawMaterialItems(); // Add this line
+        fetchRawMaterialItems();
         fetchEmployees();
     }, []);
 
@@ -177,17 +177,17 @@ const useRequests = () => {
         errors,
         stockIns,
         finishedItems,
-        rawMaterialItems, // Add this line
+        rawMaterialItems,
         employees,
         stockInsError,
         finishedItemsError,
-        rawMaterialItemsError, // Add this line
+        rawMaterialItemsError,
         employeesError,
         handleDelete,
         fetchRequests,
         fetchStockIns,
         fetchFinishedItems,
-        fetchRawMaterialItems, // Add this line
+        fetchRawMaterialItems,
         fetchEmployees,
     };
 };
