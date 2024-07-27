@@ -11,13 +11,13 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         loading, 
         errors, 
         stockIns, 
-        items, 
+        finishedItems, 
         employees, 
         stockInsError, 
-        itemsError, 
+        finishedItemsError, 
         employeesError,
         fetchStockIns,
-        fetchItems,
+        fetchFinishedItems,
         fetchEmployees
     } = useRequests();
 
@@ -25,7 +25,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
 
     useEffect(() => {
         fetchStockIns();
-        fetchItems();
+        fetchFinishedItems();
         fetchEmployees();
     }, []);
 
@@ -186,8 +186,8 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                         <label className="block text-sm font-medium mb-1 text-[#424955]" htmlFor="request_for_id">Request For</label>
                         {loading ? (
                             <div>Loading items...</div>
-                        ) : itemsError ? (
-                            <div>Error: {itemsError}</div>
+                        ) : finishedItemsError ? (
+                            <div>Error: {finishedItemsError}</div>
                         ) : (
                             <select
                                 className="bg-[#f3f4f6] w-full p-2 border border-input rounded bg-input text-foreground text-gray-400"
@@ -198,7 +198,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 required
                             >
                                 <option value="">Request For</option>
-                                {items.map((item) => (
+                                {finishedItems.map((item) => (
                                     <option key={item.id} value={item.id}>
                                         {item.name}
                                     </option>

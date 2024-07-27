@@ -10,14 +10,15 @@ const useRequests = () => {
         requester_name: '',
         request_from: '',
         status: '',
-        note: ''
+        note: '',
+        request_for_id: '',
     });
     const [errors, setErrors] = useState({});
     const [stockIns, setStockIns] = useState([]);
-    const [items, setItems] = useState([]);
+    const [finishedItems, setFinishedItems] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [stockInsError, setStockInsError] = useState(null);
-    const [itemsError, setItemsError] = useState(null);
+    const [finishedItemsError, setFinishedItemsError] = useState(null);
     const [employeesError, setEmployeesError] = useState(null);
 
     const fetchRequests = async () => {
@@ -60,17 +61,17 @@ const useRequests = () => {
         }
     };
 
-    const fetchItems = async () => {
+    const fetchFinishedItems = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/items`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/finished-items`);
             if (!response.ok) {
-                throw new Error('Failed to fetch items');
+                throw new Error('Failed to fetch finished items');
             }
             const data = await response.json();
-            setItems(data);
+            setFinishedItems(data);
         } catch (error) {
-            setItemsError(error.message);
-            console.error('Error fetching items:', error);
+            setFinishedItemsError(error.message);
+            console.error('Error fetching finished items:', error);
         }
     };
 
@@ -91,7 +92,7 @@ const useRequests = () => {
     useEffect(() => {
         fetchRequests();
         fetchStockIns();
-        fetchItems();
+        fetchFinishedItems();
         fetchEmployees();
     }, []);
 
@@ -158,15 +159,15 @@ const useRequests = () => {
         addRequest,
         errors,
         stockIns,
-        items,
+        finishedItems,
         employees,
         stockInsError,
-        itemsError,
+        finishedItemsError,
         employeesError,
         handleDelete,
         fetchRequests,
         fetchStockIns,
-        fetchItems,
+        fetchFinishedItems,
         fetchEmployees,
     };
 };
