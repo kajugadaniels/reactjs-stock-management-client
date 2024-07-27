@@ -16,9 +16,11 @@ const useRequests = () => {
     const [errors, setErrors] = useState({});
     const [stockIns, setStockIns] = useState([]);
     const [finishedItems, setFinishedItems] = useState([]);
+    const [rawMaterialItems, setRawMaterialItems] = useState([]); // Add this line
     const [employees, setEmployees] = useState([]);
     const [stockInsError, setStockInsError] = useState(null);
     const [finishedItemsError, setFinishedItemsError] = useState(null);
+    const [rawMaterialItemsError, setRawMaterialItemsError] = useState(null); // Add this line
     const [employeesError, setEmployeesError] = useState(null);
 
     const fetchRequests = async () => {
@@ -75,6 +77,20 @@ const useRequests = () => {
         }
     };
 
+    const fetchRawMaterialItems = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/raw-material-items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch raw material items');
+            }
+            const data = await response.json();
+            setRawMaterialItems(data);
+        } catch (error) {
+            setRawMaterialItemsError(error.message);
+            console.error('Error fetching raw material items:', error);
+        }
+    };
+
     const fetchEmployees = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
@@ -93,6 +109,7 @@ const useRequests = () => {
         fetchRequests();
         fetchStockIns();
         fetchFinishedItems();
+        fetchRawMaterialItems(); // Add this line
         fetchEmployees();
     }, []);
 
@@ -160,14 +177,17 @@ const useRequests = () => {
         errors,
         stockIns,
         finishedItems,
+        rawMaterialItems, // Add this line
         employees,
         stockInsError,
         finishedItemsError,
+        rawMaterialItemsError, // Add this line
         employeesError,
         handleDelete,
         fetchRequests,
         fetchStockIns,
         fetchFinishedItems,
+        fetchRawMaterialItems, // Add this line
         fetchEmployees,
     };
 };

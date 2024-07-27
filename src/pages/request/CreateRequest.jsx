@@ -12,12 +12,15 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         errors, 
         stockIns, 
         finishedItems, 
+        rawMaterialItems, // Add this line
         employees, 
         stockInsError, 
         finishedItemsError, 
+        rawMaterialItemsError, // Add this line
         employeesError,
         fetchStockIns,
         fetchFinishedItems,
+        fetchRawMaterialItems, // Add this line
         fetchEmployees
     } = useRequests();
 
@@ -26,6 +29,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     useEffect(() => {
         fetchStockIns();
         fetchFinishedItems();
+        fetchRawMaterialItems(); // Add this line
         fetchEmployees();
     }, []);
 
@@ -157,9 +161,9 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     required
                                 >
                                     <option value="">Select an item</option>
-                                    {stockIns.map((stockIn) => (
+                                    {rawMaterialItems.map((stockIn) => (
                                         <option key={stockIn.id} value={stockIn.id}>
-                                            {`${stockIn.item.name} ${stockIn.item.type.name} - Supplier: ${stockIn.supplier.name}, Quantity: ${stockIn.quantity}`}
+                                            {`${stockIn.name} ${stockIn.type_id} - Supplier: ${stockIn.supplier_id}, Quantity: ${stockIn.quantity}`}
                                         </option>
                                     ))}
                                 </select>
