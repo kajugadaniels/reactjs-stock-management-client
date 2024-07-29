@@ -21,7 +21,6 @@ const StockIn = () => {
     });
 
     useEffect(() => {
-        console.log('Filters changed:', filters);
         fetchStockIns(filters);
     }, [filters]);
 
@@ -64,20 +63,20 @@ const StockIn = () => {
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'No, keep it'
         });
-    
+
         if (confirmed.isConfirmed) {
             try {
-                const response = await deleteStockIn(id);  
-                if (response.status === 204) {  
+                const response = await deleteStockIn(id);
+                if (response.status === 204) {
                     Swal.fire('Deleted!', 'Stock in record has been deleted.', 'success').then(() => {
                         fetchStockIns(filters);
                     });
                 } else {
-                    throw new Error('Unexpected status code received.');  
+                    throw new Error('Unexpected status code received.');
                 }
             } catch (error) {
-                let errorMessage = 'Failed to delete stock in record.';  
-                if (error.response && error.response.status === 400) {  
+                let errorMessage = 'Failed to delete stock in record.';
+                if (error.response && error.response.status === 400) {
                     errorMessage = error.response.data.message;
                 } else if (error.message) {
                     errorMessage = error.message;
@@ -86,20 +85,14 @@ const StockIn = () => {
             }
         }
     };
-    
-    
-    
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        // Assuming the backend expects true, false, or '' for "All"
         setFilters((prevFilters) => ({
             ...prevFilters,
             [name]: value
         }));
     };
-    
-    
 
     return (
         <div className="p-4">
@@ -167,7 +160,7 @@ const StockIn = () => {
                         className="p-2 border border-gray-300 rounded w-52"
                     />
                 </div>
-                
+
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">End Date</label>
                     <input
@@ -192,7 +185,6 @@ const StockIn = () => {
                         <option value="false">Not Paid</option>
                     </select>
                 </div>
-
             </div>
 
             {loading ? (
@@ -228,7 +220,11 @@ const StockIn = () => {
                                     <td className="px-4 py-4 border">{stockIn.item.name}</td>
                                     <td className="px-4 py-4 border">{stockIn.item.category.name}</td>
                                     <td className="px-4 py-4 border">{stockIn.item.type.name}</td>
-                                    <td className="px-4 py-4 border">{stockIn.quantity}</td>
+                                    <td className="px-4 py-4 border">
+                                        {stockIn.quantity > 0 ? stockIn.quantity : (
+                                            <span className="px-2 py-1 text-white bg-red-500 rounded">Item not available</span>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-4 border">{stockIn.employee.name}</td>
                                     <td className="px-4 py-4 border">{stockIn.plate_number}</td>
                                     <td className="px-4 py-4 border">{stockIn.batch_number}</td>
@@ -249,7 +245,6 @@ const StockIn = () => {
                                             <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
                                         </button>
 
-                                        
                                         <button
                                             className="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ms-3"
                                             onClick={() => openStockInDetailsModal(stockIn.id)}
