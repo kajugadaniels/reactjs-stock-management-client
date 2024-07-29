@@ -96,15 +96,15 @@ const StockIn = () => {
 
     return (
         <div className="p-4">
-            <div className='flex gap-10 p-4'>
+            <div className='flex flex-col gap-4 sm:flex-row sm:gap-10 p-4'>
                 <Link to="/TotalRowMaterial">
-                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
+                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Raw Material</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
                 </Link>
                 <Link to="/TotalPackeging">
-                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
+                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Packaging</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
@@ -117,14 +117,14 @@ const StockIn = () => {
                 </button>
             </div>
 
-            <div className="flex flex-wrap gap-4 mb-4">
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:flex-wrap">
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Category</label>
                     <select
                         name="category"
                         value={filters.category}
                         onChange={handleFilterChange}
-                        className="p-2 border border-gray-300 rounded w-52"
+                        className="p-2 border border-gray-300 rounded w-full sm:w-52"
                     >
                         <option value="">All Categories</option>
                         {categories
@@ -141,7 +141,7 @@ const StockIn = () => {
                         name="type"
                         value={filters.type}
                         onChange={handleFilterChange}
-                        className="p-2 border border-gray-300 rounded w-52"
+                        className="p-2 border border-gray-300 rounded w-full sm:w-52"
                     >
                         <option value="">All Types</option>
                         {types.map((type) => (
@@ -157,7 +157,7 @@ const StockIn = () => {
                         name="startDate"
                         value={filters.startDate}
                         onChange={handleFilterChange}
-                        className="p-2 border border-gray-300 rounded w-52"
+                        className="p-2 border border-gray-300 rounded w-full sm:w-52"
                     />
                 </div>
 
@@ -168,7 +168,7 @@ const StockIn = () => {
                         name="endDate"
                         value={filters.endDate}
                         onChange={handleFilterChange}
-                        className="p-2 border border-gray-300 rounded w-52"
+                        className="p-2 border border-gray-300 rounded w-full sm:w-52"
                     />
                 </div>
 
@@ -178,7 +178,7 @@ const StockIn = () => {
                         name="loading_payment_status"
                         value={filters.loading_payment_status}
                         onChange={handleFilterChange}
-                        className="p-2 border border-gray-300 rounded w-52"
+                        className="p-2 border border-gray-300 rounded w-full sm:w-52"
                     >
                         <option value="">All</option>
                         <option value="true">Paid</option>
@@ -242,7 +242,7 @@ const StockIn = () => {
                                             className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
                                             onClick={() => handleDeleteStockIn(stockIn.id)}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fillRule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l.5 9h-1.2z" /></svg>
                                         </button>
 
                                         <button
