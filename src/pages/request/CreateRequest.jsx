@@ -213,7 +213,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     {rawMaterialItems.map((stockIn) => (
                                         stockIn.quantity > 0 && (
                                             <option key={stockIn.id} value={stockIn.id}>
-                                                {`${stockIn.name} ${stockIn.type_id} - Supplier: ${stockIn.supplier_id}, Quantity: ${stockIn.quantity}`}
+                                                {`${stockIn.name} ${stockIn.type_id} - Supplier: ${stockIn.supplier_id}, Quantity: ${stockIn.quantity},Type: ${stockIn.type_id}`}
                                             </option>
                                         )
                                     ))}
