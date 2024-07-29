@@ -105,42 +105,46 @@ const StockIn = () => {
 
     return (
         <div className="p-4">
-            <div className='flex gap-10 p-4'>
+            <div className='flex flex-col sm:flex-row gap-4 p-4'>
                 <Link to="/TotalRowMaterial">
-                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
+                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Raw Material</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
                 </Link>
                 <Link to="/TotalPackeging">
-                    <div className="p-10 text-center rounded-lg shadow-md bg-card">
+                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
                         <h2 className="text-muted-foreground">Total Packaging</h2>
                         <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
                     </div>
                 </Link>
             </div>
 
-           
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleStockInCreateModal}>
+                    Add Stock In
+                </button>
+            </div>
 
             <div className="overflow-x-auto">
                 <table className="w-full min-w-full bg-white rounded-lg shadow">
                     <thead>
                         <tr>
-                            <th scope='col' className="px-6 py-3 border">ID</th>
-                            <th scope='col' className="px-6 py-3 border">Item</th>
-                            <th scope='col' className="px-6 py-3 border">Category</th>
-                            <th scope='col' className="px-6 py-3 border">Type</th>
-                            <th scope='col' className="px-6 py-3 border">RemainQty</th>
+                            <th scope='col' className="px-2 sm:px-6 py-3 border">ID</th>
+                            <th scope='col' className="px-2 sm:px-6 py-3 border">Item</th>
+                            <th scope='col' className="px-2 sm:px-6 py-3 border">Category</th>
+                            <th scope='col' className="px-2 sm:px-6 py-3 border">Type</th>
+                            <th scope='col' className="px-2 sm:px-6 py-3 border">RemainQty</th>
                         </tr>
                     </thead>
                     <tbody>
                         {stockIns.map((stockIn, index) => (
                             <tr className="border-t" key={index}>
-                                <td className="px-4 py-4 border">{stockIn.id}</td>
-                                <td className="px-4 py-4 border">{stockIn.item}</td>
-                                <td className="px-4 py-4 border">{stockIn.category}</td>
-                                <td className="px-4 py-4 border">{stockIn.type}</td>
-                                <td className="px-4 py-4 border">{stockIn.quantity}</td>
+                                <td className="px-2 sm:px-4 py-4 border">{stockIn.id}</td>
+                                <td className="px-2 sm:px-4 py-4 border">{stockIn.item}</td>
+                                <td className="px-2 sm:px-4 py-4 border">{stockIn.category}</td>
+                                <td className="px-2 sm:px-4 py-4 border">{stockIn.type}</td>
+                                <td className="px-2 sm:px-4 py-4 border">{stockIn.quantity}</td>
                             </tr>
                         ))}
                     </tbody>
