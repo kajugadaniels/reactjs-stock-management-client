@@ -26,7 +26,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
 
     const [selectedItems, setSelectedItems] = useState([{ item_id: '', quantity: '' }]);
     const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
-    const [otherRequestFrom, setOtherRequestFrom] = useState(formData.request_from === 'Others' ? '' : formData.request_from);
+    const [otherRequestFrom, setOtherRequestFrom] = useState(formData.request_from === 'Others' || formData.request_from === 'Outside Clients' ? '' : formData.request_from);
 
     useEffect(() => {
         fetchStockIns();
@@ -44,7 +44,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         try {
             const requestData = {
                 ...formData,
-                request_from: requestFrom === 'Others' ? otherRequestFrom : requestFrom,
+                request_from: requestFrom === 'Others' || requestFrom === 'Outside Clients' ? otherRequestFrom : requestFrom,
                 items: selectedItems.filter((item) => item.item_id && item.quantity),
             };
             await addRequest(requestData);
@@ -84,7 +84,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     const handleRequestFromChange = (e) => {
         const value = e.target.value;
         setRequestFrom(value);
-        if (value !== 'Others') {
+        if (value !== 'Others' && value !== 'Outside Clients') {
             setOtherRequestFrom('');
         }
     };
@@ -149,13 +149,13 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 <option value="Outside Clients">Outside Clients</option>
                                 <option value="Others">Others</option>
                             </select>
-                            {requestFrom === 'Others' && (
+                            {(requestFrom === 'Others' || requestFrom === 'Outside Clients') && (
                                 <input
                                     className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                                     type="text"
                                     id="other_request_from"
                                     name="other_request_from"
-                                    placeholder="Specify other source"
+                                    placeholder={requestFrom === 'Others' ? 'Specify other source' : 'Specify client name'}
                                     value={otherRequestFrom}
                                     onChange={(e) => setOtherRequestFrom(e.target.value)}
                                     required
@@ -164,7 +164,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                             {errors.request_from && <p className="mt-2 text-xs text-red-500">{errors.request_from}</p>}
                         </div>
 
-                        <div className="mb-6">
+                        <div>
                             <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="request_for_id">Request For</label>
                             {loading ? (
                                 <div>Loading items...</div>
