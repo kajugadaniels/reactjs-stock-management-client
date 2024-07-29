@@ -25,8 +25,9 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     } = useRequests();
 
     const [selectedItems, setSelectedItems] = useState([{ item_id: '', quantity: '' }]);
-    const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
+    const [requestFrom, setRequestFrom] = useState(formData.request_from || 'Production');
     const [otherRequestFrom, setOtherRequestFrom] = useState(formData.request_from === 'Others' || formData.request_from === 'Outside Clients' ? '' : formData.request_from);
+    const [specifyField, setSpecifyField] = useState('');
 
     useEffect(() => {
         fetchStockIns();
@@ -87,6 +88,14 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         if (value !== 'Others' && value !== 'Outside Clients') {
             setOtherRequestFrom('');
         }
+        setSpecifyField('');
+    };
+
+    const getDynamicFieldTitle = () => {
+        if (requestFrom === 'Production') return 'Request For';
+        if (requestFrom === 'Outside Clients') return 'Client Name';
+        if (requestFrom === 'Others') return 'Other Source';
+        return 'Request For';
     };
 
     if (!isOpen) return null;
@@ -149,28 +158,15 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 <option value="Outside Clients">Outside Clients</option>
                                 <option value="Others">Others</option>
                             </select>
-                            {(requestFrom === 'Others' || requestFrom === 'Outside Clients') && (
-                                <input
-                                    className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    type="text"
-                                    id="other_request_from"
-                                    name="other_request_from"
-                                    placeholder={requestFrom === 'Others' ? 'Specify other source' : 'Specify client name'}
-                                    value={otherRequestFrom}
-                                    onChange={(e) => setOtherRequestFrom(e.target.value)}
-                                    required
-                                />
-                            )}
-                            {errors.request_from && <p className="mt-2 text-xs text-red-500">{errors.request_from}</p>}
                         </div>
 
                         <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="request_for_id">Request For</label>
+                            <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="dynamic_field">{getDynamicFieldTitle()}</label>
                             {loading ? (
                                 <div>Loading items...</div>
                             ) : finishedItemsError ? (
                                 <div>Error: {finishedItemsError}</div>
-                            ) : (
+                            ) : requestFrom === 'Production' ? (
                                 <select
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                                     id="request_for_id"
@@ -186,7 +182,18 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                         </option>
                                     ))}
                                 </select>
-                            )}
+                            ) : requestFrom === 'Outside Clients' || requestFrom === 'Others' ? (
+                                <input
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    type="text"
+                                    id="specify_field"
+                                    name="specify_field"
+                                    placeholder={requestFrom === 'Outside Clients' ? 'Specify client name' : 'Specify other source'}
+                                    value={specifyField}
+                                    onChange={(e) => setSpecifyField(e.target.value)}
+                                    required
+                                />
+                            ) : null}
                             {errors.request_for_id && <p className="mt-2 text-xs text-red-500">{errors.request_for_id}</p>}
                         </div>
                     </div>
