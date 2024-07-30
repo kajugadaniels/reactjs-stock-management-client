@@ -50,8 +50,7 @@ const Process = () => {
                             <th className="px-2 py-3 text-left text-gray-700 md:px-6">Item Name</th>
                             <th className="px-2 py-3 text-left text-gray-700 md:px-6">Stockout Item</th>
                             <th className="px-2 py-3 text-left text-gray-700 md:px-6">Category</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Type</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Quantity</th>
+                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Total Quantity</th>
                             <th className="px-2 py-3 text-left text-gray-700 md:px-6">Status</th>
                             <th className="px-2 py-3 text-left text-gray-700 md:px-6">Actions</th>
                         </tr>
@@ -63,11 +62,18 @@ const Process = () => {
                                     <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
                                 </td>
                                 <td className="px-2 py-4 text-gray-700 md:px-6">{process.id}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.items[0]?.item.name}</td>
+                                <td className="px-2 py-4 text-gray-700 md:px-6">
+                                    {process.request.items.map(item => (
+                                        <div key={item.id}>
+                                            {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
+                                        </div>
+                                    ))}
+                                </td>
                                 <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.request_for.name}</td>
                                 <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.items[0]?.item.category.name}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.items[0]?.item.type.name}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.quantity}</td>
+                                <td className="px-2 py-4 text-gray-700 md:px-6">
+                                    {process.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}
+                                </td>
                                 <td className="px-2 py-4 text-gray-700 md:px-6">
                                     <span className={`px-2 py-1 rounded ${process.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
                                         {process.status}

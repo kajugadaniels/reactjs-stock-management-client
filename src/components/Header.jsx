@@ -16,10 +16,10 @@ const Header = () => {
     return (
         <nav className="flex items-center justify-between p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
             <div className="flex items-center space-x-4">
-                <img src="images/logo.jpeg" alt="Jabana" className="rounded-full w-10 h-10 sm:w-14 sm:h-14" />
+                <img src="images/logo.jpeg" alt="Jabana" className="w-10 h-10 rounded-full sm:w-14 sm:h-14" />
             </div>
 
-            <ul className="hidden md:flex items-center ml-6 space-x-6">
+            <ul className="items-center hidden ml-6 space-x-6 md:flex">
                 {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                     <li key={index}>
                         <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`}>
@@ -34,7 +34,7 @@ const Header = () => {
                 <input type="text" placeholder="Search..." className="px-4 py-1 border rounded-md bg-input text-input-foreground border-border sm:rounded-full" />
                 <Dropdown>
                     <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
-                        <img src="images/logo.jpeg" alt="Profile" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full" style={{ border: '2px solid gray' }} />
+                        <img src="images/logo.jpeg" alt="Profile" className="w-8 h-8 rounded-full sm:w-10 sm:h-10" style={{ border: '2px solid gray' }} />
                     </Dropdown.Toggle>
                     <Dropdown.Menu align="right">
                         <Dropdown.Item as={Link} to="/profile" className="hover:bg-gray-100">Profile</Dropdown.Item>
@@ -48,7 +48,7 @@ const Header = () => {
             </div>
 
             {isMenuOpen && (
-                <ul className="absolute right-0 top-16 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
+                <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow top-16 md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
                     {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                         <li key={index}>
                             <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
