@@ -56,7 +56,7 @@ const useRequests = () => {
                 throw new Error('Failed to fetch stock-ins');
             }
             const data = await response.json();
-            setStockIns(data.filter(stockIn => stockIn.quantity > 0)); // Filter out items with quantity 0
+            setStockIns(data.filter(stockIn => stockIn.quantity > 0));
         } catch (error) {
             setStockInsError(error.message);
             console.error('Error fetching stock-ins:', error);
@@ -84,7 +84,7 @@ const useRequests = () => {
                 throw new Error('Failed to fetch raw material items');
             }
             const data = await response.json();
-            setRawMaterialItems(data.filter(stockIn => stockIn.quantity > 0)); // Filter out items with quantity 0
+            setRawMaterialItems(data.filter(item => item.quantity > 0));
         } catch (error) {
             setRawMaterialItemsError(error.message);
             console.error('Error fetching raw material items:', error);

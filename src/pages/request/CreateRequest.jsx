@@ -25,9 +25,10 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     } = useRequests();
 
     const [selectedItems, setSelectedItems] = useState([{ item_id: '', quantity: '' }]);
-    const [requestFrom, setRequestFrom] = useState(formData.request_from || 'Production');
-    const [otherRequestFrom, setOtherRequestFrom] = useState(formData.request_from === 'Others' || formData.request_from === 'Outside Clients' ? '' : formData.request_from);
-    const [specifyField, setSpecifyField] = useState('');
+    const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
+    const [otherRequestFrom, setOtherRequestFrom] = useState('');
+    const [outsideClient, setOutsideClient] = useState('');
+    const [filteredItems, setFilteredItems] = useState([]);
 
     useEffect(() => {
         fetchStockIns();
@@ -40,13 +41,29 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         });
     }, []);
 
+    useEffect(() => {
+        if (requestFrom === 'Production') {
+            setFilteredItems(finishedItems.filter(item => item.category && item.category.name === 'Finished' && item.name !== 'Outside'));
+        } else if (requestFrom === 'Outside Clients' || requestFrom === 'Others') {
+            setFilteredItems(finishedItems.filter(item => item.category && item.category.name === 'Finished' && item.name === 'Outside'));
+        } else {
+            setFilteredItems([]);
+        }
+    }, [requestFrom, finishedItems]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            let finalRequestFrom = requestFrom;
+            if (requestFrom === 'Outside Clients') {
+                finalRequestFrom = `Outside Clients: ${outsideClient}`;
+            } else if (requestFrom === 'Others') {
+                finalRequestFrom = otherRequestFrom;
+            }
+            
             const requestData = {
                 ...formData,
-                request_from: requestFrom === 'Others' || requestFrom === 'Outside Clients' ? otherRequestFrom : requestFrom,
-                request_for_id: requestFrom === 'Production' && formData.request_for_id ? formData.request_for_id : 0,
+                request_from: finalRequestFrom,
                 items: selectedItems.filter((item) => item.item_id && item.quantity),
             };
             await addRequest(requestData);
@@ -86,17 +103,12 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     const handleRequestFromChange = (e) => {
         const value = e.target.value;
         setRequestFrom(value);
-        if (value !== 'Others' && value !== 'Outside Clients') {
+        if (value !== 'Others') {
             setOtherRequestFrom('');
         }
-        setSpecifyField('');
-    };
-
-    const getDynamicFieldTitle = () => {
-        if (requestFrom === 'Production') return 'Request For';
-        if (requestFrom === 'Outside Clients') return 'Client Name';
-        if (requestFrom === 'Others') return 'Other Source';
-        return 'Request For';
+        if (value !== 'Outside Clients') {
+            setOutsideClient('');
+        }
     };
 
     if (!isOpen) return null;
@@ -159,41 +171,56 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 <option value="Outside Clients">Outside Clients</option>
                                 <option value="Others">Others</option>
                             </select>
+                            {requestFrom === 'Outside Clients' && (
+                                <input
+                                    className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    type="text"
+                                    id="outside_client"
+                                    name="outside_client"
+                                    placeholder="Specify outside client"
+                                    value={outsideClient}
+                                    onChange={(e) => setOutsideClient(e.target.value)}
+                                    required
+                                />
+                            )}
+                            {requestFrom === 'Others' && (
+                                <input
+                                    className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    type="text"
+                                    id="other_request_from"
+                                    name="other_request_from"
+                                    placeholder="Specify other source"
+                                    value={otherRequestFrom}
+                                    onChange={(e) => setOtherRequestFrom(e.target.value)}
+                                    required
+                                />
+                            )}
+                            {errors.request_from && <p className="mt-2 text-xs text-red-500">{errors.request_from}</p>}
                         </div>
 
-                        <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="dynamic_field">{getDynamicFieldTitle()}</label>
+                        <div className="mb-6">
+                            <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="request_for_id">Request For</label>
                             {loading ? (
                                 <div>Loading items...</div>
                             ) : finishedItemsError ? (
                                 <div>Error: {finishedItemsError}</div>
-                            ) : requestFrom === 'Production' ? (
+                            ) : (
                                 <select
                                     className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                                     id="request_for_id"
                                     name="request_for_id"
                                     value={formData.request_for_id}
                                     onChange={handleChange}
+                                    required
                                 >
                                     <option value="">Request For</option>
-                                    {finishedItems.map((item) => (
+                                    {filteredItems.map((item) => (
                                         <option key={item.id} value={item.id}>
                                             {item.name}
                                         </option>
                                     ))}
                                 </select>
-                            ) : requestFrom === 'Outside Clients' || requestFrom === 'Others' ? (
-                                <input
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    type="text"
-                                    id="specify_field"
-                                    name="specify_field"
-                                    placeholder={requestFrom === 'Outside Clients' ? 'Specify client name' : 'Specify other source'}
-                                    value={specifyField}
-                                    onChange={(e) => setSpecifyField(e.target.value)}
-                                    required
-                                />
-                            ) : null}
+                            )}
                             {errors.request_for_id && <p className="mt-2 text-xs text-red-500">{errors.request_for_id}</p>}
                         </div>
                     </div>
@@ -213,7 +240,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     {rawMaterialItems.map((stockIn) => (
                                         stockIn.quantity > 0 && (
                                             <option key={stockIn.id} value={stockIn.id}>
-                                                {`${stockIn.name} ${stockIn.type_name} - Supplier: ${stockIn.supplier_name}, Qty: ${stockIn.quantity}`}
+                                                {`${stockIn.name} ${stockIn.type_id} - Supplier: ${stockIn.supplier_id}, Quantity: ${stockIn.quantity}`}
                                             </option>
                                         )
                                     ))}
