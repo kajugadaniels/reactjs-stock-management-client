@@ -38,27 +38,33 @@ const FinishedProduct = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {finishedProducts.map((product) => (
-                            <tr key={product.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
-                                <td className="px-6 py-4">
-                                    <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
-                                </td>
-                                <td className="px-6 py-4 text-gray-700">{product.stock_out.request.item.item.name}</td>
-                                <td className="px-6 py-4 text-gray-700">{product.stock_out.request.request_for.name}</td>
-                                <td className="px-6 py-4 text-gray-700">{product.item_qty} KG</td>
-                                <td className="px-6 py-4 text-gray-700">{product.brand_qty} KG</td>
-                                <td className="px-6 py-4 text-gray-700">{product.dechet_qty} KG</td>
-                                <td className="px-6 py-4 text-gray-700">{product.comment}</td>
-                                <td className="px-6 py-4 space-x-2">
-                                    <button
-                                        className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-                                        onClick={() => togglePackegingCreateModal(product.id)}
-                                    >
-                                        Packaging
-                                    </button>
-                                </td>
+                        {finishedProducts.length > 0 ? (
+                            finishedProducts.map((product) => (
+                                <tr key={product.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
+                                    <td className="px-6 py-4">
+                                        <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-700">{product.stock_out.request.items.map(item => item.item.name).join(', ')}</td>
+                                    <td className="px-6 py-4 text-gray-700">{product.stock_out.request.request_for.name}</td>
+                                    <td className="px-6 py-4 text-gray-700">{product.item_qty} KG</td>
+                                    <td className="px-6 py-4 text-gray-700">{product.brand_qty} KG</td>
+                                    <td className="px-6 py-4 text-gray-700">{product.dechet_qty} KG</td>
+                                    <td className="px-6 py-4 text-gray-700">{product.comment}</td>
+                                    <td className="px-6 py-4 space-x-2">
+                                        <button
+                                            className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                                            onClick={() => togglePackegingCreateModal(product.id)}
+                                        >
+                                            Packaging
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="8" className="px-6 py-4 text-sm text-center text-gray-600 border-b border-gray-300">No finished products found.</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
