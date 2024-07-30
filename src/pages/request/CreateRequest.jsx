@@ -46,6 +46,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
             const requestData = {
                 ...formData,
                 request_from: requestFrom === 'Others' || requestFrom === 'Outside Clients' ? otherRequestFrom : requestFrom,
+                request_for_id: requestFrom === 'Production' && formData.request_for_id ? formData.request_for_id : 0,
                 items: selectedItems.filter((item) => item.item_id && item.quantity),
             };
             await addRequest(requestData);
@@ -173,7 +174,6 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     name="request_for_id"
                                     value={formData.request_for_id}
                                     onChange={handleChange}
-                                    required
                                 >
                                     <option value="">Request For</option>
                                     {finishedItems.map((item) => (
