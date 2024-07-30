@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import CreateRequest from './request/CreateRequest';
 import StockOutApproval from './Stockout/StockOutApproval';
 import RequestDetails from './request/RequestDetails';
+// import RequestPackeging from './request/RequestPackeging';
+
 import { useRequests } from '../hooks';
 
 const Stock = () => {
+    const navigate = useNavigate();
     const {
         requests,
         loading,
@@ -19,7 +22,7 @@ const Stock = () => {
     const [selectedRequestId, setSelectedRequestId] = useState(null);
     const [requestDetails, setRequestDetails] = useState(null);
 
-    const toggleModal = () => {
+    const toggleRequestItemModal = () => {
         setIsModalOpen(!isModalOpen);
     };
 
@@ -46,6 +49,10 @@ const Stock = () => {
     const closeDetailsModal = () => {
         setRequestDetails(null);
         setIsModalOpen(false);
+    };
+
+    const handleRequestPackage = () => {
+        navigate('/request-package');
     };
 
     if (loading) {
@@ -135,14 +142,26 @@ const Stock = () => {
 
             <div className="flex flex-wrap items-center mb-6 space-y-2 md:space-y-0 md:space-x-4">
                 <button
-                    onClick={toggleModal}
-                    className="mb-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
+                    onClick={toggleRequestItemModal}
+                    className="mt-1 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
                 >
                     <div className='flex items-center'>
                         <span className="mr-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
                         </span>
                         Request Item
+                    </div>
+                </button>
+
+                <button
+                    onClick={handleRequestPackage}
+                    className="mt-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
+                >
+                    <div className='flex items-center'>
+                        <span className="mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
+                        </span>
+                        Request Package
                     </div>
                 </button>
                 <div className="flex items-center space-x-2">
@@ -226,7 +245,7 @@ const Stock = () => {
 
             <CreateRequest
                 isOpen={isModalOpen}
-                onClose={toggleModal}
+                onClose={toggleRequestItemModal}
                 fetchRequests={fetchRequests}
             />
             <StockOutApproval
