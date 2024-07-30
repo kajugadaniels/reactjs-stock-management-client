@@ -14,7 +14,9 @@ export const useProcess = () => {
                 throw new Error('Failed to fetch processes');
             }
             const data = await response.json();
-            setProcesses(data);
+            // Filter processes to include only those with request_from as "Production"
+            const filteredData = data.filter(process => process.request.request_from === 'Production');
+            setProcesses(filteredData);
         } catch (error) {
             setError(error.message);
         } finally {
