@@ -4,11 +4,11 @@ import { useProcess } from '../hooks';
 
 const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
-    const [selectedProcessId, setSelectedProcessId] = useState(null);
+    const [selectedProcess, setSelectedProcess] = useState(null);
     const { processes, loading, error } = useProcess();
 
-    const toggleFinishedCreateModal = (processId) => {
-        setSelectedProcessId(processId);
+    const toggleFinishedCreateModal = (process) => {
+        setSelectedProcess(process);
         setIsFinishedModalOpen(!isFinishedModalOpen);
     };
 
@@ -82,7 +82,7 @@ const Process = () => {
                                 <td className="px-2 py-4 space-x-2 md:px-6">
                                     <button
                                         className={`px-4 py-2 text-white rounded ${process.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                                        onClick={() => toggleFinishedCreateModal(process.id)}
+                                        onClick={() => toggleFinishedCreateModal(process)}
                                         disabled={process.status === 'Finished'}
                                     >
                                         {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
@@ -93,7 +93,7 @@ const Process = () => {
                     </tbody>
                 </table>
             </div>
-            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} stockOutId={selectedProcessId} />
+            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} process={selectedProcess} />
         </div>
     );
 };

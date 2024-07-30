@@ -1,19 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { useFinishedProducts } from '../../hooks';
 
-const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
+const FinishedCreate = ({ isOpen, onClose, process }) => {
     const [itemQty, setItemQty] = useState('');
     const [brandQty, setBrandQty] = useState('');
     const [dechetQty, setDechetQty] = useState('');
     const [comment, setComment] = useState('');
     const { addFinishedProduct, loading, error } = useFinishedProducts();
 
+    useEffect(() => {
+        if (!isOpen) {
+            setItemQty('');
+            setBrandQty('');
+            setDechetQty('');
+            setComment('');
+        }
+    }, [isOpen]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const totalInput = parseInt(itemQty) + parseInt(brandQty) + parseInt(dechetQty);
+        const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
+
+        if (totalInput > totalQty) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Total quantity should not exceed ${totalQty}. Please enter valid data.`,
+            });
+            return;
+        }
+
         try {
             await addFinishedProduct({
-                stock_out_id: stockOutId, // Use the passed stock_out_id
+                stock_out_id: process.id,
                 item_qty: itemQty,
                 brand_qty: brandQty,
                 dechet_qty: dechetQty,
@@ -40,6 +61,8 @@ const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
 
     if (!isOpen) return null;
 
+    const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="max-w-md p-10 mx-auto bg-white rounded-md shadow-md">
@@ -48,6 +71,7 @@ const FinishedCreate = ({ isOpen, onClose, stockOutId }) => {
                 {error && <p className="text-red-500">{error}</p>}
                 <form className='w-96' onSubmit={handleSubmit}>
                     <div className="mb-4">
+                        <label className="block mb-2 font-medium text-zinc-700">Total Quantity: {totalQty}</label>
                         <label className="block mb-2 font-medium text-zinc-700">Item Quantity</label>
                         <input 
                             type="number" 
