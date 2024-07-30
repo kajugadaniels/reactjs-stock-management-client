@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { useStockOut } from '../../hooks';
 
 const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
-    const { checkAvailability, approveStockOut, loading, error, isAvailable, availableQuantities, setIsAvailable } = useStockOut();
     const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [isAvailable, setIsAvailable] = useState(false);
+    const [availableQuantities, setAvailableQuantities] = useState({});
 
     useEffect(() => {
         if (isOpen) {
@@ -26,6 +28,31 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         }
     };
 
+    const checkAvailability = async (items) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const availability = {};
+            for (const item of items) {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${item.id}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch stock details');
+                }
+                const stockIn = await response.json();
+                availability[item.id] = stockIn.quantity;
+            }
+            setAvailableQuantities(availability);
+            const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
+            setIsAvailable(allAvailable);
+        } catch (error) {
+            setError(error.message);
+            setIsAvailable(false);
+            setAvailableQuantities({});
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleQuantityChange = (event, index) => {
         const newQuantity = parseInt(event.target.value, 10);
         const updatedItems = [...items];
@@ -35,8 +62,27 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     };
 
     const handleApprove = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            await approveStockOut(requestId, items);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-outs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    request_id: requestId,
+                    items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
+                    date: new Date().toISOString().split('T')[0],
+                    status: 'Approved',
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Validation Error');
+            }
+
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -45,12 +91,15 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
             onClose();
             fetchRequests();
         } catch (error) {
+            setError(error.message);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: error.message || 'Failed to approve stock out',
             });
             console.error('Error approving stock out:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -70,7 +119,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                     />
                 </div>
                 {items.map((item, index) => (
-                    <div key={item.item_id} className="mb-4">
+                    <div key={item.id} className="mb-4">
                         <label className="block mb-2 text-sm font-medium text-gray-600">
                             {item.item.name} - Supplier: {item.supplier.name}
                         </label>
@@ -80,8 +129,8 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                             onChange={(event) => handleQuantityChange(event, index)}
                             className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
                         />
-                        <span className={`text-sm ${availableQuantities[item.item_id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
-                            {availableQuantities[item.item_id] >= item.pivot.quantity ? 'Available' : `Not Available, only ${availableQuantities[item.item_id]} available`}
+                        <span className={`text-sm ${availableQuantities[item.id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
+                            {availableQuantities[item.id] >= item.pivot.quantity ? 'Available' : `Not Available, only ${availableQuantities[item.id]} available`}
                         </span>
                     </div>
                 ))}

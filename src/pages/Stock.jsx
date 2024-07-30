@@ -85,7 +85,7 @@ const Stock = () => {
                     </div>
                 </Link>
                 <Link to='/StockOut'>
-                    <div className="p-2 text-white bg-purple-500 rounded-lg w-32">
+                    <div className="w-32 p-2 text-white bg-purple-500 rounded-lg">
                         <div className="flex items-center ">
                             <div>
                                 <div className='flex gap-1'>
@@ -114,14 +114,14 @@ const Stock = () => {
                                 </svg>
                                 <div className="text-xs font-bold">Request</div>
                             </div>
-                            <div className='px-2 py-3 mt-1 bg-white rounded-lg w-24'>
+                            <div className='w-24 px-2 py-3 mt-1 bg-white rounded-lg'>
                                 <div className="text-lg font-bold text-blue-500">12</div>
                                 <div className="pt-1 pr-1 text-xs text-gray-500">12 Today</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="p-2 bg-orange-200 rounded-lg text-zinc-800 w-32">
+                <div className="w-32 p-2 bg-orange-200 rounded-lg text-zinc-800">
                     <div className="flex items-center justify-between">
                         <div>
                             <div className='flex gap-1'>
@@ -179,53 +179,53 @@ const Stock = () => {
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
                     <thead className="bg-gray-200">
                         <tr>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Check</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Req Id</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Item</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Contact Person</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Requester</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request From</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Status</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request For</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Quantity</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Note</th>
-                            <th className="px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium text-left text-gray-700 border-b border-gray-300">Actions</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Check</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Req Id</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Item</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Contact Person</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Requester</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Request From</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Status</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Request For</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Quantity</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Note</th>
+                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {requests.length > 0 ? (
                             requests.map((request) => (
                                 <tr key={request.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
-                                    <td className="px-2 sm:px-4 py-4 border-b border-gray-300"><input type="checkbox" /></td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.id}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">
+                                    <td className="px-2 py-4 border-b border-gray-300 sm:px-4"><input type="checkbox" /></td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.id}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
                                         {request.items.map(item => item.item?.name).join(', ') || 'Unknown Item'}
                                     </td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.contact_person?.name || 'Unknown Person'}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.requester_name}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.request_from}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.contact_person?.name || 'Unknown Person'}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.requester_name}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_from}</td>
                                     <td className={`px-2 sm:px-4 py-4 text-xs sm:text-sm text-white border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600' : 'bg-green-600'}`}>
                                         {request.status}
                                     </td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.request_for?.name || 'Unknown Item'}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.quantity}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">{request.note}</td>
-                                    <td className="px-2 sm:px-4 py-4 text-xs sm:text-sm text-gray-600 border-b border-gray-300">
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_for?.name || 'Unknown Item'}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.quantity}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.note}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
                                         <button
-                                            className="px-2 sm:px-3 py-1 mr-2 text-xs sm:text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="px-2 py-1 mr-2 text-xs text-white bg-blue-600 rounded-lg sm:px-3 sm:text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             onClick={() => openDetailsModal(request.id)}
                                         >
                                             View Details
                                         </button>
                                         <button
-                                            className="px-2 sm:px-3 py-1 mr-2 text-xs sm:text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            className="px-2 py-1 mr-2 text-xs text-white bg-red-600 rounded-lg sm:px-3 sm:text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                                             onClick={() => handleDelete(request.id)}
                                         >
                                             Delete
                                         </button>
                                         {request.status === 'Pending' && (
                                             <button
-                                                className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                                className="px-2 py-1 text-xs text-white bg-green-600 rounded-lg sm:px-3 sm:text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                                                 onClick={() => openStockOutModal(request.id)}
                                             >
                                                 Approve Stock Out
