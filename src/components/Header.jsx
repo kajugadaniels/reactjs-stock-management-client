@@ -20,7 +20,7 @@ const Header = () => {
             </div>
 
             <ul className="hidden md:flex items-center ml-6 space-x-6">
-                {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-product', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                     <li key={index}>
                         <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`}>
                             <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -49,7 +49,7 @@ const Header = () => {
 
             {isMenuOpen && (
                 <ul className="absolute right-0 top-16 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
-                    {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                    {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-product', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                         <li key={index}>
                             <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
                                 <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -77,6 +77,8 @@ const getIconForPath = (path) => {
             return "bi:layers";
         case '/process':
             return "fa-solid:cogs";
+        case '/finished-product':
+            return "ri:product-hunt-fill";
         case '/product-stock-in':
             return "ri:product-hunt-line";
         case '/product-stock-out':
@@ -100,6 +102,8 @@ const getLabelForPath = (path) => {
             return "Inventory";
         case '/process':
             return "Process";
+        case '/finished-product':
+            return "finished product";
         case '/product-stock-in':
             return "Product Stock In";
         case '/product-stock-out':
