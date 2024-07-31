@@ -94,14 +94,14 @@ const StockInCreate = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="p-6 bg-white rounded-md shadow-md">
+            <div className="w-full max-w-4xl p-8 bg-white rounded-md shadow-md">
                 <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
                     Close
                 </button>
-                <h2 className="mb-4 text-xl font-semibold">Create Stock In</h2>
-                <form onSubmit={handleSubmit} className="p-10">
-                    <div className="flex gap-10">
-                        <div className="mb-4">
+                <h2 className="mb-4 text-2xl font-semibold">Create Stock In</h2>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex gap-6">
+                        <div className="w-2/5">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier_id">
                                 Supplier
                             </label>
@@ -110,7 +110,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="supplier_id"
                                 value={formData.supplier_id}
                                 onChange={handleSupplierChange}
-                                className="p-3 border border-gray-300 rounded w-52"
+                                className="w-full p-3 border border-gray-300 rounded"
                                 required
                             >
                                 <option value="">Select Supplier</option>
@@ -121,7 +121,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 ))}
                             </select>
                         </div>
-                        <div className="mb-4">
+                        <div className="w-3/5">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
                                 Item
                             </label>
@@ -130,62 +130,64 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="item_id"
                                 value={formData.item_id}
                                 onChange={handleInputChange}
-                                className="p-3 border border-gray-300 rounded w-52"
+                                className="w-full p-3 border border-gray-300 rounded"
                                 required
                                 disabled={!formData.supplier_id || loading}
                             >
                                 <option value="">Select Item</option>
                                 {items.map((item) => (
                                     <option key={item.id} value={item.id}>
-                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'}
+                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
-                            Quantity
-                        </label>
-                        <input
-                            type="number"
-                            id="quantity"
-                            name="quantity"
-                            value={formData.quantity}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                        />
+                    <div className="flex gap-6">
+                        <div className="w-1/3">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
+                                Quantity
+                            </label>
+                            <input
+                                type="number"
+                                id="quantity"
+                                name="quantity"
+                                value={formData.quantity}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+                        <div className="w-1/3">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
+                                Plate Number
+                            </label>
+                            <input
+                                type="text"
+                                id="plate_number"
+                                name="plate_number"
+                                value={formData.plate_number}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+                        <div className="w-1/3">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="batch_number">
+                                Batch Number
+                            </label>
+                            <input
+                                type="text"
+                                id="batch_number"
+                                name="batch_number"
+                                value={formData.batch_number}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border border-gray-300 rounded"
+                            />
+                        </div>
                     </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
-                            Plate Number
-                        </label>
-                        <input
-                            type="text"
-                            id="plate_number"
-                            name="plate_number"
-                            value={formData.plate_number}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="batch_number">
-                            Batch Number
-                        </label>
-                        <input
-                            type="text"
-                            id="batch_number"
-                            name="batch_number"
-                            value={formData.batch_number}
-                            onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
-                        />
-                    </div>
-                    <div className="flex gap-10">
-                        <div className="mb-4">
+                    <div className="flex gap-6">
+                        <div className="w-1/2">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
                                 Date
                             </label>
@@ -195,11 +197,11 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="date"
                                 value={formData.date}
                                 onChange={handleInputChange}
-                                className="p-2 border border-gray-300 rounded w-52"
+                                className="w-full p-2 border border-gray-300 rounded"
                                 required
                             />
                         </div>
-                        <div className="mb-4">
+                        <div className="w-1/2">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
                                 Registered By
                             </label>
@@ -208,7 +210,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="registered_by"
                                 value={formData.registered_by}
                                 onChange={handleInputChange}
-                                className="p-3 border border-gray-300 rounded w-52"
+                                className="w-full p-3 border border-gray-300 rounded"
                                 required
                             >
                                 <option value="">Select Employee</option>
@@ -220,7 +222,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
-                    <div className="mb-4">
+                    <div className="flex-1">
                         <label className="block mb-2 text-sm font-bold text-gray-700">
                             Loading Payment Status
                         </label>
@@ -233,7 +235,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             className="w-4 h-4"
                         /> Paid
                     </div>
-                    <div className="mb-4">
+                    <div className="flex-1">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
                             Comment
                         </label>

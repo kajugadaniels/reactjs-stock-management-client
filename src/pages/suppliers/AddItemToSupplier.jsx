@@ -52,7 +52,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                             <option value="">Select an item</option>
                             {items.map((item) => (
                                 <option key={item.id} value={item.id}>
-                                    {`${item.name} - Category: ${item.category_name}, Type: ${item.type_name}`}
+                                    {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
                                 </option>
                             ))}
                         </select>
