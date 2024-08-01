@@ -17,10 +17,12 @@ const useRequests = () => {
     const [stockIns, setStockIns] = useState([]);
     const [finishedItems, setFinishedItems] = useState([]);
     const [rawMaterialItems, setRawMaterialItems] = useState([]);
+    const [packagesItems, setPackagesItems] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [stockInsError, setStockInsError] = useState(null);
     const [finishedItemsError, setFinishedItemsError] = useState(null);
     const [rawMaterialItemsError, setRawMaterialItemsError] = useState(null);
+    const [packagesItemsError, setPackagesItemsError] = useState(null);
     const [employeesError, setEmployeesError] = useState(null);
 
     const fetchRequests = async () => {
@@ -91,6 +93,20 @@ const useRequests = () => {
         }
     };
 
+    const fetchPackagesItems = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/package-items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch packages');
+            }
+            const data = await response.json();
+            setPackagesItems(data.filter(item => item.quantity > 0));
+        } catch (error) {
+            setPackagesItemsError(error.message);
+            console.error('Error fetching packages:', error);
+        }
+    };
+
     const fetchEmployees = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
@@ -123,6 +139,7 @@ const useRequests = () => {
         fetchStockIns();
         fetchFinishedItems();
         fetchRawMaterialItems();
+        fetchPackagesItems();
         fetchEmployees();
     }, []);
 
@@ -146,15 +163,19 @@ const useRequests = () => {
                 body: JSON.stringify(requestData)
             });
     
+            const data = await response.json();
+    
             if (!response.ok) {
-                const errorData = await response.json();
-                setErrors(errorData.errors || {});
-                throw new Error(errorData.message || 'Validation Error');
+                if (response.status === 400 && data.errors) {
+                    setErrors(data.errors);
+                    throw new Error('Validation Error');
+                } else {
+                    throw new Error(data.message || 'An error occurred');
+                }
             }
     
-            const newRequest = await response.json();
-            setRequests([...requests, newRequest]);
-            return newRequest;
+            setRequests([...requests, data.data]);
+            return data.data;
         } catch (error) {
             console.error('Error creating request:', error);
             throw error;
@@ -191,16 +212,19 @@ const useRequests = () => {
         stockIns,
         finishedItems,
         rawMaterialItems,
+        packagesItems,
         employees,
         stockInsError,
         finishedItemsError,
         rawMaterialItemsError,
+        packagesItemsError,
         employeesError,
         handleDelete,
         fetchRequests,
         fetchStockIns,
         fetchFinishedItems,
         fetchRawMaterialItems,
+        fetchPackagesItems,
         fetchEmployees,
         fetchRequestDetails,
     };
