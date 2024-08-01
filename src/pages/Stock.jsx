@@ -198,7 +198,7 @@ const Stock = () => {
                                     <td className="px-2 py-4 border-b border-gray-300 sm:px-4"><input type="checkbox" /></td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.id}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
-                                        {request.items.map(item => item.item?.name).join(', ') || 'Unknown Item'}
+                                        {request.items.map(item => item.item?.name).join(', ') || 'Unknown Item'} {request.item?.capacity}
                                     </td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.contact_person?.name || 'Unknown Person'}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.requester_name}</td>

@@ -58,7 +58,7 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                             <tbody className="divide-y divide-gray-200">
                                 {details.items.map(item => (
                                     <tr key={item.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.name}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.name} {item.item.capacity || ''}{item.item.unit || ''}</td>
                                         <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
                                         <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier.name} ({item.supplier.contact})</td>
                                     </tr>
