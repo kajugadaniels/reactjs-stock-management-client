@@ -57,38 +57,40 @@ const Process = () => {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {processes.map((process) => (
-                            <tr key={process.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
-                                <td className="px-2 py-4 md:px-6">
-                                    <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
-                                </td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.id}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">
-                                    {process.request.items.map(item => (
-                                        <div key={item.id}>
-                                            {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
-                                        </div>
-                                    ))}
-                                </td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.request_for.name}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.items[0]?.item.category.name}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">
-                                    {process.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}
-                                </td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">
-                                    <span className={`px-2 py-1 rounded ${process.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
-                                        {process.status}
-                                    </span>
-                                </td>
-                                <td className="px-2 py-4 space-x-2 md:px-6">
-                                    <button
-                                        className={`px-4 py-2 text-white rounded ${process.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                                        onClick={() => toggleFinishedCreateModal(process)}
-                                        disabled={process.status === 'Finished'}
-                                    >
-                                        {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
-                                    </button>
-                                </td>
-                            </tr>
+                            process.request.items.some(item => item.item.category.name !== 'Packages') && (
+                                <tr key={process.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
+                                    <td className="px-2 py-4 md:px-6">
+                                        <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
+                                    </td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">{process.id}</td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">
+                                        {process.request.items.filter(item => item.item.category.name !== 'Packages').map(item => (
+                                            <div key={item.id}>
+                                                {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
+                                            </div>
+                                        ))}
+                                    </td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.request_for.name}</td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">{process.request.items[0]?.item.category.name}</td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">
+                                        {process.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}
+                                    </td>
+                                    <td className="px-2 py-4 text-gray-700 md:px-6">
+                                        <span className={`px-2 py-1 rounded ${process.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
+                                            {process.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-4 space-x-2 md:px-6">
+                                        <button
+                                            className={`px-4 py-2 text-white rounded ${process.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
+                                            onClick={() => toggleFinishedCreateModal(process)}
+                                            disabled={process.status === 'Finished'}
+                                        >
+                                            {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
                         ))}
                     </tbody>
                 </table>
