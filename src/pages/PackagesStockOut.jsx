@@ -39,7 +39,7 @@ const PackagesStockOut = () => {
                                 <td className="px-2 py-4 text-gray-700 md:px-6">
                                     {process.request.items.map(item => (
                                         <div key={item.id}>
-                                            {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
+                                            {item.item.name} {item.item.capacity}{item.item.unit} - {item.item.type.name} - {item.pivot.quantity}
                                         </div>
                                     ))}
                                 </td>
