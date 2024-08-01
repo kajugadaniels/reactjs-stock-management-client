@@ -1,165 +1,183 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useProductStockIn } from '../../hooks';
 
-const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
-    const [itemName, setItemName] = useState('');
-    const [quantity, setQuantity] = useState('');
-    const [itemQty, setItemQty] = useState('');
-    const [packageType, setPackageType] = useState('');
-    const [numberOfPackages, setNumberOfPackages] = useState(0);
-    const [status, setStatus] = useState('');
-    const [comment, setComment] = useState('');
-    const { addProductStockIn, fetchFinishedProductById, loading, error } = useProductStockIn();
+const PackagingCreate = ({ isOpen, onClose, finishedProductId, itemQtyProduced, addPackagingRequest }) => {
+    const [selectedPackagings, setSelectedPackagings] = useState([{ stock_in_id: '', quantity: '' }]);
+    const [packagingOptions, setPackagingOptions] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (isOpen && finishedProductId) {
-            fetchFinishedProductDetails();
+        if (isOpen) {
+            fetchPackagingOptions();
         }
-    }, [isOpen, finishedProductId]);
+    }, [isOpen]);
 
-    const fetchFinishedProductDetails = async () => {
+    const fetchPackagingOptions = async () => {
+        setLoading(true);
+        setError(null);
+
         try {
-            const data = await fetchFinishedProductById(finishedProductId);
-            setItemName(data.stock_out.request.item.item.name);
-            setItemQty(data.item_qty);
-            setQuantity(data.item_qty); // Ensure quantity is set for further calculations
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/package-items`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch packaging items');
+            }
+            const data = await response.json();
+            setPackagingOptions(data);
         } catch (error) {
-            console.error('Error fetching finished product details:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (packageType && quantity) {
-            const pkgQty = parseInt(quantity);
-            const pkgType = parseInt(packageType);
-            setNumberOfPackages(Math.floor(pkgQty / pkgType));
-        }
-    }, [packageType, quantity]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await addProductStockIn({
-                finished_product_id: finishedProductId,
-                item_name: itemName,
-                item_qty: itemQty,
-                package_type: packageType,
-                quantity: numberOfPackages,
-                status,
-                comment,
-            });
+        const totalQuantity = selectedPackagings.reduce((sum, pkg) => sum + (parseInt(pkg.quantity, 10) || 0), 0);
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Product stock in added successfully!',
-            });
-
-            onClose(); // Close the modal after successful submission
-        } catch (error) {
-            console.error('Error creating product stock in:', error);
-
+        if (totalQuantity > itemQtyProduced) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to add product stock in. Please try again.',
+                text: `Total quantity exceeds available quantity (${itemQtyProduced} KG). Please enter valid data.`,
+            });
+            return;
+        }
+
+        try {
+            const packageRequests = selectedPackagings.filter((pkg) => pkg.stock_in_id && pkg.quantity);
+            await addPackagingRequest(finishedProductId, packageRequests);
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Packaging request created successfully!',
+            });
+            onClose();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to create packaging request. Please try again.',
             });
         }
     };
+
+    const handlePackagingChange = (e, index) => {
+        const { name, value } = e.target;
+        const updatedPackagings = [...selectedPackagings];
+        updatedPackagings[index][name] = name === 'quantity' ? parseInt(value, 10) || '' : value;
+        setSelectedPackagings(updatedPackagings);
+    };
+
+    const addPackagingField = () => {
+        setSelectedPackagings([...selectedPackagings, { stock_in_id: '', quantity: '' }]);
+    };
+
+    const removePackagingField = (index) => {
+        const updatedPackagings = selectedPackagings.filter((_, i) => i !== index);
+        setSelectedPackagings(updatedPackagings);
+    };
+
+    const calculatePackagingAdvice = () => {
+        const qty5kg = Math.floor(itemQtyProduced / 5);
+        const remainingAfter5kg = itemQtyProduced % 5;
+
+        const qty10kg = Math.floor(remainingAfter5kg / 10);
+        const remainingAfter10kg = remainingAfter5kg % 10;
+
+        const qty25kg = Math.floor(remainingAfter10kg / 25);
+        const remainingAfter25kg = remainingAfter10kg % 25;
+
+        return {
+            qty5kg,
+            qty10kg,
+            qty25kg,
+            remainingAfter25kg,
+        };
+    };
+
+    const packagingAdvice = calculatePackagingAdvice();
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="max-w-md p-10 mx-auto bg-white rounded-md shadow-md">
-                <h2 className="text-2xl font-semibold text-zinc-800">Packaging</h2>
-                <p className="mb-4 text-zinc-600">Packaging Process Record</p>
-
-                <form className="w-96" onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Finished Product ID</label>
-                        <input
-                            type="text"
-                            placeholder="Input Finished Product ID"
-                            value={finishedProductId}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            readOnly
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Item Name</label>
-                        <input
-                            type="text"
-                            placeholder="Item Name"
-                            value={itemName}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            readOnly
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Quantity</label>
-                        <input
-                            type="text"
-                            placeholder="Input quantity"
-                            value={itemQty}
-                            onChange={(e) => setItemQty(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            readOnly
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Package Type</label>
-                        <select
-                            value={packageType}
-                            onChange={(e) => setPackageType(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            required
+            <div className="w-full max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-lg">
+                <h2 className="mb-6 text-3xl font-semibold text-gray-800">Packaging Request Registration</h2>
+                {error && <p className="text-red-500">{error}</p>}
+                <div className="mb-6">
+                    <p className="text-lg text-gray-700">
+                        Based on the {itemQtyProduced} KG produced, you will need approximately:
+                    </p>
+                    <ul className="list-disc list-inside">
+                        <li>{packagingAdvice.qty5kg} packages of 5 KG</li>
+                        <li>{packagingAdvice.qty10kg} packages of 10 KG</li>
+                        <li>{packagingAdvice.qty25kg} packages of 25 KG</li>
+                        {packagingAdvice.remainingAfter25kg > 0 && (
+                            <li>
+                                {packagingAdvice.remainingAfter25kg} KG remaining which could be packed with smaller packages
+                            </li>
+                        )}
+                    </ul>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="mb-6">
+                        <label className="block mb-2 text-sm font-medium text-gray-600">Packagings</label>
+                        {selectedPackagings.map((packaging, index) => (
+                            <div key={index} className="flex mb-2 space-x-4">
+                                <select
+                                    name="stock_in_id"
+                                    value={packaging.stock_in_id}
+                                    onChange={(e) => handlePackagingChange(e, index)}
+                                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    required
+                                >
+                                    <option value="">Select a packaging</option>
+                                    {packagingOptions.map((option) => (
+                                        <option key={option.id} value={option.id}>
+                                            {option.name} - {option.capacity} {option.unit} - {option.quantity} KG available
+                                        </option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    value={packaging.quantity}
+                                    onChange={(e) => handlePackagingChange(e, index)}
+                                    placeholder="Quantity"
+                                    className="w-1/4 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removePackagingField(index)}
+                                    className="px-4 py-2 text-white bg-red-500 rounded-md"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={addPackagingField}
+                            className="px-4 py-2 mt-4 text-white bg-[#00BDD6] rounded-md"
                         >
-                            <option value="">Select package type</option>
-                            <option value="5">5kg</option>
-                            <option value="10">10kg</option>
-                            <option value="25">25kg</option>
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Number of Packages</label>
-                        <input
-                            type="text"
-                            placeholder="Number of packages"
-                            value={numberOfPackages}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            readOnly
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Status</label>
-                        <select
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                            required
-                        >
-                            <option value="">Select status</option>
-                            <option value="On">On</option>
-                            <option value="Off">Off</option>
-                        </select>
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Comment</label>
-                        <textarea
-                            placeholder="Input comment"
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        />
+                            Add Packaging
+                        </button>
                     </div>
                     <div className="flex justify-end space-x-4">
-                        <button type="button" className="text-zinc-600" onClick={onClose}>
+                        <button
+                            type="button"
+                            className="px-4 py-2 text-gray-500 border border-gray-300 rounded-md hover:bg-gray-100"
+                            onClick={onClose}
+                        >
                             Cancel
                         </button>
-                        <button type="submit" className="bg-[#00BDD6] text-white px-4 py-2 rounded-md hover:bg-green-600">
-                            {loading ? 'Saving...' : 'Save'}
+                        <button
+                            type="submit"
+                            className="px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-[#00A8BB]"
+                        >
+                            Save
                         </button>
                     </div>
                 </form>
@@ -168,4 +186,4 @@ const PackegingCreate = ({ isOpen, onClose, finishedProductId }) => {
     );
 };
 
-export default PackegingCreate;
+export default PackagingCreate;
