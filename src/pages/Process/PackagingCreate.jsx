@@ -7,6 +7,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     const [remainingQty, setRemainingQty] = useState(finishedProduct.item_qty);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [validationErrors, setValidationErrors] = useState([]);
 
     useEffect(() => {
         if (finishedProduct) {
@@ -18,7 +19,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         const fetchAvailablePackages = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/package-stock-outs`);
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/unmerged-package-stock-outs`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch available packages');
                 }
@@ -40,14 +41,16 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         updatedPackages[index][name] = value;
         setSelectedPackages(updatedPackages);
         calculateRemainingQty(updatedPackages);
+        validateQuantity(updatedPackages, index);
     };
 
     const handleCapacityChange = (e, index) => {
         const { value } = e.target;
         const updatedPackages = [...selectedPackages];
-        updatedPackages[index].capacity = value;
+        updatedPackages[index].capacity = parseInt(value, 10);
         setSelectedPackages(updatedPackages);
         calculateRemainingQty(updatedPackages);
+        validateQuantity(updatedPackages, index);
     };
 
     const handleQuantityChange = (e, index) => {
@@ -56,6 +59,30 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         updatedPackages[index].quantity = parseInt(value, 10);
         setSelectedPackages(updatedPackages);
         calculateRemainingQty(updatedPackages);
+        validateQuantity(updatedPackages, index);
+    };
+
+    const validateQuantity = (packages, index) => {
+        const packageItem = availablePackages.find(
+            (process) => process.unmergedItems.some((item) => item.item_id === packages[index].package_id)
+        );
+
+        if (packageItem) {
+            const item = packageItem.unmergedItems.find((item) => item.item_id === packages[index].package_id);
+            if (packages[index].quantity > item.quantity) {
+                setValidationErrors((prevErrors) => {
+                    const newErrors = [...prevErrors];
+                    newErrors[index] = `Quantity exceeds available amount (${item.quantity})`;
+                    return newErrors;
+                });
+            } else {
+                setValidationErrors((prevErrors) => {
+                    const newErrors = [...prevErrors];
+                    newErrors[index] = '';
+                    return newErrors;
+                });
+            }
+        }
     };
 
     const calculateRemainingQty = (packages) => {
@@ -80,6 +107,15 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                 icon: 'error',
                 title: 'Error',
                 text: 'Total packaging quantity exceeds available item quantity!',
+            });
+            return;
+        }
+
+        if (validationErrors.some((error) => error)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please fix the errors before submitting.',
             });
             return;
         }
@@ -120,7 +156,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     {availablePackages.map((process) =>
                                         process.unmergedItems.map((item) => (
                                             <option key={item.item_id} value={item.item_id}>
-                                                {item.item_name} ({item.capacity}{item.unit}) - Qty: {item.quantity}
+                                                {item.item_name} ({item.capacity}{item.unit}) - Quantity: {item.quantity}
                                             </option>
                                         ))
                                     )}
@@ -133,14 +169,9 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     required
                                 >
                                     <option value="">Select Capacity</option>
-                                    {availablePackages
-                                        .flatMap(process => process.unmergedItems)
-                                        .filter(availablePackage => availablePackage.item_id === pkg.package_id)
-                                        .map(availablePackage => (
-                                            <option key={`${availablePackage.item_id}-${availablePackage.capacity}`} value={availablePackage.capacity}>
-                                                {availablePackage.capacity} {availablePackage.unit}
-                                            </option>
-                                        ))}
+                                    <option value="5">5 KG</option>
+                                    <option value="10">10 KG</option>
+                                    <option value="25">25 KG</option>
                                 </select>
                                 <input
                                     type="number"
@@ -158,6 +189,9 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                 >
                                     Remove
                                 </button>
+                                {validationErrors[index] && (
+                                    <div className="col-span-4 text-red-500">{validationErrors[index]}</div>
+                                )}
                             </div>
                         ))}
 
