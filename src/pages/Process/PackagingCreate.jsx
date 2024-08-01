@@ -1,17 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useProcess } from '../../hooks';
 
 const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
-    const { detailedPackageItems, loading, error } = useProcess();
+    const [availablePackages, setAvailablePackages] = useState([]);
     const [selectedPackages, setSelectedPackages] = useState([]);
     const [remainingQty, setRemainingQty] = useState(finishedProduct.item_qty);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (finishedProduct) {
             setRemainingQty(finishedProduct.item_qty);
         }
     }, [finishedProduct]);
+
+    useEffect(() => {
+        const fetchAvailablePackages = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/package-stock-outs`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch available packages');
+                }
+                const data = await response.json();
+                setAvailablePackages(data);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAvailablePackages();
+    }, []);
 
     const handlePackageChange = (e, index) => {
         const { name, value } = e.target;
@@ -96,11 +117,13 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     required
                                 >
                                     <option value="">Select Package</option>
-                                    {detailedPackageItems.map((availablePackage) => (
-                                        <option key={availablePackage.id} value={availablePackage.id}>
-                                            {availablePackage.name} {availablePackage.capacity}{availablePackage.unit}
-                                        </option>
-                                    ))}
+                                    {availablePackages.map((process) =>
+                                        process.unmergedItems.map((item) => (
+                                            <option key={item.item_id} value={item.item_id}>
+                                                {item.item_name} ({item.capacity}{item.unit}) - Qty: {item.quantity}
+                                            </option>
+                                        ))
+                                    )}
                                 </select>
                                 <select
                                     name="capacity"
@@ -110,9 +133,14 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     required
                                 >
                                     <option value="">Select Capacity</option>
-                                    <option value="5">5 KG</option>
-                                    <option value="10">10 KG</option>
-                                    <option value="25">25 KG</option>
+                                    {availablePackages
+                                        .flatMap(process => process.unmergedItems)
+                                        .filter(availablePackage => availablePackage.item_id === pkg.package_id)
+                                        .map(availablePackage => (
+                                            <option key={`${availablePackage.item_id}-${availablePackage.capacity}`} value={availablePackage.capacity}>
+                                                {availablePackage.capacity} {availablePackage.unit}
+                                            </option>
+                                        ))}
                                 </select>
                                 <input
                                     type="number"
