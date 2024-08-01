@@ -1,22 +1,36 @@
 import { useState, useEffect } from 'react';
 
-export const useProcess = () => {
+const useProcess = () => {
     const [processes, setProcesses] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [packageProcesses, setPackageProcesses] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const fetchProcesses = async () => {
         setLoading(true);
-        setError(null);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/process/stock-outs`);
             if (!response.ok) {
                 throw new Error('Failed to fetch processes');
             }
             const data = await response.json();
-            // Filter processes to include only those with request_from as "Production"
-            const filteredData = data.filter(process => process.request.request_from === 'Production');
-            setProcesses(filteredData);
+            setProcesses(data);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchPackageProcesses = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/package-stock-outs`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch package processes');
+            }
+            const data = await response.json();
+            setPackageProcesses(data);
         } catch (error) {
             setError(error.message);
         } finally {
@@ -26,11 +40,10 @@ export const useProcess = () => {
 
     useEffect(() => {
         fetchProcesses();
+        fetchPackageProcesses();
     }, []);
 
-    return {
-        processes,
-        loading,
-        error,
-    };
+    return { processes, packageProcesses, loading, error };
 };
+
+export default useProcess;
