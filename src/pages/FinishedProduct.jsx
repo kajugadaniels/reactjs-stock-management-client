@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useFinishedProducts } from '../hooks';
-import PackegingCreate from './Process/PackegingCreate';
+import PackagingCreate from './Process/PackagingCreate';
 
 const FinishedProduct = () => {
     const { finishedProducts, loading, error } = useFinishedProducts();
-    const [isPackegingModalOpen, setIsPackegingModalOpen] = useState(false);
-    const [selectedFinishedProductId, setSelectedFinishedProductId] = useState(null);
+    const [isPackegingModalOpen, setIsPackagingModalOpen] = useState(false);
+    const [selectedFinishedProduct, setSelectedFinishedProduct] = useState(null);
 
-    const togglePackegingCreateModal = (finishedProductId) => {
-        setSelectedFinishedProductId(finishedProductId);
-        setIsPackegingModalOpen(!isPackegingModalOpen);
+    const togglePackagingCreateModal = (finishedProduct) => {
+        setSelectedFinishedProduct(finishedProduct);
+        setIsPackagingModalOpen(!isPackegingModalOpen);
     };
 
     if (loading) {
@@ -53,7 +53,7 @@ const FinishedProduct = () => {
                                     <td className="px-6 py-4 space-x-2">
                                         <button
                                             className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-                                            onClick={() => togglePackegingCreateModal(product.id)}
+                                            onClick={() => togglePackagingCreateModal(product)}
                                         >
                                             Packaging
                                         </button>
@@ -68,7 +68,13 @@ const FinishedProduct = () => {
                     </tbody>
                 </table>
             </div>
-            <PackegingCreate isOpen={isPackegingModalOpen} onClose={togglePackegingCreateModal} finishedProductId={selectedFinishedProductId} />
+            {selectedFinishedProduct && (
+                <PackagingCreate
+                    isOpen={isPackegingModalOpen}
+                    onClose={() => setIsPackagingModalOpen(false)}
+                    finishedProduct={selectedFinishedProduct}
+                />
+            )}
         </div>
     );
 };
