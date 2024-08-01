@@ -198,15 +198,19 @@ const Stock = () => {
                                     <td className="px-2 py-4 border-b border-gray-300 sm:px-4"><input type="checkbox" /></td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.id}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
-                                        {request.items.map(item => item.item?.name).join(', ') || 'Unknown Item'} {request.item?.capacity}
+                                        {request.items.map(item => (
+                                            <div key={item.id}>
+                                                <span>{item.item?.name || ''}</span> <span>{item.item?.capacity || ''}{item.item?.unit || ''}</span>
+                                            </div>
+                                        ))}
                                     </td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.contact_person?.name || 'Unknown Person'}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.contact_person?.name || ''}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.requester_name}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_from}</td>
                                     <td className={`px-2 sm:px-4 py-4 text-xs sm:text-sm text-white border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600' : 'bg-green-600'}`}>
                                         {request.status}
                                     </td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_for?.name || 'Unknown Item'}</td>
+                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_for?.name || ''}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.quantity}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.note}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
