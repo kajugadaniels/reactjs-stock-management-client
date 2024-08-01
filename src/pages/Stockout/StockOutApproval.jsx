@@ -74,7 +74,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                     request_id: requestId,
                     items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
                     date: new Date().toISOString().split('T')[0],
-                    status: 'Approved',
+                    status: 'Pending',
                 }),
             });
 
@@ -86,7 +86,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
-                text: 'Stock out approved successfully!',
+                text: 'Stock out pending successfully!',
             });
             onClose();
             fetchRequests();
