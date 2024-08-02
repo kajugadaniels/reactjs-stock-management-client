@@ -200,7 +200,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                         </button>
 
                         <div className="mt-4">
-                            <p className="text-gray-700">Remaining Quantity: {remainingQty} KG</p>
+                            <p className="text-gray-700">Remaining Quantity: {remainingQty < 0 ? "Not Available" : `${remainingQty} KG`}</p>
                         </div>
 
                         <div className="flex justify-end space-x-4">
