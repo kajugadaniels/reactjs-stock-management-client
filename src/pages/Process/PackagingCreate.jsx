@@ -100,7 +100,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         calculateRemainingQty(updatedPackages);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (remainingQty < 0) {
             Swal.fire({
@@ -120,15 +120,55 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             return;
         }
 
-        // Submit the selected packages
-        console.log('Selected Packages:', selectedPackages);
+        try {
+            const createProductStockIn = async (packageData) => {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(packageData),
+                });
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Packages selected successfully!',
-        });
-        onClose();
+                if (!response.ok) {
+                    throw new Error('Failed to create product stock in');
+                }
+
+                return response.json();
+            };
+
+            const packageCreationPromises = selectedPackages.map(pkg => {
+                const packageItem = availablePackages.find(
+                    (process) => process.unmergedItems.some((item) => item.item_id === pkg.package_id)
+                );
+                const item = packageItem ? packageItem.unmergedItems.find((item) => item.item_id === pkg.package_id) : null;
+
+                return createProductStockIn({
+                    finished_product_id: finishedProduct.id,
+                    item_name: finishedProduct.stock_out.request.request_for.name,
+                    item_qty: pkg.capacity * pkg.quantity,
+                    package_type: `${item ? pkg.item_name : 'Unknown'} ${pkg.capacity}KG`,
+                    quantity: pkg.quantity,
+                    status: 'False',
+                    comment: ''
+                });
+            });
+
+            await Promise.all(packageCreationPromises);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Packages selected and stored successfully!',
+            });
+            onClose();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message,
+            });
+        }
     };
 
     if (!isOpen) return null;
@@ -205,7 +245,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                         </button>
 
                         <div className="mt-4">
-                            <p className="text-gray-700">Remaining Quantity: {remainingQty} KG</p>
+                            <p className="text-gray-700">Remaining Quantity: {remainingQty < 0 ? "Not Available" : `${remainingQty} KG`}</p>
                         </div>
 
                         <hr />

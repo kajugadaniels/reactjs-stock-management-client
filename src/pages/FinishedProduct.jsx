@@ -4,12 +4,12 @@ import PackagingCreate from './Process/PackagingCreate';
 
 const FinishedProduct = () => {
     const { finishedProducts, loading, error } = useFinishedProducts();
-    const [isPackegingModalOpen, setIsPackagingModalOpen] = useState(false);
+    const [isPackagingModalOpen, setIsPackagingModalOpen] = useState(false);
     const [selectedFinishedProduct, setSelectedFinishedProduct] = useState(null);
 
     const togglePackagingCreateModal = (finishedProduct) => {
         setSelectedFinishedProduct(finishedProduct);
-        setIsPackagingModalOpen(!isPackegingModalOpen);
+        setIsPackagingModalOpen(!isPackagingModalOpen);
     };
 
     if (loading) {
@@ -70,7 +70,7 @@ const FinishedProduct = () => {
             </div>
             {selectedFinishedProduct && (
                 <PackagingCreate
-                    isOpen={isPackegingModalOpen}
+                    isOpen={isPackagingModalOpen}
                     onClose={() => setIsPackagingModalOpen(false)}
                     finishedProduct={selectedFinishedProduct}
                 />
