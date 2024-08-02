@@ -121,25 +121,40 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         }
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            const createProductStockIn = async (packageData) => {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(packageData),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create product stock in');
+                }
+
+                return response.json();
+            };
+
+            const packageCreationPromises = selectedPackages.map(pkg => {
+                const packageItem = availablePackages.find(
+                    (process) => process.unmergedItems.some((item) => item.item_id === pkg.package_id)
+                );
+                const item = packageItem ? packageItem.unmergedItems.find((item) => item.item_id === pkg.package_id) : null;
+
+                return createProductStockIn({
                     finished_product_id: finishedProduct.id,
-                    item_name: finishedProduct.stock_out.request.items.map(item => item.item.name).join(', '),
-                    item_qty: selectedPackages.reduce((sum, pkg) => sum + (pkg.capacity * pkg.quantity), 0),
-                    package_type: selectedPackages.map(pkg => `${pkg.capacity}KG`).join(', '),
-                    quantity: selectedPackages.reduce((sum, pkg) => sum + pkg.quantity, 0),
+                    item_name: finishedProduct.stock_out.request.request_for.name,
+                    item_qty: pkg.capacity * pkg.quantity,
+                    package_type: `${item ? pkg.item_name : 'Unknown'} ${pkg.capacity}KG`,
+                    quantity: pkg.quantity,
                     status: 'False',
                     comment: ''
-                }),
+                });
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to create product stock in');
-            }
+            await Promise.all(packageCreationPromises);
 
             Swal.fire({
                 icon: 'success',
