@@ -1,61 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export const useProductStockIn = () => {
-    const [finishedProducts, setFinishedProducts] = useState([]);
     const [productStockIns, setProductStockIns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const fetchFinishedProducts = async () => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/finished-products`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch finished products');
-            }
-            const data = await response.json();
-            setFinishedProducts(data);
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchFinishedProductById = async (id) => {
-        try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/finished-products/${id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch finished product');
-            }
-            return await response.json();
-        } catch (error) {
-            setError(error.message);
-            throw error;
-        }
-    };
-
-    const fetchProductStockIns = async () => {
+    const fetchProductStockIns = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`);
             if (!response.ok) {
                 throw new Error('Failed to fetch product stock ins');
             }
             const data = await response.json();
-            const filteredData = data.map(stockIn => ({
-                id: stockIn.id,
-                item_name: stockIn.item_name,
-                package_type: stockIn.package_type,
-                quantity: stockIn.quantity,
-                comment: stockIn.comment,
-                created_at: stockIn.created_at
-            }));
-            setProductStockIns(filteredData);
+            setProductStockIns(data);
         } catch (error) {
             setError(error.message);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchProductStockIns();
+    }, [fetchProductStockIns]);
 
     const addProductStockIn = async (productStockIn) => {
         try {
@@ -71,24 +39,18 @@ export const useProductStockIn = () => {
                 throw new Error('Failed to create product stock in');
             }
 
-            return await response.json();
+            const newProductStockIn = await response.json();
+            setProductStockIns((prevStockIns) => [...prevStockIns, newProductStockIn]);
         } catch (error) {
             setError(error.message);
             throw error;
         }
     };
 
-    useEffect(() => {
-        fetchFinishedProducts();
-        fetchProductStockIns();
-    }, []);
-
     return {
-        finishedProducts,
         productStockIns,
         loading,
         error,
-        fetchFinishedProductById,
         fetchProductStockIns,
         addProductStockIn,
     };
