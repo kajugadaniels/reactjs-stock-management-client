@@ -59,8 +59,9 @@ const ProductStockIn = () => {
                             <th className="px-2 sm:px-6 py-3 border-b">Finished Product</th>
                             <th className="px-2 sm:px-6 py-3 border-b">Package Type</th>
                             <th className="px-2 sm:px-6 py-3 border-b">Quantity</th>
-                            <th className="px-2 sm:px-6 py-3 border-b">Comment</th>
-                            <th className="px-2 sm:px-6 py-3 border-b">Date</th>
+                            <th className="px-2 sm:px-6 py-3 border-b">Total sacks</th>
+                            <th className="px-2 sm:px-6 py-3 border-b">Remaining/Kg</th>
+                            <th className="px-2 sm:px-6 py-3 border-b">Remaining Sacks</th>
                         </tr>
                     </thead>
                     <tbody>
