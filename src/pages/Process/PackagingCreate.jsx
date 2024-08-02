@@ -100,7 +100,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         calculateRemainingQty(updatedPackages);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (remainingQty < 0) {
             Swal.fire({
@@ -120,15 +120,40 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             return;
         }
 
-        // Submit the selected packages
-        console.log('Selected Packages:', selectedPackages);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    finished_product_id: finishedProduct.id,
+                    item_name: finishedProduct.stock_out.request.items.map(item => item.item.name).join(', '),
+                    item_qty: selectedPackages.reduce((sum, pkg) => sum + (pkg.capacity * pkg.quantity), 0),
+                    package_type: selectedPackages.map(pkg => `${pkg.capacity}KG`).join(', '),
+                    quantity: selectedPackages.reduce((sum, pkg) => sum + pkg.quantity, 0),
+                    status: 'False',
+                    comment: ''
+                }),
+            });
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Packages selected successfully!',
-        });
-        onClose();
+            if (!response.ok) {
+                throw new Error('Failed to create product stock in');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Packages selected and stored successfully!',
+            });
+            onClose();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message,
+            });
+        }
     };
 
     if (!isOpen) return null;
