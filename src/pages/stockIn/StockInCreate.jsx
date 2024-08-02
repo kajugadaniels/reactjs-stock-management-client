@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useStockIn } from '../../hooks';
 
@@ -143,6 +143,8 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                     </div>
+
+
                     <div className="flex gap-6">
                         <div className="w-1/3">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
@@ -158,6 +160,8 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 required
                             />
                         </div>
+
+                        
                         <div className="w-1/3">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
                                 Plate Number

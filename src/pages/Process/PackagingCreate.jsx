@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
@@ -161,6 +161,8 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                         ))
                                     )}
                                 </select>
+
+                                
                                 <select
                                     name="capacity"
                                     value={pkg.capacity}
@@ -173,6 +175,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     <option value="10">10 KG</option>
                                     <option value="25">25 KG</option>
                                 </select>
+
                                 <input
                                     type="number"
                                     name="quantity"
@@ -189,9 +192,11 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                 >
                                     Remove
                                 </button>
+
                                 {validationErrors[index] && (
                                     <div className="col-span-4 text-red-500">{validationErrors[index]}</div>
                                 )}
+
                             </div>
                         ))}
 
@@ -201,6 +206,23 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
 
                         <div className="mt-4">
                             <p className="text-gray-700">Remaining Quantity: {remainingQty} KG</p>
+                        </div>
+
+                        <hr />
+
+                        <div className="mt-4">
+                            <p className="text-gray-700">Remaining UnPacked Sacks: 
+                                <hr />
+
+
+                            {availablePackages.map((process) =>
+                                        process.unmergedItems.map((item) => (
+                                            <option key={item.item_id} value={item.item_id}>
+                                                {item.item_name}  Quantity: {item.quantity}
+                                            </option>
+                                        ))
+                                    )}
+                            </p>
                         </div>
 
                         <div className="flex justify-end space-x-4">
