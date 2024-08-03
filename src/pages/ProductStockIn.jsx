@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import ProductStockInCreate from './ProductStockIn/ProductStockInCreate';
+import React, { useEffect, useState } from 'react';
 import { useProductStockIn } from '../hooks';
+import ProductStockInCreate from './ProductStockIn/ProductStockInCreate';
 
 const ProductStockIn = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,11 +63,12 @@ const ProductStockIn = () => {
                             <th className="px-2 py-3 border-b sm:px-6">Date</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {productStockIns.map((stockIn) => (
                             <tr key={stockIn.id} className="transition duration-200 ease-in-out hover:bg-gray-50">
                                 <td className="px-2 py-4 border-b sm:px-6"><input type="checkbox" /></td>
-                                <td className="px-2 py-4 border-b sm:px-6">{stockIn.id}</td>
+                                <td className="px-2 py-4 border-b sm:px-6">Prod-{stockIn.id}</td>
                                 <td className="px-2 py-4 border-b sm:px-6">{stockIn.item_name}</td>
                                 <td className="px-2 py-4 border-b sm:px-6">{stockIn.package_type}</td>
                                 <td className="px-2 py-4 border-b sm:px-6">{stockIn.quantity}</td>
@@ -76,6 +77,7 @@ const ProductStockIn = () => {
                             </tr>
                         ))}
                     </tbody>
+
                 </table>
             </div>
         </div>

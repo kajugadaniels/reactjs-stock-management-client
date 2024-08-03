@@ -166,8 +166,8 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                             {selectedPackages.map((pkg, index) => (
                                 <div key={index} className="grid grid-cols-4 gap-4">
                                     <select
-                                        name="package_id"
-                                        value={pkg.package_id}
+                                        name="finished_product_id"
+                                        value={pkg.finished_product_id}
                                         onChange={(e) => handlePackageChange(e, index)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                                         required
@@ -181,6 +181,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                             ))
                                         )}
                                     </select>
+
                                     <select
                                         name="capacity"
                                         value={pkg.capacity}
