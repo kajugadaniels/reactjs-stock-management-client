@@ -15,21 +15,23 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     }, [finishedProduct]);
 
     const handlePackageChange = (e, index) => {
-        const { name, value } = e.target;
-        const updatedPackages = [...selectedPackages];
-        updatedPackages[index][name] = value;
-        setSelectedPackages(updatedPackages);
-        calculateRemainingQty(updatedPackages);
-        validateQuantity(updatedPackages, index);
-    };
-
-    const handleCapacityChange = (e, index) => {
         const { value } = e.target;
         const updatedPackages = [...selectedPackages];
-        updatedPackages[index].capacity = parseInt(value, 10);
-        setSelectedPackages(updatedPackages);
-        calculateRemainingQty(updatedPackages);
-        validateQuantity(updatedPackages, index);
+        const selectedItem = packageProcesses.flatMap(process => process.unmergedItems).find(item => item.item_id === parseInt(value));
+        
+        if (selectedItem) {
+            updatedPackages[index] = {
+                ...updatedPackages[index],
+                package_id: selectedItem.item_id,
+                item_name: selectedItem.item_name,
+                capacity: selectedItem.capacity,
+                unit: selectedItem.unit,
+                available_quantity: selectedItem.quantity
+            };
+            setSelectedPackages(updatedPackages);
+            calculateRemainingQty(updatedPackages);
+            validateQuantity(updatedPackages, index);
+        }
     };
 
     const handleQuantityChange = (e, index) => {
@@ -42,25 +44,19 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     };
 
     const validateQuantity = (packages, index) => {
-        const packageItem = packageProcesses.find(
-            (process) => process.unmergedItems.some((item) => item.item_id === packages[index].package_id)
-        );
-
-        if (packageItem) {
-            const item = packageItem.unmergedItems.find((item) => item.item_id === packages[index].package_id);
-            if (packages[index].quantity > item.quantity) {
-                setValidationErrors((prevErrors) => {
-                    const newErrors = [...prevErrors];
-                    newErrors[index] = `Quantity exceeds available amount (${item.quantity})`;
-                    return newErrors;
-                });
-            } else {
-                setValidationErrors((prevErrors) => {
-                    const newErrors = [...prevErrors];
-                    newErrors[index] = '';
-                    return newErrors;
-                });
-            }
+        const pkg = packages[index];
+        if (pkg.quantity > pkg.available_quantity) {
+            setValidationErrors((prevErrors) => {
+                const newErrors = [...prevErrors];
+                newErrors[index] = `Quantity exceeds available amount (${pkg.available_quantity})`;
+                return newErrors;
+            });
+        } else {
+            setValidationErrors((prevErrors) => {
+                const newErrors = [...prevErrors];
+                newErrors[index] = '';
+                return newErrors;
+            });
         }
     };
 
@@ -70,7 +66,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     };
 
     const addPackageField = () => {
-        setSelectedPackages([...selectedPackages, { package_id: '', capacity: '', quantity: 0 }]);
+        setSelectedPackages([...selectedPackages, { package_id: '', item_name: '', capacity: '', unit: '', quantity: 0, available_quantity: 0 }]);
     };
 
     const removePackageField = (index) => {
@@ -117,16 +113,11 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             };
 
             const packageCreationPromises = selectedPackages.map(pkg => {
-                const packageItem = packageProcesses.find(
-                    (process) => process.unmergedItems.some((item) => item.item_id === pkg.package_id)
-                );
-                const item = packageItem ? packageItem.unmergedItems.find((item) => item.item_id === pkg.package_id) : null;
-
                 return createProductStockIn({
                     finished_product_id: finishedProduct.id,
-                    item_name: item ? item.item_name : 'Unknown',
+                    item_name: finishedProduct.stock_out.request.request_for.name,
                     item_qty: pkg.capacity * pkg.quantity,
-                    package_type: `${item ? item.item_name : 'Unknown'} ${pkg.capacity}KG`,
+                    package_type: `${pkg.item_name} (${pkg.capacity}${pkg.unit})`,
                     quantity: pkg.quantity,
                     status: 'False',
                     comment: ''
@@ -164,38 +155,24 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                     <>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {selectedPackages.map((pkg, index) => (
-                                <div key={index} className="grid grid-cols-4 gap-4">
+                                <div key={index} className="grid grid-cols-3 gap-4">
                                     <select
-                                        name="package_id"
                                         value={pkg.package_id}
                                         onChange={(e) => handlePackageChange(e, index)}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                                         required
                                     >
                                         <option value="">Select Package</option>
-                                        {packageProcesses.map((process) =>
+                                        {packageProcesses.flatMap((process) =>
                                             process.unmergedItems.map((item) => (
                                                 <option key={item.item_id} value={item.item_id}>
-                                                    {item.item_name} ({item.capacity}{item.unit}) - Quantity: {item.quantity}
+                                                    {item.item_name} ({item.capacity}{item.unit}) - Available: {item.quantity}
                                                 </option>
                                             ))
                                         )}
                                     </select>
-                                    <select
-                                        name="capacity"
-                                        value={pkg.capacity}
-                                        onChange={(e) => handleCapacityChange(e, index)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                        required
-                                    >
-                                        <option value="">Select Capacity</option>
-                                        <option value="5">5 KG</option>
-                                        <option value="10">10 KG</option>
-                                        <option value="25">25 KG</option>
-                                    </select>
                                     <input
                                         type="number"
-                                        name="quantity"
                                         value={pkg.quantity}
                                         onChange={(e) => handleQuantityChange(e, index)}
                                         placeholder="Quantity"
@@ -210,7 +187,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                         Remove
                                     </button>
                                     {validationErrors[index] && (
-                                        <div className="col-span-4 text-red-500">{validationErrors[index]}</div>
+                                        <div className="col-span-3 text-red-500">{validationErrors[index]}</div>
                                     )}
                                 </div>
                             ))}
