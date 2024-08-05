@@ -100,7 +100,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         calculateRemainingQty(updatedPackages);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (remainingQty < 0) {
             Swal.fire({
@@ -121,14 +121,36 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
         }
 
         // Submit the selected packages
-        console.log('Selected Packages:', selectedPackages);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-in`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    finished_product_id: finishedProduct.id,
+                    packages: selectedPackages,
+                }),
+            });
 
-        Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Packages selected successfully!',
-        });
-        onClose();
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to add product stock in');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Packages selected successfully!',
+            });
+            onClose();
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: err.message,
+            });
+        }
     };
 
     if (!isOpen) return null;
