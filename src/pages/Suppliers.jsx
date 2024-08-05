@@ -6,6 +6,7 @@ import AddItemToSupplier from './suppliers/AddItemToSupplier';
 import SupplierItems from './suppliers/SupplierItems';
 import SuppliersCreate from './suppliers/SuppliersCreate';
 import SuppliersEdit from './suppliers/SuppliersEdit';
+import SupplierReport from './reports/SupplierReport';
 
 const useUserRole = () => {
     const [userRole, setUserRole] = useState(null);
@@ -31,6 +32,7 @@ const Suppliers = () => {
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [isEmployeesCreateOpen, setIsEmployeesCreateOpen] = useState(false);
     const userRole = useUserRole();
+    const [isReportFormOpen, setIsReportFormOpen] = useState(false);
 
     const toggleSuppliersCreateModal = () => {
         setIsSuppliersCreateOpen(!isSuppliersCreateOpen);
@@ -80,6 +82,10 @@ const Suppliers = () => {
     const closeAddItemToSupplierModal = () => {
         setIsAddItemToSupplierOpen(false);
         setSelectedSupplier(null);
+    };
+
+    const toggleReportForm = () => {
+        setIsReportFormOpen(!isReportFormOpen);
     };
 
     const handleDeleteSupplier = async (id) => {
@@ -136,6 +142,10 @@ const Suppliers = () => {
 
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleEmployeesCreateModal}>
                     Add Employee
+                </button>
+
+                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleReportForm}>
+                    Generate Report
                 </button>
 
             </div>
@@ -206,6 +216,7 @@ const Suppliers = () => {
             {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={closeSupplierItemsModal} supplier={selectedSupplier} />}
             {isAddItemToSupplierOpen && <AddItemToSupplier isOpen={isAddItemToSupplierOpen} onClose={closeAddItemToSupplierModal} supplier={selectedSupplier} />}
             {isEmployeesCreateOpen && <EmployeesCreate isOpen={isEmployeesCreateOpen} onClose={toggleEmployeesCreateModal} />}
+            {isReportFormOpen && <SupplierReport onClose={toggleReportForm} />}
         </div>
     );
 };
