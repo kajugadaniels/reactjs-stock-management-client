@@ -85,7 +85,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             });
             return;
         }
-
+    
         if (validationErrors.some((error) => error)) {
             Swal.fire({
                 icon: 'error',
@@ -94,7 +94,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             });
             return;
         }
-
+    
         try {
             const createProductStockIn = async (packageData) => {
                 const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`, {
@@ -104,14 +104,14 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                     },
                     body: JSON.stringify(packageData),
                 });
-
+    
                 if (!response.ok) {
                     throw new Error('Failed to create product stock in');
                 }
-
+    
                 return response.json();
             };
-
+    
             const packageCreationPromises = selectedPackages.map(pkg => {
                 return createProductStockIn({
                     finished_product_id: finishedProduct.id,
@@ -123,9 +123,9 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                     comment: ''
                 });
             });
-
+    
             await Promise.all(packageCreationPromises);
-
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -140,6 +140,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
             });
         }
     };
+    
 
     if (!isOpen) return null;
 
