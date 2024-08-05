@@ -1,76 +1,87 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductStockOutCreate from './ProductStockOut/ProductStockOutCreate';
 
 const ProductStockOut = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [stockOutData, setStockOutData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const toggleProductStockOutCreateModal = () => {
         setIsModalOpen(!isModalOpen);
     };
 
+    useEffect(() => {
+        const fetchStockOutData = async () => {
+            setIsLoading(true);
+            try {
+                const response = await fetch('http://localhost:8000/api/product-stock-out');
+                const contentType = response.headers.get("content-type");
+                if (!response.ok) throw new Error('Network response was not ok.');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new TypeError("Received non-JSON response from server");
+                }
+                const data = await response.json();
+                setStockOutData(data);
+            } catch (err) {
+                setError(`Failed to fetch data: ${err.message}`);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStockOutData();
+    }, []);
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+
     return (
         <div className="p-4 space-y-4">
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-500 text-white p-4 sm:p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold">Total Stock Out</h2>
-                    <p className="text-2xl sm:text-3xl m-2 sm:m-5 font-bold">600</p>
-                </div>
-                <div className="bg-white text-zinc-800 p-4 sm:p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold">Total 5 Kg Out</h2>
-                    <p className="text-2xl sm:text-3xl m-2 sm:m-5 font-bold text-teal-500">500</p>
-                </div>
-                <div className="bg-zinc-200 text-zinc-800 p-4 sm:p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold">Total 10 kg Out</h2>
-                    <p className="text-2xl sm:text-3xl m-2 sm:m-5 font-bold text-zinc-600">400</p>
-                </div>
-                <div className="bg-orange-200 text-zinc-800 p-4 sm:p-6 rounded-lg shadow-md">
-                    <h2 className="text-lg font-semibold">Total 25 kg Out</h2>
-                    <p className="text-2xl sm:text-3xl m-2 sm:m-5 font-bold text-orange-600">250</p>
-                </div>
-            </div>
-
             <div className="flex space-x-2">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleProductStockOutCreateModal}>
-                    Product Stock Out
+                    Add New Stock Out
                 </button>
                 <ProductStockOutCreate isOpen={isModalOpen} onClose={toggleProductStockOutCreateModal} />
             </div>
-
             <div className="overflow-x-auto">
-                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
                 <thead className="bg-zinc-100">
-    <tr>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Check</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Stock OUT ID</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">PS IN ID</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Location</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Employee</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Plate Number</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Phone</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Loading Payment Status</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Comment</th>
-        <th className="px-1 sm:px-2 lg:px-4 py-2 border text-gray-500 text-xs sm:text-sm lg:text-base">Date</th>
-    </tr>
-</thead>
-                    <tbody>
-                        <tr>
-                            <td className="px-2 sm:px-4 py-2 border text-center"><input type="checkbox" /></td>
-                            <td className="px-2 sm:px-4 py-2 border">SU - 001</td>
-                            <td className="px-2 sm:px-4 py-2 border">SI - 001</td>
-                            <td className="px-2 sm:px-4 py-2 border">Shop</td>
-                            <td className="px-2 sm:px-4 py-2 border">Kibogora Enock</td>
-                            <td className="px-2 sm:px-4 py-2 border">RAD 304 J</td>
-                            <td className="px-2 sm:px-4 py-2 border">(250) 788-965-501</td>
-                            <td className="px-2 sm:px-4 py-2 border text-teal-500">Paid</td>
-                            <td className="px-2 sm:px-4 py-2 border">Any Comment</td>
-                            <td className="px-2 sm:px-4 py-2 border">11/04/2020</td>
+                    <tr>
+                        <th className="px-4 py-2 border text-gray-500">Stock OUT ID</th>
+                        <th className="px-4 py-2 border text-gray-500">Location</th>
+                        <th className="px-4 py-2 border text-gray-500">Employee</th>
+                        <th className="px-4 py-2 border text-gray-500">Item Name</th>
+                        <th className="px-4 py-2 border text-gray-500">Batch</th>
+                        <th className="px-4 py-2 border text-gray-500">Client Name</th>
+                        <th className="px-4 py-2 border text-gray-500">Quantity</th>
+                        <th className="px-4 py-2 border text-gray-500">Plate Number</th>
+                        <th className="px-4 py-2 border text-gray-500">L P S</th>
+                        <th className="px-4 py-2 border text-gray-500">Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {stockOutData.map((item) => (
+                        <tr key={item.id}>
+                         <center><td>STCK_OUT-{item.id}</td></center> 
+                            <td>{item.location}</td>
+                            <td>{item.employee.name}</td>
+                            <tSd>{item.product_stock_in.item_name}</tSd>
+                            <td>{item.batch}</td>
+                            <td>{item.client_name}</td>
+                            <td>{`${item.quantity} Sacks of ${item.product_stock_in ? item.product_stock_in.package_type : ''}`}</td>
+                            <td>{item.plate}</td>
+                            <td className={item.loading_payment_status ? 'text-teal-500' : 'text-red-500'}>
+                                {item.loading_payment_status ? 'Paid' : 'Not Paid'}
+                            </td>
+                            <td>{new Date(item.created_at).toLocaleDateString()}</td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
-    )
+        </div>
+    );
 }
 
 export default ProductStockOut;

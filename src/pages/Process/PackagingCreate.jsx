@@ -163,6 +163,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                         required
                                     >
                                         <option value="">Select Package</option>
+                                        
                                         {packageProcesses.flatMap((process) =>
                                             process.unmergedItems.map((item) => (
                                                 <option key={item.item_id} value={item.item_id}>
