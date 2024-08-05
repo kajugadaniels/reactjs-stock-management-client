@@ -106,6 +106,7 @@ const ItemsCreate = ({ isOpen, onClose }) => {
                             <option value="5">5 kg</option>
                             <option value="10">10 kg</option>
                             <option value="25">25 kg</option>
+                            <option value="50">50 kg</option>
                         </select>
                     </div>
                     <div className="mb-4">

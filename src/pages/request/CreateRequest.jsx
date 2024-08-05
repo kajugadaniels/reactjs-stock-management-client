@@ -136,6 +136,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     </option>
                                 ))}
                             </select>
+
                             {errors.contact_person_id && <p className="mt-2 text-xs text-red-500">{errors.contact_person_id}</p>}
                         </div>
 
@@ -171,6 +172,8 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 <option value="Outside Clients">Outside Clients</option>
                                 <option value="Others">Others</option>
                             </select>
+
+                            
                             {requestFrom === 'Outside Clients' && (
                                 <input
                                     className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"

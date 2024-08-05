@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const useStockIn = (initialData = {}) => {
     const [stockIns, setStockIns] = useState([]);
@@ -10,6 +10,7 @@ const useStockIn = (initialData = {}) => {
     const [formData, setFormData] = useState(initialData);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    
 
     const fetchStockIns = async (filters = {}) => {
         setLoading(true);
