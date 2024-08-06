@@ -14,6 +14,10 @@ const Items = () => {
     const [isItemsEditOpen, setIsItemsEditOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         fetchItems();
     }, []);
@@ -81,27 +85,36 @@ const Items = () => {
         return <div>Error: {error}</div>;
     }
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(items.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     return (
         <div className="p-4">
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-                
+                {/* Other elements */}
             </div>
 
             <div className="flex flex-col items-center justify-start gap-4 mb-4 sm:flex-row">
-                
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
                     Add Item
                 </button>
-
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleCategoryCreateModal}>
-                    Add Category
-                </button>
-
+                {/* 
+                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleCategoryCreateModal}>
+                        Add Category
+                    </button>
+                */}
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleTypesCreateModal}>
                     Add Types
                 </button>
-
-                
             </div>
 
             <div className="overflow-x-auto">
@@ -117,7 +130,7 @@ const Items = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {items.map((item) => (
+                        {currentItems.map((item) => (
                             <tr className="border-t" key={item.id}>
                                 <td className="px-4 py-4 border">item-{item.id}</td>
                                 <td className="px-10 py-4 border">{item.name}</td>
@@ -126,7 +139,7 @@ const Items = () => {
                                 <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>
                                 <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <button
-                                    className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
+                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
                                         onClick={() => openItemsEditModal(item)}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></g></svg>
@@ -143,6 +156,20 @@ const Items = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination controls */}
+            <div className="flex justify-center mt-4">
+                {pageNumbers.map((number) => (
+                    <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    >
+                        {number}
+                    </button>
+                ))}
+            </div>
+
             {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} />}
             {isCategoryCreateOpen && <CategoryCreate isOpen={isCategoryCreateOpen} onClose={toggleCategoryCreateModal} />}
             {isTypesCreateOpen && <TypesCreate isOpen={isTypesCreateOpen} onClose={toggleTypesCreateModal} />}
