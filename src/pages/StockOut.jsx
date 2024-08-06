@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useStockOut } from '../hooks';
+import StockOutReport from './reports/StockOutReport';
 
 const StockOut = () => {
     const { stockOuts, loading, error } = useStockOut();
     const [currentPage, setCurrentPage] = useState(1);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const itemsPerPage = 10;
 
     if (loading) {
@@ -28,6 +30,14 @@ const StockOut = () => {
 
     return (
         <div className="p-6">
+            <div className="mb-4">
+                <button
+                    onClick={() => setIsReportModalOpen(true)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    Generate Report
+                </button>
+            </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
                     <thead className="bg-gray-200">
@@ -80,6 +90,11 @@ const StockOut = () => {
                     </button>
                 ))}
             </div>
+
+            <StockOutReport
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
         </div>
     );
 };
