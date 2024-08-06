@@ -98,9 +98,8 @@ const getLabelForPath = (path) => {
             return "SUPPLIERS";
         case '/stock':
             return "STOCK";
-        // Commented out 'Inventory'
         case '/inventory':
-            return ""; // Inventory is commented out
+            return "Inventory";
         case '/process':
             return "PROCESS";
         case '/finished-products':

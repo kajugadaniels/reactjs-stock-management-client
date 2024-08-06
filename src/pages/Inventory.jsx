@@ -16,7 +16,6 @@ const Inventory = () => {
         { item: 'Imifuka', type: 'SN 5 kg', stockIn: '1000', stockOut: '800', remaining: '200', percentage: '70 %' },
         { item: 'Imifuka', type: 'Magic 25 kg', stockIn: '300', stockOut: '200', remaining: '100', percentage: '20 %' },
         { item: 'Imifuka', type: 'Jabana 5 kg', stockIn: '400', stockOut: '400', remaining: '0', percentage: '0 %' },
-
     ];
 
     const productStockData = [
