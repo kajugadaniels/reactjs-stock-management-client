@@ -46,26 +46,7 @@ const Process = () => {
         <div className="min-h-screen p-4 bg-gray-100 md:p-8">
             <h1 className="mb-6 text-2xl font-semibold text-gray-800 md:text-3xl">Production Process and Finished Product</h1>
             <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
-                <div className="p-4 bg-white rounded-lg shadow-lg md:p-6">
-                    <h2 className="text-gray-500">Total Requested</h2>
-                    <p className="mt-2 md:mt-4 text-2xl md:text-3xl font-bold text-[#00BDD6]">600 T</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow-lg md:p-6">
-                    <h2 className="text-gray-500">Total Pending</h2>
-                    <p className="mt-2 md:mt-4 text-2xl md:text-3xl font-bold text-[#00BDD6]">500 T</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow-lg md:p-6">
-                    <h2 className="text-gray-500">Total Complete</h2>
-                    <p className="mt-2 md:mt-4 text-2xl md:text-3xl font-bold text-[#00BDD6]">5</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow-lg md:p-6">
-                    <h2 className="text-gray-500">Total Remaining</h2>
-                    <p className="mt-2 md:mt-4 text-2xl md:text-3xl font-bold text-[#00BDD6]">2</p>
-                </div>
-                <div className="p-4 bg-white rounded-lg shadow-lg cursor-pointer md:p-6" onClick={handlePackagesStockOutClick}>
-                    <h2 className="text-gray-500">Packages Stock Out</h2>
-                    <p className="mt-2 md:mt-4 text-2xl md:text-3xl font-bold text-[#00BDD6]">Go to Packages</p>
-                </div>
+                
             </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">

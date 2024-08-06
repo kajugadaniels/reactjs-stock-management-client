@@ -84,21 +84,7 @@ const Items = () => {
     return (
         <div className="p-4">
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-                <div className="p-4 text-center bg-white rounded-lg shadow">
-                    <h2 className="text-zinc-600">Total Items</h2>
-                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
-                </div>
-
-                <div className="p-4 text-center bg-white rounded-lg shadow">
-                    <h2 className="text-zinc-600">Total Category</h2>
-                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
-                </div>
-
-                <div className="p-4 text-center bg-white rounded-lg shadow">
-                    <h2 className="text-zinc-600">Total Types</h2>
-                    <p className="text-3xl mt-2 text-[#00BDD6]">{items.length}</p>
-                </div>
-
+                
             </div>
 
             <div className="flex flex-col items-center justify-start gap-4 mb-4 sm:flex-row">

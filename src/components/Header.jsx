@@ -91,23 +91,24 @@ const getIconForPath = (path) => {
 const getLabelForPath = (path) => {
     switch (path) {
         case '/dashboard':
-            return "Dashboard";
+            return "DASHBOARD";
         case '/items':
-            return "Items";
+            return "ITEMS";
         case '/suppliers':
-            return "Suppliers";
+            return "SUPPLIERS";
         case '/stock':
-            return "Stock";
+            return "STOCK";
+        // Commented out 'Inventory'
         case '/inventory':
-            return "Inventory";
+            return ""; // Inventory is commented out
         case '/process':
-            return "Process";
+            return "PROCESS";
         case '/finished-products':
-            return "finished product";
+            return "FINISHED PRODUCTS";
         case '/product-stock-in':
-            return "Product Stock In";
+            return "PRODUCT STOCK IN";
         case '/product-stock-out':
-            return "Product Stock Out";
+            return "PRODUCT STOCK OUT";
         default:
             return "";
     }

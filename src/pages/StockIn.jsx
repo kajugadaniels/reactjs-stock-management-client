@@ -127,18 +127,7 @@ const StockIn = () => {
     return (
         <div className="p-4">
             <div className='flex flex-col gap-4 sm:flex-row sm:gap-10 p-4'>
-                <Link to="/TotalRowMaterial">
-                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
-                        <h2 className="text-muted-foreground">Total Raw Material</h2>
-                        <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
-                    </div>
-                </Link>
-                <Link to="/TotalPackeging">
-                    <div className="p-4 sm:p-10 text-center rounded-lg shadow-md bg-card">
-                        <h2 className="text-muted-foreground">Total Packaging</h2>
-                        <p className="text-primary text-3xl text-[#00BDD6]">600 T</p>
-                    </div>
-                </Link>
+                
             </div>
 
             <div className="flex flex-col gap-4 mb-4 sm:flex-row">
