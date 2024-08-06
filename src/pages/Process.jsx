@@ -8,6 +8,10 @@ const Process = () => {
     const [selectedProcess, setSelectedProcess] = useState(null);
     const { processes, loading, error } = useProcess();
     const navigate = useNavigate();
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const toggleFinishedCreateModal = (process) => {
         setSelectedProcess(process);
@@ -25,6 +29,18 @@ const Process = () => {
     if (error) {
         return <div>Error: {error}</div>;
     }
+
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentProcesses = processes.slice(indexOfFirstItem, indexOfLastItem);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(processes.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
         <div className="min-h-screen p-4 bg-gray-100 md:p-8">
@@ -66,7 +82,7 @@ const Process = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {processes.map((process) => (
+                        {currentProcesses.map((process) => (
                             <tr key={process.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
                                 <td className="px-2 py-4 md:px-6">
                                     <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
@@ -103,7 +119,20 @@ const Process = () => {
                     </tbody>
                 </table>
             </div>
-            <FinishedCreate isOpen={isFinishedModalOpen} onClose={toggleFinishedCreateModal} process={selectedProcess} />
+
+            <div className="flex justify-center mt-4">
+                {pageNumbers.map((number) => (
+                    <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    >
+                        {number}
+                    </button>
+                ))}
+            </div>
+
+            <FinishedCreate isOpen={isFinishedModalOpen} onClose={() => setIsFinishedModalOpen(false)} process={selectedProcess} />
         </div>
     );
 };
