@@ -5,6 +5,7 @@ import StockOutApproval from './Stockout/StockOutApproval';
 import RequestDetails from './request/RequestDetails';
 import RequestPackaging from './request/RequestPackaging';
 import { useRequests } from '../hooks';
+import RequestReport from './reports/RequestReport';
 
 const Stock = () => {
     const {
@@ -22,6 +23,7 @@ const Stock = () => {
     const [requestDetails, setRequestDetails] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [isRequestReportOpen, setIsRequestReportOpen] = useState(false);
 
     const toggleRequestItemModal = () => {
         setIsRequestItemModalOpen(!isRequestItemModalOpen);
@@ -67,6 +69,10 @@ const Stock = () => {
     }
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const toggleRequestReport = () => {
+        setIsRequestReportOpen(!isRequestReportOpen);
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -122,6 +128,17 @@ const Stock = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
                         </span>
                         Request Package
+                    </div>
+                </button>
+                <button
+                    onClick={toggleRequestReport}
+                    className="mt-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
+                >
+                    <div className='flex items-center'>
+                        <span className="mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="currentColor" d="M7 12h2v5H7zm8-5h2v10h-2zm-4 7h2v3h-2zm0-4h2v2h-2z"/></svg>
+                        </span>
+                        Generate Report
                     </div>
                 </button>
                 <div className="flex items-center space-x-2">
@@ -239,6 +256,10 @@ const Stock = () => {
             <RequestPackaging
                 isOpen={isRequestPackagingOpen}
                 onClose={toggleRequestPackaging}
+            />
+            <RequestReport
+                isOpen={isRequestReportOpen}
+                onClose={toggleRequestReport}
             />
         </div>
     );
