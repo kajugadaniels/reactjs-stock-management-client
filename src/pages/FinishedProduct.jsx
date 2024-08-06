@@ -51,12 +51,14 @@ const FinishedProduct = () => {
                                     <td className="px-6 py-4 text-gray-700">{product.dechet_qty} KG</td>
                                     <td className="px-6 py-4 text-gray-700">{product.comment}</td>
                                     <td className="px-6 py-4 space-x-2">
-                                        <button
-                                            className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
-                                            onClick={() => togglePackagingCreateModal(product)}
-                                        >
-                                            Packaging
-                                        </button>
+                                        {product.item_qty > 0 && (
+                                            <button
+                                                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+                                                onClick={() => togglePackagingCreateModal(product)}
+                                            >
+                                                Packaging
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))
