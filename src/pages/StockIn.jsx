@@ -5,12 +5,14 @@ import { useStockIn } from '../hooks';
 import StockInCreate from './stockIn/StockInCreate';
 import StockInDetails from './stockIn/StockInDetails';
 import StockInEdit from './stockIn/StockInEdit';
+import StockInReport from './reports/StockInReport';
 
 const StockIn = () => {
     const { stockIns, loading, error, fetchStockIns, deleteStockIn, categories, types } = useStockIn();
     const [isStockInCreateOpen, setIsStockInCreateOpen] = useState(false);
     const [isStockInEditOpen, setIsStockInEditOpen] = useState(false);
     const [isStockInDetailsOpen, setIsStockInDetailsOpen] = useState(false);
+    const [isStockInReportOpen, setIsStockInReportOpen] = useState(false); // Add state for report modal
     const [selectedStockIn, setSelectedStockIn] = useState(null);
     const [filters, setFilters] = useState({
         category: '',
@@ -28,6 +30,7 @@ const StockIn = () => {
         setIsStockInCreateOpen(!isStockInCreateOpen);
         setIsStockInEditOpen(false);
         setIsStockInDetailsOpen(false);
+        setIsStockInReportOpen(false); // Close report modal
     };
 
     const openStockInEditModal = (stockIn) => {
@@ -35,6 +38,7 @@ const StockIn = () => {
         setIsStockInEditOpen(true);
         setIsStockInCreateOpen(false);
         setIsStockInDetailsOpen(false);
+        setIsStockInReportOpen(false); // Close report modal
     };
 
     const openStockInDetailsModal = (stockInId) => {
@@ -42,6 +46,14 @@ const StockIn = () => {
         setIsStockInDetailsOpen(true);
         setIsStockInEditOpen(false);
         setIsStockInCreateOpen(false);
+        setIsStockInReportOpen(false); // Close report modal
+    };
+
+    const openStockInReportModal = () => {
+        setIsStockInReportOpen(true);
+        setIsStockInCreateOpen(false);
+        setIsStockInEditOpen(false);
+        setIsStockInDetailsOpen(false);
     };
 
     const closeStockInEditModal = () => {
@@ -52,6 +64,10 @@ const StockIn = () => {
     const closeStockInDetailsModal = () => {
         setIsStockInDetailsOpen(false);
         setSelectedStockIn(null);
+    };
+
+    const closeStockInReportModal = () => {
+        setIsStockInReportOpen(false);
     };
 
     const handleDeleteStockIn = async (id) => {
@@ -114,6 +130,9 @@ const StockIn = () => {
             <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleStockInCreateModal}>
                     Add Stock In
+                </button>
+                <button className="bg-green-500 text-white px-4 py-2 rounded-md" onClick={openStockInReportModal}>
+                    Generate Report
                 </button>
             </div>
 
@@ -216,18 +235,18 @@ const StockIn = () => {
                             {stockIns.map((stockIn) => (
                                 <tr className="border-t" key={stockIn.id}>
                                     <td className="px-4 py-4 border">{stockIn.id}</td>
-                                    <td className="px-4 py-4 border">{stockIn.supplier.name}</td>
-                                    <td className="px-4 py-4 border">{stockIn.item.name}</td>
-                                    <td className="px-4 py-4 border">{stockIn.item.category.name}</td>
-                                    <td className="px-4 py-4 border">{stockIn.item.type.name}</td>
+                                    <td className="px-4 py-4 border">{stockIn.supplier?.name || 'N/A'}</td>
+                                    <td className="px-4 py-4 border">{stockIn.item?.name || 'N/A'}</td>
+                                    <td className="px-4 py-4 border">{stockIn.item?.category?.name || 'N/A'}</td>
+                                    <td className="px-4 py-4 border">{stockIn.item?.type?.name || 'N/A'}</td>
                                     <td className="px-4 py-4 border">
                                         {stockIn.quantity > 0 ? stockIn.quantity : (
                                             <span className="px-2 py-1 text-white bg-red-500 rounded">Item not available</span>
                                         )}
                                     </td>
-                                    <td className="px-4 py-4 border">{stockIn.employee.name}</td>
-                                    <td className="px-4 py-4 border">{stockIn.plate_number}</td>
-                                    <td className="px-4 py-4 border">{stockIn.batch_number}</td>
+                                    <td className="px-4 py-4 border">{stockIn.employee?.name || 'N/A'}</td>
+                                    <td className="px-4 py-4 border">{stockIn.plate_number || 'N/A'}</td>
+                                    <td className="px-4 py-4 border">{stockIn.batch_number || 'N/A'}</td>
                                     <td className="px-4 py-4 border">{new Date(stockIn.date).toLocaleDateString()}</td>
                                     <td className="px-4 py-4 border">{stockIn.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
                                     <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
@@ -266,6 +285,7 @@ const StockIn = () => {
             {isStockInCreateOpen && <StockInCreate isOpen={isStockInCreateOpen} onClose={toggleStockInCreateModal} />}
             {isStockInEditOpen && <StockInEdit isOpen={isStockInEditOpen} onClose={closeStockInEditModal} stockIn={selectedStockIn} />}
             {isStockInDetailsOpen && <StockInDetails isOpen={isStockInDetailsOpen} onClose={closeStockInDetailsModal} stockInId={selectedStockIn} />}
+            {isStockInReportOpen && <StockInReport isOpen={isStockInReportOpen} onClose={closeStockInReportModal} />} {/* Render the report modal */}
         </div>
     );
 };
