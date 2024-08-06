@@ -1,8 +1,11 @@
+// ProductStockOut.jsx
 import React, { useEffect, useState } from 'react';
 import ProductStockOutCreate from './ProductStockOut/ProductStockOutCreate';
+import ProductStockOutReport from './reports/ProductStockOutReport';
 
 const ProductStockOut = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [stockOutData, setStockOutData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -12,7 +15,11 @@ const ProductStockOut = () => {
     const itemsPerPage = 10;
 
     const toggleProductStockOutCreateModal = () => {
-        setIsModalOpen(!isModalOpen);
+        setIsCreateModalOpen(!isCreateModalOpen);
+    };
+
+    const toggleProductStockOutReportModal = () => {
+        setIsReportModalOpen(!isReportModalOpen);
     };
 
     useEffect(() => {
@@ -56,13 +63,22 @@ const ProductStockOut = () => {
         <div className="p-6 bg-gray-50 min-h-screen">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
-                <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
-                    onClick={toggleProductStockOutCreateModal}
-                >
-                    Add New Stock Out
-                </button>
-                <ProductStockOutCreate isOpen={isModalOpen} onClose={toggleProductStockOutCreateModal} />
+                <div>
+                    <button
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition mr-4"
+                        onClick={toggleProductStockOutCreateModal}
+                    >
+                        Add New Stock Out
+                    </button>
+                    <button
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
+                        onClick={toggleProductStockOutReportModal}
+                    >
+                        Generate Report
+                    </button>
+                </div>
+                <ProductStockOutCreate isOpen={isCreateModalOpen} onClose={toggleProductStockOutCreateModal} />
+                <ProductStockOutReport isOpen={isReportModalOpen} onClose={toggleProductStockOutReportModal} />
             </div>
             <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
