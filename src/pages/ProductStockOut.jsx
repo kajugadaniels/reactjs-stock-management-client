@@ -7,6 +7,10 @@ const ProductStockOut = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const toggleProductStockOutCreateModal = () => {
         setIsModalOpen(!isModalOpen);
     };
@@ -35,6 +39,18 @@ const ProductStockOut = () => {
 
     if (isLoading) return <p className="text-center text-gray-600">Loading...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentStockOuts = stockOutData.slice(indexOfFirstItem, indexOfLastItem);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(stockOutData.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -65,7 +81,7 @@ const ProductStockOut = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {stockOutData.map((item) => (
+                        {currentStockOuts.map((item) => (
                             <tr key={item.id}>
                                 <td className="px-6 py-4 text-sm font-medium text-gray-900">STCK_OUT-{item.id}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500">{item.location || 'N/A'}</td>
@@ -83,6 +99,18 @@ const ProductStockOut = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="flex justify-center mt-4">
+                {pageNumbers.map((number) => (
+                    <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    >
+                        {number}
+                    </button>
+                ))}
             </div>
         </div>
     );
