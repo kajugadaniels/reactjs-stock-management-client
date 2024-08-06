@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStockOut } from '../hooks';
 
 const StockOut = () => {
     const { stockOuts, loading, error } = useStockOut();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     if (loading) {
         return <div>Loading...</div>;
@@ -12,14 +14,25 @@ const StockOut = () => {
         return <div>Error: {error}</div>;
     }
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentStockOuts = stockOuts.slice(indexOfFirstItem, indexOfLastItem);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(stockOuts.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     return (
         <div className="p-6">
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
                     <thead className="bg-gray-200">
                         <tr>
-                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Stock Out ID</th>
-                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request ID</th>
+                            <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">No</th>
                             <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Requester Name</th>
                             <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Request From</th>
                             <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Items</th>
@@ -29,11 +42,10 @@ const StockOut = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {stockOuts.length > 0 ? (
-                            stockOuts.map((stockOut) => (
+                        {currentStockOuts.length > 0 ? (
+                            currentStockOuts.map((stockOut, index) => (
                                 <tr key={stockOut.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
-                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{stockOut.id}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{stockOut.request_id}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{indexOfFirstItem + index + 1}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{stockOut.request.requester_name}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{stockOut.request.request_from}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">
@@ -50,11 +62,23 @@ const StockOut = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8" className="px-6 py-4 text-sm text-center text-gray-600 border-b border-gray-300">No stock outs found.</td>
+                                <td colSpan="9" className="px-6 py-4 text-sm text-center text-gray-600 border-b border-gray-300">No stock outs found.</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="flex justify-center mt-4">
+                {pageNumbers.map((number) => (
+                    <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    >
+                        {number}
+                    </button>
+                ))}
             </div>
         </div>
     );
