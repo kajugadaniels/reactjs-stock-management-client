@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import { useFinishedProducts } from '../hooks';
 import PackagingCreate from './Process/PackagingCreate';
+import FinishedProductReport from './reports/FinishedProductReport';
 
 const FinishedProduct = () => {
     const { finishedProducts, loading, error } = useFinishedProducts();
     const [isPackagingModalOpen, setIsPackagingModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [selectedFinishedProduct, setSelectedFinishedProduct] = useState(null);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const togglePackagingCreateModal = (finishedProduct) => {
         setSelectedFinishedProduct(finishedProduct);
         setIsPackagingModalOpen(!isPackagingModalOpen);
+    };
+
+    const toggleReportModal = () => {
+        setIsReportModalOpen(!isReportModalOpen);
     };
 
     if (loading) {
@@ -20,9 +30,29 @@ const FinishedProduct = () => {
         return <div>Error: {error}</div>;
     }
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentFinishedProducts = finishedProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(finishedProducts.length / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     return (
         <div className="min-h-screen p-8 bg-gray-100">
             <h1 className="mb-6 text-3xl font-semibold text-gray-800">Finished Products</h1>
+            <div className="mb-4">
+                <button
+                    className="px-4 py-2 text-white bg-green-500 rounded hover:bg-green-600"
+                    onClick={toggleReportModal}
+                >
+                    Generate Report
+                </button>
+            </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
                     <thead className="bg-gray-200">
@@ -38,8 +68,8 @@ const FinishedProduct = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {finishedProducts.length > 0 ? (
-                            finishedProducts.map((product) => (
+                        {currentFinishedProducts.length > 0 ? (
+                            currentFinishedProducts.map((product) => (
                                 <tr key={product.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
                                     <td className="px-6 py-4">
                                         <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
@@ -70,6 +100,19 @@ const FinishedProduct = () => {
                     </tbody>
                 </table>
             </div>
+
+            <div className="flex justify-center mt-4">
+                {pageNumbers.map((number) => (
+                    <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    >
+                        {number}
+                    </button>
+                ))}
+            </div>
+
             {selectedFinishedProduct && (
                 <PackagingCreate
                     isOpen={isPackagingModalOpen}
@@ -77,6 +120,10 @@ const FinishedProduct = () => {
                     finishedProduct={selectedFinishedProduct}
                 />
             )}
+            <FinishedProductReport
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+            />
         </div>
     );
 };
