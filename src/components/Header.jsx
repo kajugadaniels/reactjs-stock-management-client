@@ -56,29 +56,33 @@ const Header = () => {
             </ul>
 
             <div className="flex items-center space-x-4">
-                <Dropdown>
+                <Dropdown show={isMenuOpen} onToggle={toggleMenu}>
                     <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
-                        <img src="images/logo.jpeg" alt="Profile" className="w-8 h-8 rounded-full sm:w-10 sm:h-10" style={{ border: '2px solid gray' }} />
+                        <div className='flex gap-5'>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path fill="#212d31" fillRule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clipRule="evenodd"></path></svg>
+                            <h1 className='semi-bold mt-2'>James Aldrino</h1>
+                        </div>
                     </Dropdown.Toggle>
-                    <Dropdown.Menu align="right" className="flex flex-col p-4 bg-white text-foreground w-64 rounded-lg shadow-lg">
-                        <div className="flex items-center mb-4">
-                            <span className="ml-2 text-lg font-semibold">James Aldrino</span>
-                        </div>
-                        <div className="flex flex-col space-y-2">
-
-                            <form method="POST" action="/logout" className="flex items-center justify-between p-2 rounded-lg hover:bg-muted" onSubmit={handleLogout}>
-                                {csrfToken && <input type="hidden" name="_token" value={csrfToken} />}
-                                <Dropdown.Item as="button" type="submit" className="w-full text-left flex items-center">
-                                    <div className='flex gap-5'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="none" stroke="#43badb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 6.5C4.159 8.148 3 10.334 3 13a9 9 0 1 0 18 0c0-2.666-1.159-4.852-3-6.5M12 2v9m0-9c-.7 0-2.008 1.994-2.5 2.5M12 2c.7 0 2.008 1.994 2.5 2.5" color="#43badb"></path></svg>
-                                        Logout
-                                    </div>
-                                </Dropdown.Item>
-
-                            </form>
-                        </div>
-                    </Dropdown.Menu>
+                    {isMenuOpen && (
+                        <Dropdown.Menu align="right" className="flex flex-col p-4 bg-white text-foreground w-64 rounded-lg shadow-lg mt-5">
+                            <div className="flex items-center mb-4">
+                                <span className="ml-2 text-lg font-semibold">James Aldrino</span>
+                            </div>
+                            <div className="flex flex-col space-y-2">
+                                <form method="POST" action="/logout" className="flex items-center justify-between p-2 rounded-lg hover:bg-muted" onSubmit={handleLogout}>
+                                    {csrfToken && <input type="hidden" name="_token" value={csrfToken} />}
+                                    <Dropdown.Item as="button" type="submit" className="w-full text-left flex items-center">
+                                        <div className='flex gap-5'>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="none" stroke="#43badb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 6.5C4.159 8.148 3 10.334 3 13a9 9 0 1 0 18 0c0-2.666-1.159-4.852-3-6.5M12 2v9m0-9c-.7 0-2.008 1.994-2.5 2.5M12 2c.7 0 2.008 1.994 2.5 2.5" color="#43badb"></path></svg>
+                                            Logout
+                                        </div>
+                                    </Dropdown.Item>
+                                </form>
+                            </div>
+                        </Dropdown.Menu>
+                    )}
                 </Dropdown>
+
 
 
                 <button onClick={toggleMenu} className="text-xl text-black focus:outline-none md:hidden">
