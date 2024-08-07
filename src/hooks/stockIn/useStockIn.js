@@ -64,7 +64,7 @@ const useStockIn = (initialData = {}) => {
     const fetchTypes = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/raw-materials-and-packages`);
             if (!response.ok) {
                 throw new Error('Failed to fetch types');
             }
@@ -72,6 +72,7 @@ const useStockIn = (initialData = {}) => {
             setTypes(data);
         } catch (error) {
             setError(error.message);
+            console.error('Error fetching types:', error);
         } finally {
             setLoading(false);
         }

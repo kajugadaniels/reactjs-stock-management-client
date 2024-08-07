@@ -222,10 +222,14 @@ const StockIn = () => {
                             <tr className="bg-gray-100 text-gray-700">
                                 <th className="py-2 px-4">No</th>
                                 <th className="py-2 px-4">Date</th>
+                                <th className="py-2 px-4">Supplier</th>
+                                <th className="py-2 px-4">Item</th>
                                 <th className="py-2 px-4">Category</th>
+                                <th className="py-2 px-4">Type</th>
                                 <th className="py-2 px-4">Quantity</th>
-                                <th className="py-2 px-4">Total</th>
-                                <th className="py-2 px-4">Remaining</th>
+                                <th className="py-2 px-4">Plate Number</th>
+                                <th className="py-2 px-4">Batch Number</th>
+                                <th className="py-2 px-4">Payment Status</th>
                                 <th className="py-2 px-4">Actions</th>
                             </tr>
                         </thead>
@@ -234,10 +238,14 @@ const StockIn = () => {
                                 <tr key={stockIn.id} className="text-gray-700">
                                     <td className="py-2 px-4">{indexOfFirstItem + index + 1}</td>
                                     <td className="py-2 px-4">{stockIn.date}</td>
-                                    <td className="py-2 px-4">{stockIn.category}</td>
+                                    <td className="py-2 px-4">{stockIn.supplier.name}</td>
+                                    <td className="py-2 px-4">{stockIn.item.name}</td>
+                                    <td className="py-2 px-4">{stockIn.item.category.name}</td>
+                                    <td className="py-2 px-4">{stockIn.item.type.name}</td>
                                     <td className="py-2 px-4">{stockIn.quantity}</td>
-                                    <td className="py-2 px-4">{stockIn.total_quantity}</td>
-                                    <td className="py-2 px-4">{stockIn.remaining_quantity}</td>
+                                    <td className="py-2 px-4">{stockIn.plate_number}</td>
+                                    <td className="py-2 px-4">{stockIn.batch_number}</td>
+                                    <td className="py-2 px-4">{stockIn.loading_payment_status ? 'Paid' : 'Not Paid'}</td>
                                     <td className="py-2 px-4 flex gap-2">
                                         <button
                                             className="bg-green-500 text-white px-4 py-2 rounded-md"
