@@ -29,7 +29,7 @@ const StockOut = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="p-6">
+        <div className="p-6 mt-20">
             <div className="mb-4">
                 <button
                     onClick={() => setIsReportModalOpen(true)}

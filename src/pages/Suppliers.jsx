@@ -13,7 +13,7 @@ const useUserRole = () => {
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from localStorage:', user);  
+        console.log('User data from localStorage:', user);
         console.log('Current user role:', userRole);
         if (user && user.role) {
             setUserRole(user.role);
@@ -119,9 +119,9 @@ const Suppliers = () => {
     }
 
     return (
-        <div className="p-4">
+        <div className="p-4 mt-20">
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-                
+
             </div>
             <div className="flex flex-col gap-4 mb-4 sm:flex-row">
                 <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>

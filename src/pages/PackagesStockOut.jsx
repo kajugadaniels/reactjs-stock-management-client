@@ -13,7 +13,7 @@ const PackagesStockOut = () => {
     }
 
     return (
-        <div className="min-h-screen p-4 bg-gray-100 md:p-8">
+        <div className="min-h-screen p-4 bg-gray-100 md:p-8 mt-20">
             <h1 className="mb-6 text-2xl font-semibold text-gray-800 md:text-3xl">Packages Stock Out Dashboard</h1>
             <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">

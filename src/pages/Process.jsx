@@ -43,7 +43,7 @@ const Process = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="min-h-screen p-4 bg-gray-100 md:p-8">
+        <div className="min-h-screen p-4 bg-gray-100 md:p-8 mt-20">
             <h1 className="mb-6 text-2xl font-semibold text-gray-800 md:text-3xl">Production Process and Finished Product</h1>
             <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
                 

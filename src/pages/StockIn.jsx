@@ -125,7 +125,7 @@ const StockIn = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="p-4">
+        <div className="p-4 mt-20">
             <div className='flex flex-col gap-4 sm:flex-row sm:gap-10 p-4'>
                 
             </div>

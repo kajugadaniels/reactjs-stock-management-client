@@ -39,7 +39,7 @@ const Header = () => {
     };
 
     return (
-        <nav className="flex items-center justify-between p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
+        <nav className="fixed top-0 left-0 w-full flex items-center justify-between p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray z-50">
             <div className="flex items-center space-x-4">
                 <img src="images/logo.jpeg" alt="Jabana" className="w-10 h-10 rounded-full sm:w-14 sm:h-14" />
             </div>

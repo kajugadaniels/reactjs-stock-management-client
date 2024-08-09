@@ -60,7 +60,7 @@ const ProductStockOut = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="p-6 bg-gray-50 min-h-screen mt-20">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
                 <div>

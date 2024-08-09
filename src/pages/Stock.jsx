@@ -83,7 +83,7 @@ const Stock = () => {
     }
 
     return (
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 mt-20">
             <div className="flex flex-wrap gap-4 mb-6">
                 <Link to='/products'>
                     <div className="bg-[rgba(78,189,214,255)] text-white p-2 rounded-lg w-32">
@@ -156,7 +156,7 @@ const Stock = () => {
                 >
                     <div className='flex items-center'>
                         <span className="mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path fill="currentColor" d="M7 12h2v5H7zm8-5h2v10h-2zm-4 7h2v3h-2zm0-4h2v2h-2z"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /><path fill="currentColor" d="M7 12h2v5H7zm8-5h2v10h-2zm-4 7h2v3h-2zm0-4h2v2h-2z" /></svg>
                         </span>
                         Generate Report
                     </div>
@@ -204,13 +204,13 @@ const Stock = () => {
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.note}</td>
                                     <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
                                         <button
-                                            className="px-2 py-1 mr-2 text-xs text-white bg-blue-600 rounded-lg sm:px-3 sm:text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="px-2 py-3 mr-2 text-xs text-white bg-blue-600 rounded-lg sm:px-3 sm:text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                             onClick={() => openDetailsModal(request.id)}
                                         >
                                             View Details
                                         </button>
                                         <button
-                                            className="px-2 py-1 mr-2 text-xs text-white bg-red-600 rounded-lg sm:px-3 sm:text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            className="px-6 py-3 mr-2 text-xs text-white bg-red-600 rounded-lg sm:px-3 sm:text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                                             onClick={() => handleDelete(request.id)}
                                         >
                                             Delete

@@ -98,7 +98,7 @@ const Items = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="p-4">
+        <div className="p-4 mt-20">
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
                 {/* Other elements */}
             </div>

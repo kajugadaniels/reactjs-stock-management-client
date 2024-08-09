@@ -19,50 +19,52 @@ const tableData = [
 
 const Dashboard = () => {
     return (
-        <Box sx={{ flexGrow: 1, p: 2 }}>
-            <Typography variant="h4" gutterBottom>Dashboard</Typography>
-            <Grid container spacing={2}>
-                {/* KPI Diagrams */}
-                {dataKPI.map((data, index) => (
-                    <Grid item xs={12} md={6} lg={3} key={index}>
-                        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Typography variant="h6" sx={{ mb: 2 }}>Stock KPI {index + 1}</Typography>
-                            <ResponsiveContainer width="100%" height={150}>
-                                <PieChart>
-                                    <Pie dataKey="value" data={data} cx="50%" cy="50%" outerRadius={60}>
-                                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </Paper>
-                    </Grid>
-                ))}
-            </Grid>
-            {/* Data Tables */}
-            <Grid container spacing={2} sx={{ mt: 4 }}>
-                {tableData.map((table, index) => (
-                    <Grid item xs={12} md={4} key={index}>
-                        <TableContainer component={Paper}>
-                            <Table sx={{ minWidth: 350 }} aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell colSpan={2}>{table.title}</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {table.data.map((row, idx) => (
-                                        <TableRow key={idx}>
-                                            <TableCell component="th" scope="row">{row.metric}</TableCell>
-                                            <TableCell align="right">{row.value}</TableCell>
+        <div className='mt-20'>
+            <Box sx={{ flexGrow: 1, p: 2 }}>
+                <Typography variant="h4" gutterBottom>Dashboard</Typography>
+                <Grid container spacing={2}>
+                    {/* KPI Diagrams */}
+                    {dataKPI.map((data, index) => (
+                        <Grid item xs={12} md={6} lg={3} key={index}>
+                            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <Typography variant="h6" sx={{ mb: 2 }}>Stock KPI {index + 1}</Typography>
+                                <ResponsiveContainer width="100%" height={150}>
+                                    <PieChart>
+                                        <Pie dataKey="value" data={data} cx="50%" cy="50%" outerRadius={60}>
+                                            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </Paper>
+                        </Grid>
+                    ))}
+                </Grid>
+                {/* Data Tables */}
+                <Grid container spacing={2} sx={{ mt: 4 }}>
+                    {tableData.map((table, index) => (
+                        <Grid item xs={12} md={4} key={index}>
+                            <TableContainer component={Paper}>
+                                <Table sx={{ minWidth: 350 }} aria-label="simple table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell colSpan={2}>{table.title}</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Grid>
-                ))}
-            </Grid>
-        </Box>
+                                    </TableHead>
+                                    <TableBody>
+                                        {table.data.map((row, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell component="th" scope="row">{row.metric}</TableCell>
+                                                <TableCell align="right">{row.value}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Grid>
+                    ))}
+                </Grid>
+            </Box>
+        </div>
     );
 }
 

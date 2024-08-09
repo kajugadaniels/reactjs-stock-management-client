@@ -43,7 +43,7 @@ const FinishedProduct = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="min-h-screen p-8 bg-gray-100">
+        <div className="min-h-screen p-8 bg-gray-100 mt-20">
             <h1 className="mb-6 text-3xl font-semibold text-gray-800">Finished Products</h1>
             <div className="mb-4">
                 <button

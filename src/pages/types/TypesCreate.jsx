@@ -71,7 +71,7 @@ const TypesCreate = ({ isOpen, onClose }) => {
                     </div>
                     <div className="flex justify-end space-x-4">
                         <button type="button" className="btn btn-outline" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                        <button type="submit" className="btn btn-primary bg-[#00BDD6] text-white rounded p-2" disabled={loading}>
                             {loading ? 'Creating...' : 'Create Type'}
                         </button>
                     </div>
