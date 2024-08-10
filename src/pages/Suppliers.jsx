@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useSupplier } from '../hooks';
+import DataTable from 'react-data-table-component';
 import EmployeesCreate from './employees/EmployeesCreate';
 import AddItemToSupplier from './suppliers/AddItemToSupplier';
 import SupplierItems from './suppliers/SupplierItems';
@@ -8,201 +9,184 @@ import SuppliersCreate from './suppliers/SuppliersCreate';
 import SuppliersEdit from './suppliers/SuppliersEdit';
 import SupplierReport from './reports/SupplierReport';
 
-const useUserRole = () => {
-    const [userRole, setUserRole] = useState(null);
-
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from localStorage:', user);
-        console.log('Current user role:', userRole);
-        if (user && user.role) {
-            setUserRole(user.role);
-        }
-    }, []);
-
-    return userRole;
-};
-
 const Suppliers = () => {
-    const { suppliers, deleteSupplier, loading, error } = useSupplier();
+    const [suppliers, setSuppliers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isSuppliersCreateOpen, setIsSuppliersCreateOpen] = useState(false);
     const [isSuppliersEditOpen, setIsSuppliersEditOpen] = useState(false);
     const [isSupplierItemsOpen, setIsSupplierItemsOpen] = useState(false);
     const [isAddItemToSupplierOpen, setIsAddItemToSupplierOpen] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [isEmployeesCreateOpen, setIsEmployeesCreateOpen] = useState(false);
-    const userRole = useUserRole();
     const [isReportFormOpen, setIsReportFormOpen] = useState(false);
 
-    const toggleSuppliersCreateModal = () => {
-        setIsSuppliersCreateOpen(!isSuppliersCreateOpen);
-        setIsSuppliersEditOpen(false);
-        setIsSupplierItemsOpen(false);
-        setIsEmployeesCreateOpen(false);
+    const fetchSuppliers = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/suppliers`);
+            setSuppliers(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching suppliers:', error);
+            setError('Failed to fetch suppliers. Please try again later.');
+            setLoading(false);
+        }
     };
 
-    const toggleEmployeesCreateModal = () => {
-        setIsEmployeesCreateOpen(!isEmployeesCreateOpen);
-        setIsSuppliersCreateOpen(false);
-        setIsSuppliersEditOpen(false);
-        setIsSupplierItemsOpen(false);
-    };
-
-    const openSuppliersEditModal = (supplier) => {
-        setSelectedSupplier(supplier);
-        setIsSuppliersEditOpen(true);
-        setIsSuppliersCreateOpen(false);
-        setIsSupplierItemsOpen(false);
-    };
-
-    const openSupplierItemsModal = (supplier) => {
-        setSelectedSupplier(supplier);
-        setIsSupplierItemsOpen(true);
-        setIsSuppliersCreateOpen(false);
-        setIsSuppliersEditOpen(false);
-    };
-
-    const openAddItemToSupplierModal = (supplier) => {
-        setSelectedSupplier(supplier);
-        setIsAddItemToSupplierOpen(true);
-        setIsSuppliersCreateOpen(false);
-        setIsSuppliersEditOpen(false);
-    };
-
-    const closeSuppliersEditModal = () => {
-        setIsSuppliersEditOpen(false);
-        setSelectedSupplier(null);
-    };
-
-    const closeSupplierItemsModal = () => {
-        setIsSupplierItemsOpen(false);
-        setSelectedSupplier(null);
-    };
-
-    const closeAddItemToSupplierModal = () => {
-        setIsAddItemToSupplierOpen(false);
-        setSelectedSupplier(null);
-    };
-
-    const toggleReportForm = () => {
-        setIsReportFormOpen(!isReportFormOpen);
-    };
+    useEffect(() => {
+        fetchSuppliers();
+    }, []);
 
     const handleDeleteSupplier = async (id) => {
-        const confirmed = await Swal.fire({
+        const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this supplier!',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, keep it',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
         });
 
-        if (confirmed.isConfirmed) {
+        if (result.isConfirmed) {
             try {
-                await deleteSupplier(id);
-                Swal.fire('Deleted!', 'Supplier has been deleted.', 'success').then(() => {
-                    window.location.reload();
-                });
+                await axios.delete(`${import.meta.env.VITE_API_URL}/suppliers/${id}`);
+                Swal.fire('Deleted!', 'Supplier has been deleted.', 'success');
+                fetchSuppliers();
             } catch (error) {
+                console.error('Error deleting supplier:', error);
                 Swal.fire('Error!', 'Failed to delete supplier.', 'error');
             }
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const columns = [
+        {
+            name: 'Supplier Id',
+            selector: row => `supplier-${row.id}`,
+            sortable: true,
+        },
+        {
+            name: 'Names',
+            selector: row => row.name,
+            sortable: true,
+        },
+        {
+            name: 'Contact',
+            selector: row => row.contact,
+            sortable: true,
+        },
+        {
+            name: 'Address',
+            selector: row => row.address,
+            sortable: true,
+        },
+        {
+            name: 'Action',
+            cell: (row) => (
+                <div className="flex space-x-2">
+                    <button onClick={() => openSuppliersEditModal(row)} className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        Edit
+                    </button>
+                    <button onClick={() => handleDeleteSupplier(row.id)} className="text-red-600 hover:text-red-800">
+                        Delete
+                    </button>
+                    <button onClick={() => openSupplierItemsModal(row)} className="text-green-600 hover:text-green-800">
+                        View Items
+                    </button>
+                    <button onClick={() => openAddItemToSupplierModal(row)} className="text-yellow-600 hover:text-yellow-800">
+                        Add Item
+                    </button>
+                </div>
+            ),
+        },
+    ];
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
+
+    const toggleSuppliersCreateModal = () => setIsSuppliersCreateOpen(!isSuppliersCreateOpen);
+    const toggleEmployeesCreateModal = () => setIsEmployeesCreateOpen(!isEmployeesCreateOpen);
+    const toggleReportForm = () => setIsReportFormOpen(!isReportFormOpen);
+
+    const openSuppliersEditModal = (supplier) => {
+        setSelectedSupplier(supplier);
+        setIsSuppliersEditOpen(true);
+    };
+
+    const openSupplierItemsModal = (supplier) => {
+        setSelectedSupplier(supplier);
+        setIsSupplierItemsOpen(true);
+    };
+
+    const openAddItemToSupplierModal = (supplier) => {
+        setSelectedSupplier(supplier);
+        setIsAddItemToSupplierOpen(true);
+    };
+
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="p-4 mt-20">
-            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-
+        <div className="container py-32 mx-auto">
+            <div className="flex flex-col mb-8 md:flex-row md:items-center md:justify-between">
+                <h1 className="mb-4 text-3xl font-semibold text-gray-800 md:mb-0">Suppliers Management</h1>
+                <div className="flex space-x-2">
+                    <button onClick={toggleSuppliersCreateModal} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+                        Add Supplier
+                    </button>
+                    <button onClick={toggleEmployeesCreateModal} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+                        Add Employee
+                    </button>
+                    <button onClick={toggleReportForm} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+                        Generate Report
+                    </button>
+                </div>
             </div>
-            <div className="flex flex-col gap-4 mb-4 sm:flex-row">
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleSuppliersCreateModal}>
-                    Add Supplier
-                </button>
 
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleEmployeesCreateModal}>
-                    Add Employee
-                </button>
-
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleReportForm}>
-                    Generate Report
-                </button>
-
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={suppliers}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
             </div>
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-full bg-white rounded-lg shadow">
-                    <thead>
-                        <tr>
-                            <th scope="col" className="px-6 py-3 border">Supplier Id</th>
-                            <th scope="col" className="px-6 py-3 border">Names</th>
-                            <th scope="col" className="px-6 py-3 border">Contact</th>
-                            <th scope="col" className="px-6 py-3 border">Address</th>
-                            <th scope="col" className="px-6 py-3 border">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {suppliers.map((supplier) => (
-                            <tr className="border-t" key={supplier.id}>
-                                <td className="px-4 py-4 border">supplier-{supplier.id}</td>
-                                <td className="px-10 py-4 border">{supplier.name}</td>
-                                <td className="px-10 py-4 border">{supplier.contact}</td>
-                                <td className="px-10 py-4 border">{supplier.address}</td>
-                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    <button className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3" onClick={() => openSuppliersEditModal(supplier)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                                                <path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5" />
-                                                <path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" />
-                                            </g>
-                                        </svg>
-                                    </button>
-                                    <button className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3" onClick={() => handleDeleteSupplier(supplier.id)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
-                                            <path
-                                                fill="currentColor"
-                                                fill-rule="evenodd"
-                                                d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z"
-                                            />
-                                        </svg>
-                                    </button>
-                                    <button className="font-medium text-green-600 dark:text-green-500 hover:underline ms-3" onClick={() => openSupplierItemsModal(supplier)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
-                                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" color="currentColor">
-                                                <path d="M21.544 11.045c.304.426.456.64.456.955c0 .316-.152.529-.456.955C20.178 14.871 16.689 19 12 19c-4.69 0-8.178-4.13-9.544-6.045C2.152 12.529 2 12.315 2 12c0-.316.152-.529.456-.955C3.822 9.129 7.311 5 12 5c4.69 0 8.178 4.13 9.544 6.045" />
-                                                <path d="M15 12a3 3 0 1 0-6 0a3 3 0 0 0 6 0" />
-                                            </g>
-                                        </svg>
-                                    </button>
-                                    <button className="font-medium text-yellow-600 dark:text-yellow-500 hover:underline ms-3" onClick={() => openAddItemToSupplierModal(supplier)}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24">
-                                            <path
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M12 5v14m-7-7h14"
-                                            />
-                                        </svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {isSuppliersCreateOpen && <SuppliersCreate isOpen={isSuppliersCreateOpen} onClose={toggleSuppliersCreateModal} />}
-            {isSuppliersEditOpen && <SuppliersEdit isOpen={isSuppliersEditOpen} onClose={closeSuppliersEditModal} supplier={selectedSupplier} />}
-            {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={closeSupplierItemsModal} supplier={selectedSupplier} />}
-            {isAddItemToSupplierOpen && <AddItemToSupplier isOpen={isAddItemToSupplierOpen} onClose={closeAddItemToSupplierModal} supplier={selectedSupplier} />}
+
+            {isSuppliersCreateOpen && <SuppliersCreate isOpen={isSuppliersCreateOpen} onClose={toggleSuppliersCreateModal} onSupplierCreated={fetchSuppliers} />}
+            {isSuppliersEditOpen && <SuppliersEdit isOpen={isSuppliersEditOpen} onClose={() => setIsSuppliersEditOpen(false)} supplier={selectedSupplier} onSupplierUpdated={fetchSuppliers} />}
+            {isSupplierItemsOpen && <SupplierItems isOpen={isSupplierItemsOpen} onClose={() => setIsSupplierItemsOpen(false)} supplier={selectedSupplier} />}
+            {isAddItemToSupplierOpen && <AddItemToSupplier isOpen={isAddItemToSupplierOpen} onClose={() => setIsAddItemToSupplierOpen(false)} supplier={selectedSupplier} />}
             {isEmployeesCreateOpen && <EmployeesCreate isOpen={isEmployeesCreateOpen} onClose={toggleEmployeesCreateModal} />}
             {isReportFormOpen && <SupplierReport onClose={toggleReportForm} />}
         </div>

@@ -1,4 +1,3 @@
-import useItems from './items/useItems';
 import useSupplier from './suppliers/useSupplier';
 import useStockIn from './stockIn/useStockIn';
 import useRequests from './request/useRequests';
@@ -9,7 +8,6 @@ import { useProductStockIn } from './productStockIn/useProductStockIn';
 import useSupplierItem from './suppliers/useSupplierItem';
 
 export {
-    useItems,
     useSupplier,
     useStockIn,
     useRequests,

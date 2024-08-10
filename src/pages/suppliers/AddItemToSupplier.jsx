@@ -1,70 +1,168 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useSupplierItem } from '../../hooks';
 
 const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
-    const { items, loading, error, isAdding, fetchAvailableItems, addItemToSupplier } = useSupplierItem();
-    const [selectedItem, setSelectedItem] = useState('');
+    const [allItems, setAllItems] = useState([]);
+    const [displayedItems, setDisplayedItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [isAdding, setIsAdding] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
+        const fetchAvailableItems = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/available-items`);
+                setAllItems(response.data.data);
+                setDisplayedItems(response.data.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching available items:', error);
+                setError('Failed to fetch available items');
+                setLoading(false);
+            }
+        };
+
         fetchAvailableItems();
     }, []);
 
-    const handleAddItem = () => {
-        if (!selectedItem) {
-            Swal.fire('Error', 'Please select an item.', 'error');
+    useEffect(() => {
+        const filtered = allItems.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.type_name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setDisplayedItems(filtered);
+    }, [searchTerm, allItems]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleAddItems = async () => {
+        if (selectedItems.length === 0) {
+            Swal.fire('Error', 'Please select at least one item.', 'error');
             return;
         }
 
-        addItemToSupplier(supplier.id, selectedItem, onClose, () => setSelectedItem(''));
+        setIsAdding(true);
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/supplier-items`, {
+                supplier_id: supplier.id,
+                item_ids: selectedItems.map(item => item.id)
+            });
+            
+            Swal.fire('Success', 'Items added to supplier successfully!', 'success');
+            onClose();
+            setSelectedItems([]);
+        } catch (error) {
+            console.error('Error adding items to supplier:', error);
+            Swal.fire('Error', error.response?.data?.message || 'Failed to add items to supplier.', 'error');
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    const toggleItemSelection = (item) => {
+        setSelectedItems(prev => 
+            prev.some(i => i.id === item.id)
+                ? prev.filter(i => i.id !== item.id)
+                : [...prev, item]
+        );
+    };
+
+    const removeSelectedItem = (itemId) => {
+        setSelectedItems(prev => prev.filter(item => item.id !== itemId));
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="p-6 bg-white rounded-md shadow-md">
-                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
-                    Close
-                </button>
-                <h2 className="mb-4 text-xl font-semibold">Add Item to {supplier.name}</h2>
-                <div className="mb-4">
-                    <label className="block mb-2 text-sm font-medium text-gray-600">Supplier</label>
-                    <input
-                        type="text"
-                        value={supplier.name}
-                        readOnly
-                        className="w-full px-4 py-2 bg-gray-200 border border-gray-300 rounded-md"
-                    />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
+                <h2 className="mb-4 text-2xl font-semibold">Add Items to {supplier.name}</h2>
+                
+                {/* Selected Items Badges */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                    {selectedItems.map(item => (
+                        <span key={item.id} className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center">
+                            {item.name}
+                            <button onClick={() => removeSelectedItem(item.id)} className="ml-1 text-green-600 hover:text-green-800">
+                                ×
+                            </button>
+                        </span>
+                    ))}
                 </div>
-                <div className="mb-4">
-                    <label className="block mb-2 text-sm font-medium text-gray-600">Item</label>
-                    {loading ? (
-                        <div>Loading items...</div>
-                    ) : error ? (
-                        <div>Error: {error}</div>
-                    ) : (
-                        <select
-                            value={selectedItem}
-                            onChange={(e) => setSelectedItem(e.target.value)}
-                            className="w-full px-4 py-2 bg-white border border-gray-300 rounded-md"
-                        >
-                            <option value="">Select an item</option>
-                            {items.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                    {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
-                                </option>
-                            ))}
-                        </select>
+
+                {/* Custom Select Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                    >
+                        Select items...
+                    </button>
+                    
+                    {isDropdownOpen && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                            <div className="p-2">
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search items..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                                />
+                            </div>
+                            <ul className="overflow-auto max-h-60">
+                                {displayedItems.map(item => (
+                                    <li
+                                        key={item.id}
+                                        onClick={() => toggleItemSelection(item)}
+                                        className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedItems.some(i => i.id === item.id)}
+                                            onChange={() => {}}
+                                            className="mr-2"
+                                        />
+                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     )}
                 </div>
-                <button
-                    onClick={handleAddItem}
-                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                    disabled={isAdding}
-                >
-                    {isAdding ? 'Adding...' : 'Add Item'}
-                </button>
+
+                <div className="flex justify-end mt-6 space-x-4">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleAddItems}
+                        className="px-4 py-2 bg-[#00BDD6] text-white rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                        disabled={isAdding || selectedItems.length === 0}
+                    >
+                        {isAdding ? 'Adding...' : 'Add Items'}
+                    </button>
+                </div>
             </div>
         </div>
     );
