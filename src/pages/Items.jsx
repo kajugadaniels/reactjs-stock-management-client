@@ -1,22 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 import CategoryCreate from './categories/CategoryCreate';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import TypesCreate from './types/TypesCreate';
-import { useItems } from '../hooks';
 
 const Items = () => {
-    const { items, loading, error, fetchItems, deleteItem } = useItems();
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isItemsCreateOpen, setIsItemsCreateOpen] = useState(false);
-    const [isCategoryCreateOpen, setIsCategoryCreateOpen] = useState(false);
     const [isTypesCreateOpen, setIsTypesCreateOpen] = useState(false);
     const [isItemsEditOpen, setIsItemsEditOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const fetchItems = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/items`);
+            setItems(response.data);
+            setLoading(false);
+        } catch (error) {
+            setError('Error fetching items');
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchItems();
@@ -25,14 +35,6 @@ const Items = () => {
     const toggleItemsCreateModal = () => {
         setIsItemsCreateOpen(!isItemsCreateOpen);
         setIsItemsEditOpen(false);
-        setIsCategoryCreateOpen(false);
-        setIsTypesCreateOpen(false);
-    };
-
-    const toggleCategoryCreateModal = () => {
-        setIsCategoryCreateOpen(!isCategoryCreateOpen);
-        setIsItemsCreateOpen(false);
-        setIsItemsEditOpen(false);
         setIsTypesCreateOpen(false);
     };
 
@@ -40,14 +42,12 @@ const Items = () => {
         setIsTypesCreateOpen(!isTypesCreateOpen);
         setIsItemsCreateOpen(false);
         setIsItemsEditOpen(false);
-        setIsCategoryCreateOpen(false);
     };
 
     const openItemsEditModal = (item) => {
         setSelectedItem(item);
         setIsItemsEditOpen(true);
         setIsItemsCreateOpen(false);
-        setIsCategoryCreateOpen(false);
     };
 
     const closeItemsEditModal = () => {
@@ -56,124 +56,160 @@ const Items = () => {
     };
 
     const handleDeleteItem = async (id) => {
-        const confirmed = await Swal.fire({
+        const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'You will not be able to recover this item!',
+            text: "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'No, keep it'
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
         });
 
-        if (confirmed.isConfirmed) {
+        if (result.isConfirmed) {
             try {
-                await deleteItem(id);
-                Swal.fire('Deleted!', 'Item has been deleted.', 'success').then(() => {
-                    fetchItems();
-                });
+                await axios.delete(`${import.meta.env.VITE_API_URL}/items/${id}`);
+                Swal.fire('Deleted!', 'Your item has been deleted.', 'success');
+                fetchItems();
             } catch (error) {
-                Swal.fire('Error!', 'Failed to delete item.', 'error');
+                Swal.fire('Error!', 'Failed to delete the item.', 'error');
             }
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const columns = [
+        {
+            name: 'Item Id',
+            selector: row => `item-${row.id}`,
+            sortable: true,
+        },
+        {
+            name: 'Name',
+            selector: row => row.name,
+            sortable: true,
+        },
+        {
+            name: 'Category',
+            selector: row => row.category_name,
+            sortable: true,
+        },
+        {
+            name: 'Type',
+            selector: row => row.type_name,
+            sortable: true,
+        },
+        {
+            name: 'Capacity',
+            selector: row => `${row.capacity || 'N/A'} ${row.unit || ''}`,
+            sortable: true,
+        },
+        {
+            name: 'Action',
+            cell: (row) => (
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => openItemsEditModal(row)}
+                        className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => handleDeleteItem(row.id)}
+                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                        Delete
+                    </button>
+                </div>
+            ),
+        },
+    ];
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+    const filteredItems = useMemo(() => {
+        return items.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.type_name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [items, searchTerm]);
 
-    const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(items.length / itemsPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="p-4 mt-20">
-            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
-                {/* Other elements */}
-            </div>
-
-            <div className="flex flex-col items-center justify-start gap-4 mb-4 sm:flex-row">
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleItemsCreateModal}>
-                    Add Item
-                </button>
-                {/* 
-                    <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleCategoryCreateModal}>
-                        Add Category
-                    </button>
-                */}
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleTypesCreateModal}>
-                    Add Types
-                </button>
-            </div>
-
-            <div className="overflow-x-auto">
-                <table className="w-full min-w-full bg-white rounded-lg shadow">
-                    <thead>
-                        <tr>
-                            <th scope='col' className="px-6 py-3 border">Item Id</th>
-                            <th scope='col' className="px-6 py-3 border">Name</th>
-                            <th scope='col' className="px-6 py-3 border">Category</th>
-                            <th scope='col' className="px-6 py-3 border">Type</th>
-                            <th scope='col' className="px-6 py-3 border">Capacity</th>
-                            <th scope='col' className="px-6 py-3 border">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentItems.map((item) => (
-                            <tr className="border-t" key={item.id}>
-                                <td className="px-4 py-4 border">item-{item.id}</td>
-                                <td className="px-10 py-4 border">{item.name}</td>
-                                <td className="px-10 py-4 border">{item.category_name}</td>
-                                <td className="px-10 py-4 border">{item.type_name}</td>
-                                <td className="px-10 py-4 border">{item.capacity} {item.unit}</td>
-                                <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    <button
-                                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline ms-3"
-                                        onClick={() => openItemsEditModal(item)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v9.5"/><path d="M14 2v4a2 2 0 0 0 2 2h4m-6.622 7.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></g></svg>
-                                    </button>
-                                    <button
-                                        className="font-medium text-red-600 dark:text-red-500 hover:underline ms-3"
-                                        onClick={() => handleDeleteItem(item.id)}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="m6.774 6.4l.812 13.648a.8.8 0 0 0 .798.752h7.232a.8.8 0 0 0 .798-.752L17.226 6.4zm11.655 0l-.817 13.719A2 2 0 0 1 15.616 22H8.384a2 2 0 0 1-1.996-1.881L5.571 6.4H3.5v-.7a.5.5 0 0 1 .5-.5h16a.5.5 0 0 1 .5.5v.7zM14 3a.5.5 0 0 1 .5.5v.7h-5v-.7A.5.5 0 0 1 10 3zM9.5 9h1.2l.5 9H10zm3.8 0h1.2l-.5 9h-1.2z"/></svg>
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination controls */}
-            <div className="flex justify-center mt-4">
-                {pageNumbers.map((number) => (
-                    <button
-                        key={number}
-                        onClick={() => paginate(number)}
-                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        <div className="container py-32 mx-auto">
+            <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+                <h1 className="text-3xl font-semibold text-gray-800">Items Management</h1>
+                <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search items..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
+                        />
+                        
+                    </div>
+                    <button 
+                        onClick={toggleItemsCreateModal} 
+                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
                     >
-                        {number}
+                        Add Item
                     </button>
-                ))}
+                    <button 
+                        onClick={toggleTypesCreateModal} 
+                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
+                    >
+                        Add Types
+                    </button>
+                </div>
             </div>
 
-            {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} />}
-            {isCategoryCreateOpen && <CategoryCreate isOpen={isCategoryCreateOpen} onClose={toggleCategoryCreateModal} />}
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={filteredItems}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
+            </div>
+
+            {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} onItemCreated={fetchItems} />}
             {isTypesCreateOpen && <TypesCreate isOpen={isTypesCreateOpen} onClose={toggleTypesCreateModal} />}
-            {isItemsEditOpen && <ItemsEdit isOpen={isItemsEditOpen} onClose={closeItemsEditModal} item={selectedItem} />}
+            {isItemsEditOpen && <ItemsEdit isOpen={isItemsEditOpen} onClose={closeItemsEditModal} item={selectedItem} onItemUpdated={fetchItems} />}
         </div>
     );
 };
