@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
-import CategoryCreate from './categories/CategoryCreate';
+import { SearchIcon } from '@heroicons/react/solid';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import TypesCreate from './types/TypesCreate';
@@ -178,7 +178,7 @@ const Items = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
                         />
-                        
+                        <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
                     </div>
                     <button 
                         onClick={toggleItemsCreateModal} 

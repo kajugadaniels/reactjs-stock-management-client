@@ -118,7 +118,6 @@ const ItemsCreate = ({ isOpen, onClose, onItemCreated }) => {
                             value={formData.type_id}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            required
                             disabled={!formData.category_id}
                         >
                             <option value="">Select type</option>
@@ -135,7 +134,6 @@ const ItemsCreate = ({ isOpen, onClose, onItemCreated }) => {
                             value={formData.capacity}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            required
                         >
                             <option value="">Select capacity</option>
                             <option value="5">5 kg</option>
@@ -152,7 +150,6 @@ const ItemsCreate = ({ isOpen, onClose, onItemCreated }) => {
                             value={formData.unit}
                             onChange={handleChange}
                             className="w-full p-2 border border-gray-300 rounded-md"
-                            required
                         >
                             <option value="">Select unit</option>
                             <option value="kg">Kg</option>
