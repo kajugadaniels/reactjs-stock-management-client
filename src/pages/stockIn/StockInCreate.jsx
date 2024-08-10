@@ -1,20 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useStockIn } from '../../hooks';
 
-const StockInCreate = ({ isOpen, onClose }) => {
-    const {
-        suppliers,
-        employees,
-        getItemsBySupplier,
-        addStockIn,
-        loading,
-        error,
-    } = useStockIn();
+const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
     const [formData, setFormData] = useState({
         supplier_id: '',
-        item_id: '',
-        quantity: '',
+        items: [],
         plate_number: '',
         batch_number: '',
         comment: '',
@@ -22,71 +13,138 @@ const StockInCreate = ({ isOpen, onClose }) => {
         registered_by: '',
         loading_payment_status: false,
     });
-    const [items, setItems] = useState([]);
-    const [isAdding, setIsAdding] = useState(false);
+    const [suppliers, setSuppliers] = useState([]);
+    const [employees, setEmployees] = useState([]);
+    const [availableItems, setAvailableItems] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            setFormData({
-                supplier_id: '',
-                item_id: '',
-                quantity: '',
-                plate_number: '',
-                batch_number: '',
-                comment: '',
-                date: '',
-                registered_by: '',
-                loading_payment_status: false,
-            });
+            fetchInitialData();
+            resetForm();
         }
     }, [isOpen]);
 
+    const fetchInitialData = async () => {
+        setLoading(true);
+        try {
+            const [suppliersResponse, employeesResponse] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/suppliers`),
+                axios.get(`${import.meta.env.VITE_API_URL}/employees`)
+            ]);
+            setSuppliers(suppliersResponse.data);
+            setEmployees(employeesResponse.data);
+        } catch (error) {
+            console.error('Error fetching initial data:', error);
+            Swal.fire('Error', 'Failed to fetch initial data', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            supplier_id: '',
+            items: [],
+            plate_number: '',
+            batch_number: '',
+            comment: '',
+            date: '',
+            registered_by: '',
+            loading_payment_status: false,
+        });
+        setAvailableItems([]);
+    };
+
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData((prevState) => ({
+        setFormData(prevState => ({
             ...prevState,
             [name]: type === 'checkbox' ? checked : value,
         }));
     };
 
+    const handleSupplierChange = async (e) => {
+        const supplierId = e.target.value;
+        setFormData(prevState => ({ ...prevState, supplier_id: supplierId, items: [] }));
+        if (supplierId) {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplierId}`);
+                const items = response.data.data || response.data;
+                setAvailableItems(Array.isArray(items) ? items : []);
+                if (items.length === 0) {
+                    Swal.fire('Warning', 'This supplier doesn\'t supply any items', 'warning');
+                }
+            } catch (error) {
+                console.error('Error fetching items for supplier:', error);
+                Swal.fire('Error', 'Failed to fetch items for supplier', 'error');
+                setAvailableItems([]);
+            }
+        } else {
+            setAvailableItems([]);
+        }
+    };
+
+    const handleItemSelect = (e) => {
+        const selectedItemId = e.target.value;
+        if (selectedItemId) {
+            const selectedItem = availableItems.find(item => item.id === parseInt(selectedItemId));
+            if (selectedItem) {
+                setFormData(prevState => {
+                    const existingItemIndex = prevState.items.findIndex(i => i.item_id === selectedItem.id);
+                    if (existingItemIndex > -1) {
+                        const updatedItems = [...prevState.items];
+                        updatedItems[existingItemIndex] = {
+                            ...updatedItems[existingItemIndex],
+                            quantity: updatedItems[existingItemIndex].quantity + 1
+                        };
+                        return { ...prevState, items: updatedItems };
+                    } else {
+                        return {
+                            ...prevState,
+                            items: [...prevState.items, { item_id: selectedItem.id, name: selectedItem.name, category_name: selectedItem.category_name, type_name: selectedItem.type_name, capacity: selectedItem.capacity, unit: selectedItem.unit, quantity: 1 }]
+                        };
+                    }
+                });
+            }
+        }
+    };
+
+    const handleItemQuantityChange = (itemId, quantity) => {
+        setFormData(prevState => ({
+            ...prevState,
+            items: prevState.items.map(item =>
+                item.item_id === itemId ? { ...item, quantity: parseInt(quantity, 10) } : item
+            )
+        }));
+    };
+
+    const handleItemRemove = (itemId) => {
+        setFormData(prevState => ({
+            ...prevState,
+            items: prevState.items.filter(item => item.item_id !== itemId)
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsAdding(true);
+        setLoading(true);
         try {
-            await addStockIn(formData);
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-ins`, formData);
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In created successfully',
                 icon: 'success',
                 confirmButtonText: 'OK',
             }).then(() => {
+                onStockInCreated();
                 onClose();
-                window.location.reload();
             });
         } catch (error) {
-            Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-            });
+            console.error('Error creating stock in:', error);
+            Swal.fire('Error', error.response?.data?.message || 'Failed to create Stock In', 'error');
         } finally {
-            setIsAdding(false);
-        }
-    };
-
-    const handleSupplierChange = async (e) => {
-        const supplierId = e.target.value;
-        setFormData((prevState) => ({
-            ...prevState,
-            supplier_id: supplierId,
-        }));
-
-        try {
-            const itemsData = await getItemsBySupplier(supplierId);
-            setItems(itemsData);
-        } catch (error) {
-            setError(error.message);
+            setLoading(false);
         }
     };
 
@@ -114,7 +172,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 required
                             >
                                 <option value="">Select Supplier</option>
-                                {suppliers && suppliers.map((supplier) => (
+                                {suppliers.map((supplier) => (
                                     <option key={supplier.id} value={supplier.id}>
                                         {supplier.name}
                                     </option>
@@ -122,46 +180,59 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             </select>
                         </div>
                         <div className="w-3/5">
-                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_id">
-                                Item
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="item_select">
+                                Select Item
                             </label>
                             <select
-                                id="item_id"
-                                name="item_id"
-                                value={formData.item_id}
-                                onChange={handleInputChange}
+                                id="item_select"
+                                onChange={handleItemSelect}
                                 className="w-full p-3 border border-gray-300 rounded"
-                                required
-                                disabled={!formData.supplier_id || loading}
+                                disabled={!formData.supplier_id}
                             >
-                                <option value="">Select Item</option>
-                                {items.map((item) => (
+                                <option value="">Select an item</option>
+                                {availableItems.map(item => (
                                     <option key={item.id} value={item.id}>
-                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
+                                        {item.name} - {item.category_name} - {item.type_name} {item.capacity} {item.unit}
                                     </option>
                                 ))}
                             </select>
                         </div>
                     </div>
 
+                    <div>
+                        <h3 className="mb-2 text-lg font-semibold">Selected Items</h3>
+                        {formData.items.length === 0 ? (
+                            <p className="text-gray-500">No items selected</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {formData.items.map(item => (
+                                    <div key={item.item_id} className="flex items-center justify-between p-2 bg-gray-100 rounded">
+                                        <div>
+                                            {item.name} - {item.category_name} - {item.type_name} {item.capacity} {item.unit}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={item.quantity}
+                                                onChange={(e) => handleItemQuantityChange(item.item_id, e.target.value)}
+                                                className="w-20 p-1 border border-gray-300 rounded"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleItemRemove(item.item_id)}
+                                                className="px-2 py-1 text-red-500 bg-white border border-red-500 rounded hover:bg-red-500 hover:text-white"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     <div className="flex gap-6">
-                        <div className="w-1/3">
-                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="quantity">
-                                Quantity
-                            </label>
-                            <input
-                                type="number"
-                                id="quantity"
-                                name="quantity"
-                                value={formData.quantity}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border border-gray-300 rounded"
-                                required
-                            />
-                        </div>
-
-                        
                         <div className="w-1/3">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="plate_number">
                                 Plate Number
@@ -172,7 +243,7 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="plate_number"
                                 value={formData.plate_number}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border border-gray-300 rounded"
+                                className="w-full p-3 border border-gray-300 rounded"
                                 required
                             />
                         </div>
@@ -186,26 +257,10 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 name="batch_number"
                                 value={formData.batch_number}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border border-gray-300 rounded"
+                                className="w-full p-3 border border-gray-300 rounded"
                             />
                         </div>
-                    </div>
-                    <div className="flex gap-6">
-                        <div className="w-1/2">
-                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
-                                Date
-                            </label>
-                            <input
-                                type="date"
-                                id="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleInputChange}
-                                className="w-full p-2 border border-gray-300 rounded"
-                                required
-                            />
-                        </div>
-                        <div className="w-1/2">
+                        <div className="w-1/3">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
                                 Registered By
                             </label>
@@ -218,28 +273,30 @@ const StockInCreate = ({ isOpen, onClose }) => {
                                 required
                             >
                                 <option value="">Select Employee</option>
-                                {employees && employees.map((employee) => (
+                                {employees.map(employee => (
                                     <option key={employee.id} value={employee.id}>
                                         {employee.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
+                        <div className="w-1/3">
+                            <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                                Date
+                            </label>
+                            <input
+                                type="date"
+                                id="date"
+                                name="date"
+                                value={formData.date}
+                                onChange={handleInputChange}
+                                className="w-full p-3 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <label className="block mb-2 text-sm font-bold text-gray-700">
-                            Loading Payment Status
-                        </label>
-                        <input
-                            type="checkbox"
-                            id="loading_payment_status"
-                            name="loading_payment_status"
-                            checked={formData.loading_payment_status}
-                            onChange={handleInputChange}
-                            className="w-4 h-4"
-                        /> Paid
-                    </div>
-                    <div className="flex-1">
+
+                    <div>
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="comment">
                             Comment
                         </label>
@@ -248,15 +305,30 @@ const StockInCreate = ({ isOpen, onClose }) => {
                             name="comment"
                             value={formData.comment}
                             onChange={handleInputChange}
-                            className="w-full p-2 border border-gray-300 rounded"
+                            className="w-full p-3 border border-gray-300 rounded"
                         />
                     </div>
+
+                    <div className="flex items-center">
+                        <label className="block text-sm font-bold text-gray-700" htmlFor="loading_payment_status">
+                            Loading Payment Status
+                        </label>
+                        <input
+                            type="checkbox"
+                            id="loading_payment_status"
+                            name="loading_payment_status"
+                            checked={formData.loading_payment_status}
+                            onChange={handleInputChange}
+                            className="ml-2"
+                        />
+                    </div>
+
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
-                        disabled={loading || !formData.supplier_id || !formData.item_id}
+                        className="w-full p-3 text-white bg-blue-500 rounded hover:bg-blue-600"
+                        disabled={loading}
                     >
-                        {isAdding ? 'Creating...' : 'Create Stock In'}
+                        {loading ? 'Creating...' : 'Create Stock In'}
                     </button>
                 </form>
             </div>
