@@ -57,7 +57,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
             Swal.fire('Error', 'Please select at least one item.', 'error');
             return;
         }
-
+    
         setIsAdding(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/supplier-items`, {
@@ -65,7 +65,22 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 item_ids: selectedItems.map(item => item.id)
             });
             
-            Swal.fire('Success', 'Items added to supplier successfully!', 'success');
+            const { created_items, existing_items } = response.data;
+            
+            let message = '';
+            if (created_items.length > 0) {
+                message += `${created_items.length} item(s) added successfully. `;
+            }
+            if (existing_items.length > 0) {
+                const existingItemNames = existing_items.map(item => item.item.name).join(', ');
+                message += `Supplier already supplies these item(s): ${existingItemNames}.`;
+            }
+    
+            Swal.fire({
+                title: 'Operation Complete',
+                html: message,
+                icon: 'info'
+            });
             onClose();
             setSelectedItems([]);
         } catch (error) {

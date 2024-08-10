@@ -85,7 +85,7 @@ const Suppliers = () => {
             name: 'Action',
             cell: (row) => (
                 <div className="flex space-x-2">
-                    <button onClick={() => openSuppliersEditModal(row)} className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <button onClick={() => openSuppliersEditModal(row)} className="text-blue-600 hover:text-blue-800">
                         Edit
                     </button>
                     <button onClick={() => handleDeleteSupplier(row.id)} className="text-red-600 hover:text-red-800">
