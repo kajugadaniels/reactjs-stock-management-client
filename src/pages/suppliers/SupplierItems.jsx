@@ -103,7 +103,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                 {loading ? (
                     <div>Loading...</div>
                 ) : error ? (
-                    <div className="text-yellow-500">{error}. Please try again later.</div>
+                    <div className="text-yellow-500">{error}</div>
                 ) : items.length === 0 ? (
                     <div className="text-lg font-semibold text-yellow-600">
                         This supplier hasn't supplied any items yet.

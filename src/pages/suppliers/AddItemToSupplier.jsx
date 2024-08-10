@@ -77,9 +77,9 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
             }
     
             Swal.fire({
-                title: 'Operation Complete',
+                title: 'Success',
                 html: message,
-                icon: 'info'
+                icon: 'success'
             });
             onClose();
             setSelectedItems([]);
@@ -114,7 +114,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 <div className="flex flex-wrap gap-2 mb-4">
                     {selectedItems.map(item => (
                         <span key={item.id} className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center">
-                            {item.name}
+                            {item.name} - {item.category_name || ''} - {item.type_name || ''} {item.capacity || ''}{item.unit}
                             <button onClick={() => removeSelectedItem(item.id)} className="ml-1 text-green-600 hover:text-green-800">
                                 ×
                             </button>
@@ -155,7 +155,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                                             onChange={() => {}}
                                             className="mr-2"
                                         />
-                                        {item.name} - {item.category_name || 'Unknown Category'} - {item.type_name || 'Unknown Type'} {item.capacity || ''}{item.unit}
+                                        {item.name} - {item.category_name || ''} - {item.type_name || ''} {item.capacity || ''}{item.unit}
                                     </li>
                                 ))}
                             </ul>
