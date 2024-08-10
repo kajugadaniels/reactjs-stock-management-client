@@ -85,21 +85,21 @@ const Suppliers = () => {
             name: 'Action',
             cell: (row) => (
                 <div className="flex space-x-2">
-                    <button onClick={() => openSuppliersEditModal(row)} className="text-blue-600 hover:text-blue-800">
+                    <button onClick={() => openSuppliersEditModal(row)} className="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded hover:bg-blue-200">
                         Edit
                     </button>
-                    <button onClick={() => handleDeleteSupplier(row.id)} className="text-red-600 hover:text-red-800">
+                    <button onClick={() => handleDeleteSupplier(row.id)} className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded hover:bg-red-200">
                         Delete
                     </button>
-                    <button onClick={() => openSupplierItemsModal(row)} className="text-green-600 hover:text-green-800">
+                    <button onClick={() => openSupplierItemsModal(row)} className="px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded hover:bg-green-200">
                         View Items
                     </button>
-                    <button onClick={() => openAddItemToSupplierModal(row)} className="text-yellow-600 hover:text-yellow-800">
+                    <button onClick={() => openAddItemToSupplierModal(row)} className="px-2 py-1 text-xs font-semibold text-yellow-600 bg-yellow-100 rounded hover:bg-yellow-200">
                         Add Item
                     </button>
                 </div>
             ),
-        },
+        }
     ];
 
     const customStyles = {

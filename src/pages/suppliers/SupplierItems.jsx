@@ -1,94 +1,132 @@
 import React, { useEffect, useState } from 'react';
-import { useSupplierItem } from '../../hooks';
+import axios from 'axios';
+import DataTable from 'react-data-table-component';
 
 const SupplierItems = ({ isOpen, onClose, supplier }) => {
-    const { items, loading, error, fetchSupplierItems } = useSupplierItem();
+    const [items, setItems] = useState([]);
     const [categories, setCategories] = useState([]);
     const [types, setTypes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
             try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/categories`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch categories');
-                }
-                const data = await response.json();
-                setCategories(data || []);
+                const [itemsResponse, categoriesResponse, typesResponse] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/categories`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/types`)
+                ]);
+
+                setItems(itemsResponse.data.data || []);
+                setCategories(categoriesResponse.data || []);
+                setTypes(typesResponse.data || []);
             } catch (error) {
-                console.error('Error fetching categories:', error);
+                console.error('Error fetching data:', error);
+                setError(error.response?.data?.message || 'Failed to fetch data');
+            } finally {
+                setLoading(false);
             }
         };
 
-        const fetchTypes = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/types`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch types');
-                }
-                const data = await response.json();
-                setTypes(data || []);
-            } catch (error) {
-                console.error('Error fetching types:', error);
-            }
-        };
-
-        if (supplier) {
-            fetchSupplierItems(supplier.id);
+        if (supplier && isOpen) {
+            fetchData();
         }
-        fetchCategories();
-        fetchTypes();
-    }, [supplier]);
+    }, [supplier, isOpen]);
 
-    const getCategoryName = (categoryId) => {
-        const category = categories.find((cat) => cat.id === categoryId);
-        return category ? category.name : '';
-    };
+    const columns = [
+        {
+            name: 'Item ID',
+            selector: row => row.id,
+            sortable: true,
+        },
+        {
+            name: 'Name',
+            selector: row => row.name,
+            sortable: true,
+        },
+        {
+            name: 'Category',
+            selector: row => categories.find(cat => cat.id === row.category_id)?.name || 'Unknown',
+            sortable: true,
+        },
+        {
+            name: 'Type',
+            selector: row => types.find(type => type.id === row.type_id)?.name || 'Unknown',
+            sortable: true,
+        },
+        {
+            name: 'Capacity',
+            selector: row => `${row.capacity || 'N/A'} ${row.unit || ''}`,
+            sortable: true,
+        },
+    ];
 
-    const getTypeName = (typeId) => {
-        const type = types.find((typ) => typ.id === typeId);
-        return type ? type.name : '';
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="p-6 bg-white rounded-md shadow-md">
-                <button onClick={onClose} className="mb-4 text-red-500 hover:underline">
-                    Close
-                </button>
-                <h2 className="mb-4 text-xl font-semibold">Items for {supplier.name}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-full max-w-4xl p-6 bg-white rounded-lg shadow-xl">
+                <h2 className="mb-4 text-2xl font-semibold">Items for {supplier.name}</h2>
                 {loading ? (
                     <div>Loading...</div>
                 ) : error ? (
-                    <div>{error}</div>
+                    <div className="text-yellow-500">{error}. Please try again later.</div>
                 ) : items.length === 0 ? (
-                    <div>No items yet.</div>
+                    <div className="text-lg font-semibold text-yellow-600">
+                        This supplier hasn't supplied any items yet.
+                    </div>
                 ) : (
-                    <table className="min-w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th className="px-10 py-5 border">Item ID</th>
-                                <th className="px-10 py-5 border">Name</th>
-                                <th className="px-10 py-5 border">Category</th>
-                                <th className="px-10 py-5 border">Type</th>
-                                <th className="px-10 py-5 border">Capacity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item) => (
-                                <tr key={item.id}>
-                                    <td className="px-10 py-5 border">{item.id}</td>
-                                    <td className="px-10 py-5 border">{item.name}</td>
-                                    <td className="px-10 py-5 border">{getCategoryName(item.category_id)}</td>
-                                    <td className="px-10 py-5 border">{getTypeName(item.type_id)}</td>
-                                    <td className="px-10 py-5 border">{item.capacity} {item.unit}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    <DataTable
+                        columns={columns}
+                        data={items}
+                        pagination
+                        responsive
+                        highlightOnHover
+                        pointerOnHover
+                        customStyles={customStyles}
+                    />
                 )}
+                <div className="flex justify-end mt-4">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     );
