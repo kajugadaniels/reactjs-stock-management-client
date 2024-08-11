@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const StockInDetails = ({ isOpen, onClose, stockInId }) => {
     const [stockInDetails, setStockInDetails] = useState(null);
@@ -16,19 +17,16 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
     const fetchStockInDetails = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${stockInId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch stock in details');
-            }
-            const data = await response.json();
-            setStockInDetails(data);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-ins/${stockInId}`, {
+                timeout: 5000, // Set a timeout of 5 seconds
+            });
+            setStockInDetails(response.data);
         } catch (error) {
             setError(error.message);
         } finally {
             setLoading(false);
         }
     };
-
 
     const downloadInvoice = () => {
         const input = document.getElementById('invoice');
@@ -68,20 +66,16 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
         });
     };
     
-    
-    
-    
-
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-2xl p-6 bg-white rounded-md shadow-md">
+            <div className="w-full max-w-6xl p-6 bg-white rounded-md shadow-md">
                 <button onClick={onClose} className="float-right mb-4 text-red-500 hover:underline">
                     Close
                 </button>
                 <div className="mb-6 text-center">
-                    <h2 className="text-2xl font-bold text-gray-800">Jabana Maize Mailing</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">Jabana Maize Milling</h2>
                     <h3 className="text-xl font-semibold text-gray-600">Stock In Details</h3>
                 </div>
                 {loading ? (
@@ -92,90 +86,75 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                     stockInDetails && (
                         <div id="invoice" className="p-4 border rounded-lg">
                             <div className="mb-8">
-                                <h4 className="mb-2 text-lg font-semibold text-indigo-600">Supplier Information</h4>
+                                <h4 className="mb-2 text-lg font-semibold text-[#00BDD6]">Supplier Information</h4>
                                 <table className="min-w-full bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th className="px-4 py-2 text-left text-gray-700 border">Name</th>
+                                            <th className="px-4 py-2 text-left text-gray-700 border">Contact</th>
+                                            <th className="px-4 py-2 text-left text-gray-700 border">Address</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Name</td>
                                             <td className="px-4 py-2 text-gray-600 border">{stockInDetails.supplier.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Contact</td>
                                             <td className="px-4 py-2 text-gray-600 border">{stockInDetails.supplier.contact}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Address</td>
                                             <td className="px-4 py-2 text-gray-600 border">{stockInDetails.supplier.address}</td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div className="mb-8">
-                                <h4 className="mb-2 text-lg font-semibold text-indigo-600">Stock In Details</h4>
-                                <table className="min-w-full bg-white">
-                                    <tbody>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">ID</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.id}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Item</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Category</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.category.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Type</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.type.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Quantity</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.quantity}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Plate Number</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.plate_number}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Batch Number</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.batch_number}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Date</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{new Date(stockInDetails.date).toLocaleDateString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Loading Payment Status</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Registered By</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.employee.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="px-4 py-2 font-medium text-gray-700 border">Comment</td>
-                                            <td className="px-4 py-2 text-gray-600 border">{stockInDetails.comment || 'N/A'}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <h4 className="mb-2 text-lg font-semibold text-[#00BDD6]">Stock In Details</h4>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full bg-white">
+                                        <thead>
+                                            <tr>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">ID</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Item</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Category</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Type</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Quantity</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Plate Number</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Batch Number</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Date</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Loading Payment Status</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Registered By</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Comment</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.id}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.name}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.category.name}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.type.name}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.quantity}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.plate_number}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.batch_number}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{new Date(stockInDetails.date).toLocaleDateString()}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.employee.name}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.comment || 'N/A'}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             <div className="mt-8 text-right">
-                                <p className="text-sm">Jabana Maize Mailing</p>
+                                <p className="text-sm">Jabana Maize Milling</p>
                                 <p className="text-sm">Contact: +250 123 456 789</p>
                                 <p className="text-sm">Address: Kigali, Rwanda</p>
                             </div>
                             <div className="mt-4 text-right">
                                 <button
-                                    id="download-button"  // Add this id here
+                                    id="download-button"
                                     onClick={downloadInvoice}
-                                    className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                                    className={`px-6 py-3 font-semibold text-white bg-[#00BDD6] rounded-md hover:bg-[#48b0c0] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     Download as PDF
                                 </button>
                             </div>
-
                         </div>
                     )
                 )}
