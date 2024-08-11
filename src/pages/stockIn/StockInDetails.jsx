@@ -129,7 +129,7 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.name}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.category.name}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.type.name}</td>
-                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.quantity}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.init_qty}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.plate_number}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.batch_number}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{new Date(stockInDetails.date).toLocaleDateString()}</td>

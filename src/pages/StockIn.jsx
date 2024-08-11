@@ -135,6 +135,11 @@ const StockIn = () => {
         },
         {
             name: 'Quantity',
+            selector: row => row.init_qty,
+            sortable: true,
+        },
+        {
+            name: 'Remaining Qty',
             selector: row => row.quantity,
             sortable: true,
         },
