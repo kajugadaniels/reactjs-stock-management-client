@@ -292,6 +292,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                 onChange={handleInputChange}
                                 className="w-full p-3 border border-gray-300 rounded"
                                 required
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
                     </div>

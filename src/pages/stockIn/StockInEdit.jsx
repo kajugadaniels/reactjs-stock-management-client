@@ -193,6 +193,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 onChange={handleItemSelect}
                                 className="w-full p-3 border border-gray-300 rounded"
                                 disabled={!formData.supplier_id}
+                                required
                             >
                                 <option value="">Select an item</option>
                                 {availableItems.map(item => (
@@ -218,6 +219,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                         value={formData.quantity}
                                         onChange={(e) => handleItemQuantityChange(e.target.value)}
                                         className="w-20 p-1 border border-gray-300 rounded"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -238,6 +240,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 value={formData.plate_number}
                                 onChange={handleInputChange}
                                 className="w-full p-3 border border-gray-300 rounded"
+                                required
                             />
                         </div>
                         <div>
@@ -251,6 +254,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 value={formData.batch_number}
                                 onChange={handleInputChange}
                                 className="w-full p-3 border border-gray-300 rounded"
+                                required
                             />
                         </div>
                         <div>
@@ -264,8 +268,11 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 value={formData.date}
                                 onChange={handleInputChange}
                                 className="w-full p-3 border border-gray-300 rounded"
+                                max={new Date().toISOString().split('T')[0]}
+                                required
                             />
                         </div>
+
                         <div>
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
                                 Registered By
@@ -276,6 +283,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 value={formData.registered_by}
                                 onChange={handleInputChange}
                                 className="w-full p-3 border border-gray-300 rounded"
+                                required
                             >
                                 <option value="">Select Employee</option>
                                 {employees.map(employee => (
