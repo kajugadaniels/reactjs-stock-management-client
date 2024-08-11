@@ -15,14 +15,19 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
     const fetchApprovedQuantities = async (requestId) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs?request_id=${requestId}`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`);
             const stockOuts = response.data;
 
             const quantities = {};
             details.items.forEach(item => {
-                const stockOut = stockOuts.find(so => so.request_id === details.id);
-                if (stockOut) {
-                    quantities[item.id] = stockOut.quantity;
+                const relevantStockOut = stockOuts.find(so => 
+                    so.request_id === details.id && 
+                    so.request.items.some(ri => ri.item.id === item.item.id)
+                );
+
+                if (relevantStockOut) {
+                    const matchingItem = relevantStockOut.request.items.find(ri => ri.item.id === item.item.id);
+                    quantities[item.id] = matchingItem ? matchingItem.pivot.quantity : 'Not found';
                 } else {
                     quantities[item.id] = 'Request still pending';
                 }

@@ -18,7 +18,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         items: [],
     });
     const [errors, setErrors] = useState({});
-    const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
+    const [requestFrom, setRequestFrom] = useState('');
     const [otherRequestFrom, setOtherRequestFrom] = useState('');
     const [outsideClient, setOutsideClient] = useState('');
     const [filteredItems, setFilteredItems] = useState([]);
@@ -26,6 +26,8 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
     const [employees, setEmployees] = useState([]);
     const [finishedItems, setFinishedItems] = useState([]);
     const [rawMaterialItems, setRawMaterialItems] = useState([]);
+    const [availableQuantities, setAvailableQuantities] = useState({});
+    const [quantityErrors, setQuantityErrors] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -72,6 +74,38 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         }
     }, [requestFrom, finishedItems]);
 
+    const checkAvailability = async (items) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const stockPromises = items.map(item =>
+                axios.get(`${import.meta.env.VITE_API_URL}/stock-ins/${item.id}`)
+            );
+            const stockResponses = await Promise.all(stockPromises);
+
+            const availability = {};
+            stockResponses.forEach((response, index) => {
+                availability[items[index].id] = response.data.quantity;
+            });
+
+            setAvailableQuantities(availability);
+
+            const errors = {};
+            items.forEach(item => {
+                if (item.quantity > availability[item.id]) {
+                    errors[item.id] = `Insufficient stock. Available: ${availability[item.id]}`;
+                }
+            });
+            setQuantityErrors(errors);
+
+        } catch (error) {
+            setError('Failed to fetch stock details');
+            setAvailableQuantities({});
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -80,39 +114,13 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         });
     };
 
-    const handleAddItem = (item) => {
-        if (formData.items.some(selectedItem => selectedItem.id === item.id)) {
-            Swal.fire('Error', 'The item has already been selected.', 'error');
-            return;
-        }
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            items: [...prevFormData.items, { ...item, quantity: 1 }],
-        }));
-        setIsDropdownOpen(false);
-    };
-
-    const handleItemQuantityChange = (index, quantity) => {
-        setFormData((prevFormData) => {
-            const updatedItems = [...prevFormData.items];
-            updatedItems[index].quantity = quantity;
-            return {
-                ...prevFormData,
-                items: updatedItems,
-            };
-        });
-    };
-
-    const handleRemoveItem = (index) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            items: prevFormData.items.filter((_, i) => i !== index),
-        }));
-    };
-
     const handleRequestFromChange = (e) => {
         const value = e.target.value;
         setRequestFrom(value);
+        setFormData(prevState => ({
+            ...prevState,
+            request_from: value
+        }));
         if (value !== 'Others') {
             setOtherRequestFrom('');
         }
@@ -121,8 +129,52 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         }
     };
 
+    const handleAddItem = (item) => {
+        if (formData.items.some(selectedItem => selectedItem.id === item.id)) {
+            Swal.fire('Error', 'The item has already been selected.', 'error');
+            return;
+        }
+        setFormData((prevFormData) => {
+            const updatedItems = [...prevFormData.items, { ...item, quantity: 1 }];
+            checkAvailability(updatedItems);
+            return {
+                ...prevFormData,
+                items: updatedItems,
+            };
+        });
+        setIsDropdownOpen(false);
+    };
+
+    const handleItemQuantityChange = (index, quantity) => {
+        setFormData((prevFormData) => {
+            const updatedItems = [...prevFormData.items];
+            updatedItems[index].quantity = quantity;
+            checkAvailability(updatedItems);
+            return {
+                ...prevFormData,
+                items: updatedItems,
+            };
+        });
+    };
+
+    const handleRemoveItem = (index) => {
+        setFormData((prevFormData) => {
+            const updatedItems = prevFormData.items.filter((_, i) => i !== index);
+            checkAvailability(updatedItems);
+            return {
+                ...prevFormData,
+                items: updatedItems,
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (Object.keys(quantityErrors).length > 0) {
+            Swal.fire('Error', 'Please correct the quantity errors before submitting.', 'error');
+            return;
+        }
+
         setLoading(true);
         setErrors({});
 
@@ -148,7 +200,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
 
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/requests`, requestData);
-            
+
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -348,12 +400,13 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                     key={index}
                                     className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center"
                                 >
-                                    {item.name} - {item.supplier_name || ''} - {item.type_name || ''} {item.quantity}
+                                    {item.name} - {item.supplier_name || ''} - {item.type_name || ''}
                                     <input
                                         type="number"
                                         value={item.quantity}
                                         onChange={(e) => handleItemQuantityChange(index, parseInt(e.target.value, 10))}
-                                        className="ml-2 w-16 px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                                        className={`ml-2 w-16 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] ${quantityErrors[item.id] ? 'border-red-500' : 'border-green-300'
+                                            }`}
                                     />
                                     <button
                                         type="button"
@@ -365,6 +418,9 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 </div>
                             ))}
                         </div>
+                        {Object.entries(quantityErrors).map(([itemId, error]) => (
+                            <p key={itemId} className="mt-2 text-xs text-red-500">{error}</p>
+                        ))}
                     </div>
 
                     <div>
