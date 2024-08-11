@@ -1,36 +1,198 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 import CreateRequest from './request/CreateRequest';
 import StockOutApproval from './Stockout/StockOutApproval';
 import RequestDetails from './request/RequestDetails';
 import RequestPackaging from './request/RequestPackaging';
-import { useRequests } from '../hooks';
 import RequestReport from './reports/RequestReport';
 
 const Stock = () => {
-    const {
-        requests,
-        loading,
-        error,
-        fetchRequests,
-        handleDelete,
-        fetchRequestDetails,
-    } = useRequests();
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isRequestItemModalOpen, setIsRequestItemModalOpen] = useState(false);
     const [isStockOutModalOpen, setIsStockOutModalOpen] = useState(false);
     const [isRequestPackagingOpen, setIsRequestPackagingOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState(null);
     const [requestDetails, setRequestDetails] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
     const [isRequestReportOpen, setIsRequestReportOpen] = useState(false);
+    const [filters, setFilters] = useState({
+        status: '',
+        requester: '',
+        startDate: '',
+        endDate: '',
+    });
 
-    const toggleRequestItemModal = () => {
-        setIsRequestItemModalOpen(!isRequestItemModalOpen);
+    useEffect(() => {
+        fetchRequests();
+    }, [filters]);
+
+    const fetchRequests = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests`, { params: filters });
+            setRequests(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching requests:', error);
+            setError('Error fetching requests');
+            setLoading(false);
+        }
     };
 
-    const toggleRequestPackaging = () => {
-        setIsRequestPackagingOpen(!isRequestPackagingOpen);
+    const handleDelete = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`${import.meta.env.VITE_API_URL}/requests/${id}`);
+                Swal.fire('Deleted!', 'Request has been deleted.', 'success');
+                fetchRequests();
+            } catch (error) {
+                Swal.fire('Error!', 'Failed to delete request.', 'error');
+            }
+        }
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            [name]: value
+        }));
+    };
+
+    const columns = [
+        {
+            name: 'Req Id',
+            selector: row => row.id,
+            sortable: true,
+        },
+        {
+            name: 'Item',
+            selector: row => row.items[0]?.item?.name || '',
+            sortable: true,
+            cell: row => (
+                <div>
+                    {row.items.map((item, index) => (
+                        <div key={index}>
+                            <div>{item.item?.name || ''}</div>
+                            <div className="text-xs text-gray-500">
+                                {item.item?.category?.name || ''} - {item.item?.type?.name || ''}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                {item.item?.capacity || ''} {item.item?.unit || ''}
+                            </div>
+                            {index < row.items.length - 1 && <hr className="my-1" />}
+                        </div>
+                    ))}
+                </div>
+            ),
+        },
+        {
+            name: 'Contact Person',
+            selector: row => row.contact_person?.name || '',
+            sortable: true,
+        },
+        {
+            name: 'Requester',
+            selector: row => row.requester_name,
+            sortable: true,
+        },
+        {
+            name: 'Request From',
+            selector: row => row.request_from,
+            sortable: true,
+        },
+        {
+            name: 'Status',
+            cell: row => (
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                    {row.status}
+                </span>
+            ),
+        },
+        {
+            name: 'Request For',
+            selector: row => row.request_for?.name || '',
+            sortable: true,
+        },
+        {
+            name: 'Quantity',
+            selector: row => row.quantity,
+            sortable: true,
+        },
+        {
+            name: 'Actions',
+            cell: row => (
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => openDetailsModal(row.id)}
+                        className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    >
+                        View Details
+                    </button>
+                    {row.status === 'Pending' && (
+                        <button
+                            onClick={() => openStockOutModal(row.id)}
+                            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+                        >
+                            Approve Stock Out
+                        </button>
+                    )}
+                </div>
+            ),
+        },
+    ];
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
+
+    const openDetailsModal = async (requestId) => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
+            setRequestDetails(response.data);
+            setIsRequestItemModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching request details:', error);
+        }
     };
 
     const openStockOutModal = (requestId) => {
@@ -38,242 +200,123 @@ const Stock = () => {
         setIsStockOutModalOpen(true);
     };
 
-    const closeStockOutModal = () => {
-        setSelectedRequestId(null);
-        setIsStockOutModalOpen(false);
-    };
-
-    const openDetailsModal = async (requestId) => {
-        try {
-            const details = await fetchRequestDetails(requestId);
-            setRequestDetails(details);
-            setIsRequestItemModalOpen(true);
-        } catch (error) {
-            console.error('Error fetching request details:', error);
-        }
-    };
-
-    const closeDetailsModal = () => {
-        setRequestDetails(null);
-        setIsRequestItemModalOpen(false);
-    };
-
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentRequests = requests.slice(indexOfFirstItem, indexOfLastItem);
-
-    const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(requests.length / itemsPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const toggleRequestReport = () => {
-        setIsRequestReportOpen(!isRequestReportOpen);
-    };
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
-
     return (
-        <div className="p-4 md:p-6 mt-20">
-            <div className="flex flex-wrap gap-4 mb-6">
-                <Link to='/products'>
-                    <div className="bg-[rgba(78,189,214,255)] text-white p-2 rounded-lg w-32">
-                        <div className="flex ">
-                            <div>
-                                <div className='flex'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16">
-                                        <path fill="white" d="M6.75 1.5a.75.75 0 0 0 0 1.5h4.75A1.5 1.5 0 0 1 13 4.5v7a1.5 1.5 0 0 1-1.5 1.5H6.75a.75.75 0 0 0 0 1.5h4.75a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3zm3.03 5.97l-2.5-2.5a.75.75 0 0 0-1.06 1.06l1.22 1.22H1.75a.75.75 0 0 0 0 1.5h5.69L6.22 9.97a.75.75 0 1 0 1.06 1.06l2.5-2.5a.75.75 0 0 0 0-1.06"></path>
-                                    </svg>
-                                    <div className="text-xs font-bold">Stock In</div>
-                                </div>
-                                <div className='px-2 py-3 mt-1 bg-white rounded-lg'>
-                                    <div className="text-lg font-bold text-[rgba(78,189,214,255)]">29 T</div>
-                                    <div className="pt-1 pr-1 text-xs text-gray-500">230 Packaging</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-                <Link to='/StockOut'>
-                    <div className="w-32 p-2 text-white bg-purple-500 rounded-lg">
-                        <div className="flex items-center ">
-                            <div>
-                                <div className='flex gap-1'>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
-                                        <g fill="none">
-                                            <path d="M24 0v24H0V0zM12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z"></path>
-                                            <path fill="white" d="M5 6a1 1 0 0 0-2 0v12a1 1 0 1 0 2 0zm7.703 10.95a1 1 0 0 0 0-1.415L10.167 13H20a1 1 0 1 0 0-2h-9.833l2.536-2.536a1 1 0 0 0-1.415-1.414l-4.242 4.243a1 1 0 0 0 0 1.414l4.242 4.243a1 1 0 0 0 1.415 0"></path>
-                                        </g>
-                                    </svg>
-                                    <div className="text-xs font-bold">Stock Out</div>
-                                </div>
-                                <div className='bg-[#ebfdfe] px-2 py-3 mt-1 rounded-lg'>
-                                    <div className="text-lg font-bold text-purple-500">79 T</div>
-                                    <div className="pt-1 pr-1 text-xs text-gray-500">100 Packaging</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-            </div>
-
-            <div className="flex flex-wrap items-center mb-6 space-y-2 md:space-y-0 md:space-x-4">
-                <button
-                    onClick={toggleRequestItemModal}
-                    className="mt-1 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
-                >
-                    <div className='flex items-center'>
-                        <span className="mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
-                        </span>
+        <div className="p-4 mt-20">
+            <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
+                <h1 className="text-3xl font-semibold text-gray-800">Stock Management</h1>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => setIsRequestItemModalOpen(true)}
+                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
+                    >
                         Request Item
-                    </div>
-                </button>
-
-                <button
-                    onClick={toggleRequestPackaging}
-                    className="mt-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
-                >
-                    <div className='flex items-center'>
-                        <span className="mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20"><g fill="#fff"><path d="M5 11a1 1 0 1 1 0-2h10a1 1 0 1 1 0 2z"></path><path d="M9 5a1 1 0 0 1 2 0v10a1 1 0 1 1-2 0z"></path></g></svg>
-                        </span>
+                    </button>
+                    <button
+                        onClick={() => setIsRequestPackagingOpen(true)}
+                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
+                    >
                         Request Package
-                    </div>
-                </button>
-                <button
-                    onClick={toggleRequestReport}
-                    className="mt-4 px-4 py-2 text-sm bg-[#00BDD6] text-white rounded-lg hover:bg-primary/80"
-                >
-                    <div className='flex items-center'>
-                        <span className="mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /><path fill="currentColor" d="M7 12h2v5H7zm8-5h2v10h-2zm-4 7h2v3h-2zm0-4h2v2h-2z" /></svg>
-                        </span>
+                    </button>
+                    <button
+                        onClick={() => setIsRequestReportOpen(true)}
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    >
                         Generate Report
-                    </div>
-                </button>
+                    </button>
+                </div>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
-                    <thead className="bg-gray-200">
-                        <tr>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Check</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Req Id</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Item</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Contact Person</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Requester</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Request From</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Status</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Request For</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Quantity</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Note</th>
-                            <th className="px-2 py-3 text-xs font-medium text-left text-gray-700 border-b border-gray-300 sm:px-4 sm:text-sm">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {currentRequests.length > 0 ? (
-                            currentRequests.map((request) => (
-                                <tr key={request.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
-                                    <td className="px-2 py-4 border-b border-gray-300 sm:px-4"><input type="checkbox" /></td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.id}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
-                                        {request.items.map(item => (
-                                            <div key={item.id}>
-                                                <span>{item.item?.name || ''}</span> <span>{item.item?.capacity || ''}{item.item?.unit || ''}</span>
-                                            </div>
-                                        ))}
-                                    </td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.contact_person?.name || ''}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.requester_name}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_from}</td>
-                                    <td className={`px-2 sm:px-4 py-4 text-xs sm:text-sm text-white border-b border-gray-300 ${request.status === 'Pending' ? 'bg-red-600' : 'bg-green-600'}`}>
-                                        {request.status}
-                                    </td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.request_for?.name || ''}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.quantity}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">{request.note}</td>
-                                    <td className="px-2 py-4 text-xs text-gray-600 border-b border-gray-300 sm:px-4 sm:text-sm">
-                                        <button
-                                            className="px-2 py-3 mr-2 text-xs text-white bg-blue-600 rounded-lg sm:px-3 sm:text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            onClick={() => openDetailsModal(request.id)}
-                                        >
-                                            View Details
-                                        </button>
-                                        <button
-                                            className="px-6 py-3 mr-2 text-xs text-white bg-red-600 rounded-lg sm:px-3 sm:text-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            onClick={() => handleDelete(request.id)}
-                                        >
-                                            Delete
-                                        </button>
-                                        {request.status === 'Pending' && (
-                                            <button
-                                                className="px-2 py-1 text-xs text-white bg-green-600 rounded-lg sm:px-3 sm:text-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                                onClick={() => openStockOutModal(request.id)}
-                                            >
-                                                Approve Stock Out
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="11" className="px-6 py-4 text-sm text-center text-gray-600 border-b border-gray-300">No requests found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="flex justify-center mt-4">
-                    {pageNumbers.map((number) => (
-                        <button
-                            key={number}
-                            onClick={() => paginate(number)}
-                            className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                        >
-                            {number}
-                        </button>
-                    ))}
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
+                    <select
+                        name="status"
+                        value={filters.status}
+                        onChange={handleFilterChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                    >
+                        <option value="">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                    </select>
                 </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Requester</label>
+                    <input
+                        type="text"
+                        name="requester"
+                        value={filters.requester}
+                        onChange={handleFilterChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                        placeholder="Enter requester name"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
+                    <input
+                        type="date"
+                        name="startDate"
+                        value={filters.startDate}
+                        onChange={handleFilterChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                    />
+                </div>
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">End Date</label>
+                    <input
+                        type="date"
+                        name="endDate"
+                        value={filters.endDate}
+                        onChange={handleFilterChange}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                    />
+                </div>
+            </div>
+
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={requests}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    striped
+                    progressPending={loading}
+                    progressComponent={<div>Loading...</div>}
+                    noDataComponent={<div className="p-4">No requests found</div>}
+                    customStyles={customStyles}
+                />
             </div>
 
             <CreateRequest
                 isOpen={isRequestItemModalOpen}
-                onClose={toggleRequestItemModal}
+                onClose={() => setIsRequestItemModalOpen(false)}
                 fetchRequests={fetchRequests}
             />
             <StockOutApproval
                 isOpen={isStockOutModalOpen}
-                onClose={closeStockOutModal}
+                onClose={() => setIsStockOutModalOpen(false)}
                 requestId={selectedRequestId}
                 fetchRequests={fetchRequests}
             />
             <RequestDetails
-                isOpen={isRequestItemModalOpen}
-                onClose={closeDetailsModal}
+                isOpen={isRequestItemModalOpen && requestDetails !== null}
+                onClose={() => {
+                    setIsRequestItemModalOpen(false);
+                    setRequestDetails(null);
+                }}
                 details={requestDetails}
             />
             <RequestPackaging
                 isOpen={isRequestPackagingOpen}
-                onClose={toggleRequestPackaging}
+                onClose={() => setIsRequestPackagingOpen(false)}
             />
             <RequestReport
                 isOpen={isRequestReportOpen}
-                onClose={toggleRequestReport}
+                onClose={() => setIsRequestReportOpen(false)}
             />
         </div>
     );
-};
+}
 
 export default Stock;
