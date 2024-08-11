@@ -323,13 +323,22 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                         />
                     </div>
 
-                    <button
-                        type="submit"
-                        className="w-full p-3 text-white bg-blue-500 rounded hover:bg-blue-600"
-                        disabled={loading}
-                    >
-                        {loading ? 'Creating...' : 'Create Stock In'}
-                    </button>
+                    <div className="flex items-center justify-between">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`px-6 py-3 font-semibold text-white bg-[#00BDD6] rounded-md hover:bg-[#48b0c0] ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            {loading ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={resetForm}
+                            className="px-6 py-3 font-semibold text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                        >
+                            Reset
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
