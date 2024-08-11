@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
@@ -16,15 +17,12 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
 
     const fetchRequestDetails = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch request details');
-            }
-            const data = await response.json();
-            setItems(data.items);
-            checkAvailability(data.items);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
+            setItems(response.data.items);
+            checkAvailability(response.data.items);
         } catch (error) {
             console.error('Error fetching request details:', error);
+            setError('Failed to fetch request details');
         }
     };
 
@@ -32,20 +30,21 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         setLoading(true);
         setError(null);
         try {
+            const stockPromises = items.map(item => 
+                axios.get(`${import.meta.env.VITE_API_URL}/stock-ins/${item.id}`)
+            );
+            const stockResponses = await Promise.all(stockPromises);
+            
             const availability = {};
-            for (const item of items) {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-ins/${item.id}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch stock details');
-                }
-                const stockIn = await response.json();
-                availability[item.id] = stockIn.quantity;
-            }
+            stockResponses.forEach((response, index) => {
+                availability[items[index].id] = response.data.quantity;
+            });
+
             setAvailableQuantities(availability);
             const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
             setIsAvailable(allAvailable);
         } catch (error) {
-            setError(error.message);
+            setError('Failed to fetch stock details');
             setIsAvailable(false);
             setAvailableQuantities({});
         } finally {
@@ -65,23 +64,12 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/stock-outs`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    request_id: requestId,
-                    items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
-                    date: new Date().toISOString().split('T')[0],
-                    status: 'Pending',
-                }),
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs`, {
+                request_id: requestId,
+                items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
+                date: new Date().toISOString().split('T')[0],
+                status: 'Pending',
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Validation Error');
-            }
 
             Swal.fire({
                 icon: 'success',
@@ -89,15 +77,16 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 text: 'Stock out pending successfully!',
             });
             onClose();
-            fetchRequests();
+            if (typeof fetchRequests === 'function') {
+                fetchRequests();
+            }
         } catch (error) {
-            setError(error.message);
+            setError(error.response?.data?.message || 'Failed to approve stock out');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.message || 'Failed to approve stock out',
+                text: error.response?.data?.message || 'Failed to approve stock out',
             });
-            console.error('Error approving stock out:', error);
         } finally {
             setLoading(false);
         }
@@ -108,18 +97,18 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-full max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md">
-                <h2 className="mb-4 text-2xl font-semibold">Stock Out Approval</h2>
-                <div className="mb-4">
+                <h2 className="mb-6 text-2xl font-semibold text-gray-800">Stock Out Approval</h2>
+                <div className="mb-6">
                     <label className="block mb-2 text-sm font-medium text-gray-600">Request ID</label>
                     <input
                         type="text"
                         value={requestId}
                         readOnly
-                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                     />
                 </div>
                 {items.map((item, index) => (
-                    <div key={item.id} className="mb-4">
+                    <div key={item.id} className="mb-6">
                         <label className="block mb-2 text-sm font-medium text-gray-600">
                             {item.item.name} - Supplier: {item.supplier.name}
                         </label>
@@ -127,21 +116,31 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                             type="number"
                             value={item.pivot.quantity}
                             onChange={(event) => handleQuantityChange(event, index)}
-                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                         />
-                        <span className={`text-sm ${availableQuantities[item.id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
-                            {availableQuantities[item.id] >= item.pivot.quantity ? 'Available' : `Not Available, only ${availableQuantities[item.id]} available`}
+                        <span className={`block mt-2 text-sm ${availableQuantities[item.id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
+                            {availableQuantities[item.id] >= item.pivot.quantity 
+                                ? 'Available' 
+                                : `Not Available, only ${availableQuantities[item.id]} available`}
                         </span>
                     </div>
                 ))}
                 {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
                 <div className="flex justify-end space-x-4">
-                    <button type="button" className="text-gray-500" onClick={onClose}>
+                    <button 
+                        type="button" 
+                        className="px-4 py-2 text-gray-500 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00BDD6]" 
+                        onClick={onClose}
+                    >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        className={`bg-blue-600 text-white p-2 rounded ${loading || !isAvailable ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
+                        className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] ${
+                            loading || !isAvailable 
+                                ? 'bg-gray-400 cursor-not-allowed' 
+                                : 'bg-[#00BDD6] hover:bg-[#00a8bb]'
+                        }`}
                         onClick={handleApprove}
                         disabled={loading || !isAvailable}
                     >
