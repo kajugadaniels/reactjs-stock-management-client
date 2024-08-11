@@ -1,45 +1,66 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useRequests } from '../../hooks';
 
 const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
-    const {
-        formData,
-        setFormData,
-        handleChange,
-        addRequest,
-        loading,
-        errors,
-        stockIns,
-        finishedItems,
-        rawMaterialItems,
-        employees,
-        stockInsError,
-        finishedItemsError,
-        rawMaterialItemsError,
-        employeesError,
-        fetchStockIns,
-        fetchFinishedItems,
-        fetchRawMaterialItems,
-        fetchEmployees,
-    } = useRequests();
-
-    const [selectedItems, setSelectedItems] = useState([{ item_id: '', quantity: '' }]);
+    const [allItems, setAllItems] = useState([]);
+    const [displayedItems, setDisplayedItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [formData, setFormData] = useState({
+        contact_person_id: '',
+        requester_name: '',
+        request_from: '',
+        status: 'Pending',
+        note: '',
+        request_for_id: '',
+        items: [],
+    });
+    const [errors, setErrors] = useState({});
     const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
     const [otherRequestFrom, setOtherRequestFrom] = useState('');
     const [outsideClient, setOutsideClient] = useState('');
     const [filteredItems, setFilteredItems] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [employees, setEmployees] = useState([]);
+    const [finishedItems, setFinishedItems] = useState([]);
+    const [rawMaterialItems, setRawMaterialItems] = useState([]);
 
     useEffect(() => {
-        fetchStockIns();
-        fetchFinishedItems();
-        fetchRawMaterialItems();
-        fetchEmployees();
-        setFormData({
-            ...formData,
-            status: 'Pending',
-        });
+        const fetchData = async () => {
+            try {
+                const [itemsResponse, employeesResponse, finishedItemsResponse, rawMaterialItemsResponse] = await Promise.all([
+                    axios.get(`${import.meta.env.VITE_API_URL}/raw-material-items`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/employees`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/finished-items`),
+                    axios.get(`${import.meta.env.VITE_API_URL}/raw-material-items`),
+                ]);
+
+                setAllItems(itemsResponse.data.filter(item => item.quantity > 0));
+                setDisplayedItems(itemsResponse.data.filter(item => item.quantity > 0));
+                setEmployees(employeesResponse.data);
+                setFinishedItems(finishedItemsResponse.data);
+                setRawMaterialItems(rawMaterialItemsResponse.data.filter(item => item.quantity > 0));
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setError('Failed to fetch data');
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
+
+    useEffect(() => {
+        const filtered = allItems.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.category_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.type_name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setDisplayedItems(filtered);
+    }, [searchTerm, allItems]);
 
     useEffect(() => {
         if (requestFrom === 'Production') {
@@ -51,53 +72,42 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         }
     }, [requestFrom, finishedItems]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            let finalRequestFrom = requestFrom;
-            if (requestFrom === 'Outside Clients') {
-                finalRequestFrom = `Outside Clients: ${outsideClient}`;
-            } else if (requestFrom === 'Others') {
-                finalRequestFrom = otherRequestFrom;
-            }
-            
-            const requestData = {
-                ...formData,
-                request_from: finalRequestFrom,
-                items: selectedItems.filter((item) => item.item_id && item.quantity),
-            };
-            await addRequest(requestData);
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Request created successfully!',
-            });
-            onClose();
-            fetchRequests();
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Failed to create request',
-            });
-            console.error('Error creating request:', error);
-        }
-    };
-
-    const handleItemChange = (e, index) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
-        const updatedItems = [...selectedItems];
-        updatedItems[index][name] = name === 'quantity' ? parseInt(value, 10) || '' : value;
-        setSelectedItems(updatedItems);
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
     };
 
-    const addItemField = () => {
-        setSelectedItems([...selectedItems, { item_id: '', quantity: '' }]);
+    const handleAddItem = (item) => {
+        if (formData.items.some(selectedItem => selectedItem.id === item.id)) {
+            Swal.fire('Error', 'The item has already been selected.', 'error');
+            return;
+        }
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            items: [...prevFormData.items, { ...item, quantity: 1 }],
+        }));
+        setIsDropdownOpen(false);
     };
 
-    const removeItemField = (index) => {
-        const updatedItems = selectedItems.filter((_, i) => i !== index);
-        setSelectedItems(updatedItems);
+    const handleItemQuantityChange = (index, quantity) => {
+        setFormData((prevFormData) => {
+            const updatedItems = [...prevFormData.items];
+            updatedItems[index].quantity = quantity;
+            return {
+                ...prevFormData,
+                items: updatedItems,
+            };
+        });
+    };
+
+    const handleRemoveItem = (index) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            items: prevFormData.items.filter((_, i) => i !== index),
+        }));
     };
 
     const handleRequestFromChange = (e) => {
@@ -108,6 +118,83 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
         }
         if (value !== 'Outside Clients') {
             setOutsideClient('');
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrors({});
+
+        let finalRequestFrom = requestFrom;
+        if (requestFrom === 'Outside Clients') {
+            finalRequestFrom = `Outside Clients: ${outsideClient}`;
+        } else if (requestFrom === 'Others') {
+            finalRequestFrom = otherRequestFrom;
+        }
+
+        const requestData = {
+            contact_person_id: parseInt(formData.contact_person_id),
+            requester_name: formData.requester_name,
+            request_from: finalRequestFrom,
+            status: formData.status,
+            note: formData.note,
+            request_for_id: parseInt(formData.request_for_id) || null,
+            items: formData.items.map(item => ({
+                item_id: item.id,
+                quantity: parseInt(item.quantity)
+            }))
+        };
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/requests`, requestData);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Request created successfully!',
+            });
+
+            setFormData({
+                contact_person_id: '',
+                requester_name: '',
+                request_from: '',
+                status: 'Pending',
+                note: '',
+                request_for_id: '',
+                items: [],
+            });
+            setRequestFrom('');
+            setOtherRequestFrom('');
+            setOutsideClient('');
+            onClose();
+            fetchRequests();
+        } catch (error) {
+            console.error('Error creating request:', error);
+            if (error.response && error.response.data) {
+                if (error.response.data.errors) {
+                    setErrors(error.response.data.errors);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please check the form for errors.',
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.response.data.message || 'Failed to create request',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again.',
+                });
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -130,13 +217,12 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 required
                             >
                                 <option value="">Select a contact person</option>
-                                {employees.map((employee) => (
-                                    <option key={employee.id} value={employee.id}>
-                                        {employee.name}
+                                {employees.map((person) => (
+                                    <option key={person.id} value={person.id}>
+                                        {person.name}
                                     </option>
                                 ))}
                             </select>
-
                             {errors.contact_person_id && <p className="mt-2 text-xs text-red-500">{errors.contact_person_id}</p>}
                         </div>
 
@@ -173,7 +259,6 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                                 <option value="Others">Others</option>
                             </select>
 
-                            
                             {requestFrom === 'Outside Clients' && (
                                 <input
                                     className="w-full px-4 py-2 mt-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
@@ -203,68 +288,83 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
 
                         <div className="mb-6">
                             <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="request_for_id">Request For</label>
-                            {loading ? (
-                                <div>Loading items...</div>
-                            ) : finishedItemsError ? (
-                                <div>Error: {finishedItemsError}</div>
-                            ) : (
-                                <select
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    id="request_for_id"
-                                    name="request_for_id"
-                                    value={formData.request_for_id}
-                                    onChange={handleChange}
-                                    required
-                                >
-                                    <option value="">Request For</option>
-                                    {filteredItems.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
+                            <select
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                id="request_for_id"
+                                name="request_for_id"
+                                value={formData.request_for_id}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Request For</option>
+                                {filteredItems.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                        {item.name}
+                                    </option>
+                                ))}
+                            </select>
                             {errors.request_for_id && <p className="mt-2 text-xs text-red-500">{errors.request_for_id}</p>}
                         </div>
                     </div>
 
                     <div className="mb-6">
                         <label className="block mb-2 text-sm font-medium text-gray-600">Items</label>
-                        {selectedItems.map((item, index) => (
-                            <div key={index} className="flex mb-2 space-x-4">
-                                <select
-                                    name="item_id"
-                                    value={item.item_id}
-                                    onChange={(e) => handleItemChange(e, index)}
-                                    className="w-1/2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    required
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                            >
+                                Add Items
+                            </button>
+                            {isDropdownOpen && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg -gray-300">
+                                    <div className="p-2">
+                                        <input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Search items..."
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                                        />
+                                    </div>
+                                    <ul className="overflow-auto max-h-60">
+                                        {displayedItems.map((item) => (
+                                            <li
+                                                key={item.id}
+                                                onClick={() => handleAddItem(item)}
+                                                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 ${formData.items.some(selectedItem => selectedItem.id === item.id) ? 'opacity-50 pointer-events-none' : ''}`}
+                                            >
+                                                {item.name} - {item.supplier_name || ''} - {item.type_name || ''} {item.quantity}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-4">
+                            {formData.items.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center"
                                 >
-                                    <option value="">Select an item</option>
-                                    {rawMaterialItems.map((stockIn) => (
-                                        stockIn.quantity > 0 && (
-                                            <option key={stockIn.id} value={stockIn.id}>
-                                                {`${stockIn.name} ${stockIn.type_name} - Supplier: ${stockIn.supplier_name} - Qty: ${stockIn.quantity}`}
-                                            </option>
-                                        )
-                                    ))}
-                                </select>
-                                <input
-                                    type="number"
-                                    name="quantity"
-                                    value={item.quantity}
-                                    onChange={(e) => handleItemChange(e, index)}
-                                    placeholder="Quantity"
-                                    className="w-1/4 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    required
-                                />
-                                <button type="button" onClick={() => removeItemField(index)} className="px-4 py-2 text-white bg-red-500 rounded-md">
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
-                        <button type="button" onClick={addItemField} className="px-4 py-2 mt-4 text-white bg-[#00BDD6] rounded-md">
-                            Add Item
-                        </button>
+                                    {item.name} - {item.supplier_name || ''} - {item.type_name || ''} {item.quantity}
+                                    <input
+                                        type="number"
+                                        value={item.quantity}
+                                        onChange={(e) => handleItemQuantityChange(index, parseInt(e.target.value, 10))}
+                                        className="ml-2 w-16 px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveItem(index)}
+                                        className="ml-1 text-green-600 hover:text-green-800"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     <div>
