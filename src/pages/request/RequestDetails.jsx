@@ -1,6 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const RequestDetails = ({ isOpen, onClose, details }) => {
+    const [approvedQuantities, setApprovedQuantities] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (isOpen && details && details.id) {
+            fetchApprovedQuantities(details.id);
+        }
+    }, [isOpen, details]);
+
+    const fetchApprovedQuantities = async (requestId) => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs?request_id=${requestId}`);
+            const stockOuts = response.data;
+
+            const quantities = {};
+            details.items.forEach(item => {
+                const stockOut = stockOuts.find(so => so.request_id === details.id);
+                if (stockOut) {
+                    quantities[item.id] = stockOut.quantity;
+                } else {
+                    quantities[item.id] = 'Request still pending';
+                }
+            });
+
+            setApprovedQuantities(quantities);
+        } catch (error) {
+            console.error('Error fetching approved quantities:', error);
+            setError('Failed to fetch approved quantities');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (!isOpen || !details) return null;
 
     return (
@@ -60,7 +96,8 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                                         <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Type</th>
                                         <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Capacity</th>
                                         <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Unit</th>
-                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Quantity</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Requested Quantity</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Approved Quantity</th>
                                         <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Supplier</th>
                                     </tr>
                                 </thead>
@@ -73,6 +110,9 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.capacity || 'N/A'}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.unit || 'N/A'}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">
+                                                {loading ? 'Loading...' : approvedQuantities[item.id]}
+                                            </td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier?.name} ({item.supplier?.contact})</td>
                                         </tr>
                                     ))}
