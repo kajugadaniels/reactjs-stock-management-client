@@ -5,7 +5,7 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-4xl p-8 mx-auto bg-white rounded-lg shadow-lg">
+            <div className="w-full max-w-6xl p-8 mx-auto bg-white rounded-lg shadow-lg overflow-y-auto max-h-[90vh]">
                 <div className="flex items-center justify-between pb-4 mb-4 border-b">
                     <h2 className="text-3xl font-semibold text-gray-800">Request Details</h2>
                     <button
@@ -18,7 +18,7 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                         </svg>
                     </button>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <strong className="block text-gray-700">Requester Name:</strong>
@@ -38,33 +38,47 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                         </div>
                         <div>
                             <strong className="block text-gray-700">Request For:</strong>
-                            <p className="text-gray-900">{details.request_for.name}</p>
+                            <p className="text-gray-900">{details.request_for?.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <strong className="block text-gray-700">Created At:</strong>
+                            <p className="text-gray-900">{new Date(details.created_at).toLocaleString()}</p>
                         </div>
                     </div>
                     <div>
                         <strong className="block text-gray-700">Note:</strong>
-                        <p className="text-gray-900">{details.note}</p>
+                        <p className="text-gray-900">{details.note || 'No note provided'}</p>
                     </div>
                     <div>
                         <strong className="block mb-2 text-gray-700">Items:</strong>
-                        <table className="min-w-full bg-white border border-gray-300 rounded-lg">
-                            <thead className="bg-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Item</th>
-                                    <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Quantity</th>
-                                    <th className="px-6 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Supplier</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {details.items.map(item => (
-                                    <tr key={item.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
-                                        <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.name} {item.item.capacity || ''}{item.item.unit || ''}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier.name} ({item.supplier.contact})</td>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full bg-white border border-gray-300 rounded-lg">
+                                <thead className="bg-gray-200">
+                                    <tr>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Item</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Category</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Type</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Capacity</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Unit</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Quantity</th>
+                                        <th className="px-4 py-3 text-sm font-medium text-left text-gray-700 border-b border-gray-300">Supplier</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {details.items.map(item => (
+                                        <tr key={item.id} className="transition duration-200 ease-in-out bg-white hover:bg-gray-50">
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.name}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.category?.name || 'N/A'}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.type?.name || 'N/A'}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.capacity || 'N/A'}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.unit || 'N/A'}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
+                                            <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier?.name} ({item.supplier?.contact})</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div className="flex justify-end mt-6">
