@@ -6,7 +6,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: null,
-        quantity: 1, // Default quantity to 1
+        init_qty: 1, // Default init_qty to 1
         plate_number: '',
         batch_number: '',
         comment: '',
@@ -26,7 +26,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
             setFormData({
                 supplier_id: stockIn.supplier_id,
                 item_id: stockIn.item ? stockIn.item.id : null,
-                quantity: stockIn.quantity || 1,
+                init_qty: stockIn.init_qty || 1,
                 plate_number: stockIn.plate_number,
                 batch_number: stockIn.batch_number,
                 comment: stockIn.comment,
@@ -111,7 +111,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                 setFormData(prevState => ({
                     ...prevState,
                     item_id: selectedItem.id,
-                    quantity: 1 // Reset quantity to 1 when a new item is selected
+                    init_qty: 1 // Reset init_qty to 1 when a new item is selected
                 }));
             }
         } else {
@@ -123,10 +123,10 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
         }
     };
 
-    const handleItemQuantityChange = (quantity) => {
+    const handleItemQuantityChange = (init_qty) => {
         setFormData(prevState => ({
             ...prevState,
-            quantity: parseInt(quantity, 10) || 1 // Ensure quantity is at least 1
+            init_qty: parseInt(init_qty, 10) || 1 // Ensure init_qty is at least 1
         }));
     };
 
@@ -216,7 +216,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                     <input
                                         type="number"
                                         min="1"
-                                        value={formData.quantity}
+                                        value={formData.init_qty}
                                         onChange={(e) => handleItemQuantityChange(e.target.value)}
                                         className="w-20 p-1 border border-gray-300 rounded"
                                         required

@@ -179,12 +179,12 @@ const StockIn = () => {
                     >
                         Edit
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => handleDeleteStockIn(row.id)}
                         className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                     >
                         Delete
-                    </button>
+                    </button> */}
                 </div>
             ),
         },
