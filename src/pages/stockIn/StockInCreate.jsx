@@ -94,15 +94,27 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                     const existingItemIndex = prevState.items.findIndex(i => i.item_id === selectedItem.id);
                     if (existingItemIndex > -1) {
                         const updatedItems = [...prevState.items];
+                        const quantity = updatedItems[existingItemIndex].quantity + 1;
                         updatedItems[existingItemIndex] = {
                             ...updatedItems[existingItemIndex],
-                            quantity: updatedItems[existingItemIndex].quantity + 1
+                            quantity: quantity,
+                            init_qty: quantity // Set init_qty to match the updated quantity
                         };
                         return { ...prevState, items: updatedItems };
                     } else {
+                        const quantity = 1;
                         return {
                             ...prevState,
-                            items: [...prevState.items, { item_id: selectedItem.id, name: selectedItem.name, category_name: selectedItem.category_name, type_name: selectedItem.type_name, capacity: selectedItem.capacity, unit: selectedItem.unit, quantity: 1 }]
+                            items: [...prevState.items, {
+                                item_id: selectedItem.id,
+                                name: selectedItem.name,
+                                category_name: selectedItem.category_name,
+                                type_name: selectedItem.type_name,
+                                capacity: selectedItem.capacity,
+                                unit: selectedItem.unit,
+                                quantity: quantity,
+                                init_qty: quantity // Set init_qty to match the initial quantity
+                            }]
                         };
                     }
                 });
@@ -114,7 +126,11 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
         setFormData(prevState => ({
             ...prevState,
             items: prevState.items.map(item =>
-                item.item_id === itemId ? { ...item, quantity: parseInt(quantity, 10) } : item
+                item.item_id === itemId ? {
+                    ...item,
+                    quantity: parseInt(quantity, 10),
+                    init_qty: parseInt(quantity, 10) // Update init_qty to match the new quantity
+                } : item
             )
         }));
     };
@@ -129,8 +145,18 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        const formDataToSubmit = {
+            ...formData,
+            items: formData.items.map(item => ({
+                item_id: item.item_id,
+                quantity: item.quantity,
+                init_qty: item.init_qty
+            }))
+        };
+
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-ins`, formData);
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-ins`, formDataToSubmit);
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In created successfully',
@@ -225,6 +251,11 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                             >
                                                 Remove
                                             </button>
+                                            <input
+                                                type="hidden"
+                                                name={`items[${item.item_id}][init_qty]`}
+                                                value={item.init_qty}
+                                            />
                                         </div>
                                     </div>
                                 ))}
