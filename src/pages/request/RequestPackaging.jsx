@@ -18,7 +18,7 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
         items: [],
     });
     const [errors, setErrors] = useState({});
-    const [requestFrom, setRequestFrom] = useState(formData.request_from || '');
+    const [requestFrom, setRequestFrom] = useState('');
     const [otherRequestFrom, setOtherRequestFrom] = useState('');
     const [outsideClient, setOutsideClient] = useState('');
     const [filteredItems, setFilteredItems] = useState([]);
@@ -26,6 +26,8 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
     const [employees, setEmployees] = useState([]);
     const [finishedItems, setFinishedItems] = useState([]);
     const [packagesItems, setPackagesItems] = useState([]);
+    const [availableQuantities, setAvailableQuantities] = useState({});
+    const [quantityErrors, setQuantityErrors] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +43,14 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                 setPackagesItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
                 setAllItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
                 setDisplayedItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
+                
+                // Set initial available quantities
+                const initialQuantities = {};
+                packagesItemsResponse.data.forEach(item => {
+                    initialQuantities[item.id] = item.quantity;
+                });
+                setAvailableQuantities(initialQuantities);
+                
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -79,39 +89,13 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
         });
     };
 
-    const handleAddItem = (item) => {
-        if (formData.items.some(selectedItem => selectedItem.id === item.id)) {
-            Swal.fire('Error', 'The item has already been selected.', 'error');
-            return;
-        }
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            items: [...prevFormData.items, { ...item, quantity: 1 }],
-        }));
-        setIsDropdownOpen(false);
-    };
-
-    const handleItemQuantityChange = (index, quantity) => {
-        setFormData((prevFormData) => {
-            const updatedItems = [...prevFormData.items];
-            updatedItems[index].quantity = quantity;
-            return {
-                ...prevFormData,
-                items: updatedItems,
-            };
-        });
-    };
-
-    const handleRemoveItem = (index) => {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            items: prevFormData.items.filter((_, i) => i !== index),
-        }));
-    };
-
     const handleRequestFromChange = (e) => {
         const value = e.target.value;
         setRequestFrom(value);
+        setFormData(prevState => ({
+            ...prevState,
+            request_from: value
+        }));
         if (value !== 'Others') {
             setOtherRequestFrom('');
         }
@@ -120,8 +104,81 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
         }
     };
 
+    const handleAddItem = (item) => {
+        if (formData.items.some(selectedItem => selectedItem.id === item.id)) {
+            Swal.fire('Error', 'The item has already been selected.', 'error');
+            return;
+        }
+        if (availableQuantities[item.id] < 1) {
+            Swal.fire('Error', 'This item is out of stock.', 'error');
+            return;
+        }
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            items: [...prevFormData.items, { ...item, quantity: 1 }],
+        }));
+        setAvailableQuantities(prev => ({
+            ...prev,
+            [item.id]: prev[item.id] - 1
+        }));
+        setIsDropdownOpen(false);
+    };
+
+    const handleItemQuantityChange = (index, newQuantity) => {
+        const item = formData.items[index];
+        const currentQuantity = item.quantity;
+        const availableQuantity = availableQuantities[item.id] + currentQuantity;
+        
+        if (newQuantity > availableQuantity) {
+            setQuantityErrors(prev => ({
+                ...prev,
+                [item.id]: `Insufficient stock. Available: ${availableQuantity}`
+            }));
+            return;
+        }
+
+        setQuantityErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[item.id];
+            return newErrors;
+        });
+
+        setFormData(prevState => {
+            const updatedItems = [...prevState.items];
+            updatedItems[index].quantity = newQuantity;
+            return { ...prevState, items: updatedItems };
+        });
+
+        setAvailableQuantities(prev => ({
+            ...prev,
+            [item.id]: availableQuantity - newQuantity
+        }));
+    };
+
+    const handleRemoveItem = (index) => {
+        const removedItem = formData.items[index];
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            items: prevFormData.items.filter((_, i) => i !== index),
+        }));
+        setAvailableQuantities(prev => ({
+            ...prev,
+            [removedItem.id]: prev[removedItem.id] + removedItem.quantity
+        }));
+        setQuantityErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[removedItem.id];
+            return newErrors;
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (Object.keys(quantityErrors).length > 0) {
+            Swal.fire('Error', 'Please correct the quantity errors before submitting.', 'error');
+            return;
+        }
+    
         setLoading(true);
         setErrors({});
     
@@ -152,28 +209,30 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                 icon: 'success',
                 title: 'Success',
                 text: 'Request created successfully!',
-            });
+            }).then(() => {
+                setFormData({
+                    contact_person_id: '',
+                    requester_name: '',
+                    request_from: '',
+                    status: 'Pending',
+                    note: '',
+                    request_for_id: '',
+                    items: [],
+                });
+                setRequestFrom('');
+                setOtherRequestFrom('');
+                setOutsideClient('');
+                onClose();
+                
+                if (typeof fetchRequests === 'function') {
+                    fetchRequests();
+                } else {
+                    console.warn('fetchRequests is not a function. Please ensure it is passed as a prop to the RequestPackaging component.');
+                }
     
-            setFormData({
-                contact_person_id: '',
-                requester_name: '',
-                request_from: '',
-                status: 'Pending',
-                note: '',
-                request_for_id: '',
-                items: [],
+                // Reload the page after successful submission
+                window.location.reload();
             });
-            setRequestFrom('');
-            setOtherRequestFrom('');
-            setOutsideClient('');
-            onClose();
-            
-            // Check if fetchRequests is a function before calling it
-            if (typeof fetchRequests === 'function') {
-                fetchRequests();
-            } else {
-                console.warn('fetchRequests is not a function. Please ensure it is passed as a prop to the RequestPackaging component.');
-            }
         } catch (error) {
             console.error('Error creating request:', error);
             if (error.response && error.response.data) {
@@ -338,8 +397,9 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                                             <li
                                                 key={item.id}
                                                 onClick={() => handleAddItem(item)}
-                                                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 ${formData.items.some(selectedItem => selectedItem.id === item.id) ? 'opacity-50 pointer-events-none' : ''}`}>
-                                                {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''} - Qty: {item.quantity}
+                                                className={`flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 ${formData.items.some(selectedItem => selectedItem.id === item.id) || availableQuantities[item.id] < 1 ? 'opacity-50 pointer-events-none' : ''}`}
+                                            >
+                                                {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''} - Available: {availableQuantities[item.id]}
                                             </li>
                                         ))}
                                     </ul>
@@ -352,12 +412,14 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                                     key={index}
                                     className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center"
                                 >
-                                    {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''} - Qty: {item.quantity}
+                                    {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''}
                                     <input
                                         type="number"
                                         value={item.quantity}
                                         onChange={(e) => handleItemQuantityChange(index, parseInt(e.target.value, 10))}
-                                        className="ml-2 w-16 px-2 py-1 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                                        className={`ml-2 w-16 px-2 py-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] ${
+                                            quantityErrors[item.id] ? 'border-red-500' : 'border-green-300'
+                                        }`}
                                     />
                                     <button
                                         type="button"
@@ -369,6 +431,9 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                                 </div>
                             ))}
                         </div>
+                        {Object.entries(quantityErrors).map(([itemId, error]) => (
+                            <p key={itemId} className="mt-2 text-xs text-red-500">{error}</p>
+                        ))}
                     </div>
 
                     <div>
