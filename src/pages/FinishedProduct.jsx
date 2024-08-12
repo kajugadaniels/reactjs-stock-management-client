@@ -178,7 +178,6 @@ const FinishedProduct = () => {
                     isOpen={isPackagingModalOpen}
                     onClose={() => setIsPackagingModalOpen(false)}
                     finishedProduct={selectedFinishedProduct}
-                    onPackagingAdded={addPackagingRequest}
                 />
             )}
             <FinishedProductReport
