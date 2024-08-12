@@ -116,6 +116,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                             type="number"
                             value={item.pivot.quantity}
                             onChange={(event) => handleQuantityChange(event, index)}
+                            readOnly
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                         />
                         <span className={`block mt-2 text-sm ${availableQuantities[item.id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
