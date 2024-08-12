@@ -1,74 +1,150 @@
-import React from 'react';
-import { useProcess } from '../hooks';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 
 const PackagesStockOut = () => {
-    const { packageProcesses, loading, error } = useProcess();
+    const [packageProcesses, setPackageProcesses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const fetchPackageProcesses = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/package-stock-outs`);
+            setPackageProcesses(response.data);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to fetch package processes');
+            setLoading(false);
+        }
+    };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    useEffect(() => {
+        fetchPackageProcesses();
+    }, []);
+
+    const handleFinish = async (processId) => {
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/package-stock-outs/${processId}`, { status: 'Finished' });
+            Swal.fire('Success', 'Process marked as finished', 'success');
+            fetchPackageProcesses();
+        } catch (error) {
+            Swal.fire('Error', 'Failed to update process status', 'error');
+        }
+    };
+
+    const columns = [
+        {
+            name: 'ID',
+            selector: row => row.id,
+            sortable: true,
+        },
+        {
+            name: 'Item Name',
+            selector: row => row.item_name,
+            sortable: true,
+        },
+        {
+            name: 'Capacity',
+            selector: row => row.capacity,
+            sortable: true,
+        },
+        {
+            name: 'Unit',
+            selector: row => row.unit,
+            sortable: true,
+        },
+        {
+            name: 'Type',
+            selector: row => row.type,
+            sortable: true,
+        },
+        {
+            name: 'Category',
+            selector: row => row.category,
+            sortable: true,
+        },
+        {
+            name: 'Total Quantity',
+            selector: row => row.quantity,
+            sortable: true,
+        },
+        {
+            name: 'Status',
+            cell: row => (
+                <span className={`px-2 py-1 rounded ${row.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
+                    {row.status}
+                </span>
+            ),
+            sortable: true,
+        },
+        {
+            name: 'Actions',
+            cell: row => (
+                <button
+                    className={`px-4 py-2 text-white rounded ${row.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
+                    onClick={() => handleFinish(row.id)}
+                    disabled={row.status === 'Finished'}
+                >
+                    {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                </button>
+            ),
+        },
+    ];
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
+
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="min-h-screen p-4 bg-gray-100 md:p-8 mt-20">
-            <h1 className="mb-6 text-2xl font-semibold text-gray-800 md:text-3xl">Packages Stock Out Dashboard</h1>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
-                    <thead className="bg-gray-200">
-                        <tr>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Check</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">ID</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Item Name</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Capacity</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Unit</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Type</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Category</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Total Quantity</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Status</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {packageProcesses && packageProcesses.length > 0 ? (
-                            packageProcesses.map((process) => (
-                                process.unmergedItems && process.unmergedItems.map((item) => (
-                                    <tr key={`${process.id}-${item.item_id}`} className="transition duration-200 ease-in-out hover:bg-gray-100">
-                                        <td className="px-2 py-4 md:px-6">
-                                            <input type="checkbox" className="w-4 h-4 text-blue-600 transition duration-150 ease-in-out form-checkbox" />
-                                        </td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{process.id}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.item_name}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.capacity}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.unit}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.type}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.category}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">{item.quantity}</td>
-                                        <td className="px-2 py-4 text-gray-700 md:px-6">
-                                            <span className={`px-2 py-1 rounded ${process.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
-                                                {process.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-2 py-4 space-x-2 md:px-6">
-                                            <button
-                                                className={`px-4 py-2 text-white rounded ${process.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                                                disabled={process.status === 'Finished'}
-                                            >
-                                                {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="10" className="px-2 py-4 text-gray-700 md:px-6">No package processes found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+        <div className="container py-32 mx-auto">
+            <h1 className="mb-6 text-3xl font-semibold text-gray-800">Packages Stock Out Dashboard</h1>
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={packageProcesses.flatMap(process => 
+                        process.unmergedItems.map(item => ({
+                            id: process.id,
+                            status: process.status,
+                            ...item
+                        }))
+                    )}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
             </div>
         </div>
     );
