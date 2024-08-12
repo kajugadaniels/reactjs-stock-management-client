@@ -8,6 +8,8 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     const [error, setError] = useState(null);
     const [isAvailable, setIsAvailable] = useState(false);
     const [availableQuantities, setAvailableQuantities] = useState({});
+    const [totalRawMaterialQuantity, setTotalRawMaterialQuantity] = useState(0);
+    const [totalPackageQuantity, setTotalPackageQuantity] = useState(0);
 
     useEffect(() => {
         if (isOpen) {
@@ -19,11 +21,28 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
             setItems(response.data.items);
+            calculateTotalQuantities(response.data.items);
             checkAvailability(response.data.items);
         } catch (error) {
             console.error('Error fetching request details:', error);
             setError('Failed to fetch request details');
         }
+    };
+
+    const calculateTotalQuantities = (items) => {
+        let rawMaterialTotal = 0;
+        let packageTotal = 0;
+
+        items.forEach((item) => {
+            if (item.item.category.name === 'Raw Materials') {
+                rawMaterialTotal += item.pivot.quantity;
+            } else {
+                packageTotal += item.pivot.quantity;
+            }
+        });
+
+        setTotalRawMaterialQuantity(rawMaterialTotal);
+        setTotalPackageQuantity(packageTotal);
     };
 
     const checkAvailability = async (items) => {
@@ -57,6 +76,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         const updatedItems = [...items];
         updatedItems[index].pivot.quantity = newQuantity;
         setItems(updatedItems);
+        calculateTotalQuantities(updatedItems);
         checkAvailability(updatedItems);
     };
 
@@ -67,6 +87,8 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs`, {
                 request_id: requestId,
                 items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
+                total_raw_material_quantity: totalRawMaterialQuantity,
+                total_package_quantity: totalPackageQuantity,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Pending',
             });
@@ -126,6 +148,14 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                         </span>
                     </div>
                 ))}
+                <div className="mb-6">
+                    <label className="block mb-2 text-sm font-medium text-gray-600">
+                        Total Raw Material Quantity: {totalRawMaterialQuantity}
+                    </label>
+                    <label className="block mb-2 text-sm font-medium text-gray-600">
+                        Total Package Quantity: {totalPackageQuantity}
+                    </label>
+                </div>
                 {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
                 <div className="flex justify-end space-x-4">
                     <button 
