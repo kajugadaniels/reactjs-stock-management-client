@@ -58,7 +58,7 @@ const StockOut = () => {
                 <div>
                     {row.request.items.map((item, index) => (
                         <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.item?.name || ''} ({item.supplier?.name || 'N/A'})</div>
+                            <div className="font-semibold">{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
                             <div className="text-xs text-gray-600">
                                 {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
                             </div>
@@ -75,7 +75,7 @@ const StockOut = () => {
         },
         {
             name: 'Quantity',
-            selector: (row) => row.quantity,
+            selector: (row) => row.request.items.reduce((total, item) => total + item.pivot.quantity, 0),
             sortable: true,
         },
         {
