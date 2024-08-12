@@ -55,23 +55,26 @@ const FinishedProduct = () => {
     const columns = [
         {
             name: 'Item',
-            selector: row => row.stock_out.request.items[0].item.name,
+            selector: row => row.stock_out?.request?.items[0]?.item?.name ?? '',
             sortable: true,
-            cell: row => (
-                <div>
-                    <div>{row.stock_out.request.items[0].item.name}</div>
-                    <div className="text-xs text-gray-500">
-                        {row.stock_out.request.items[0].item.category.name} - {row.stock_out.request.items[0].item.type.name}
+            cell: row => {
+                const item = row.stock_out?.request?.items[0]?.item;
+                return (
+                    <div>
+                        <div>{item?.name ?? ''}</div>
+                        <div className="text-xs text-gray-500">
+                            {item?.category?.name ?? ''} - {item?.type?.name ?? ''}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                            {item?.capacity ?? ''} {item?.unit ?? ''}
+                        </div>
                     </div>
-                    <div className="text-xs text-gray-500">
-                        {row.stock_out.request.items[0].item.capacity} {row.stock_out.request.items[0].item.unit}
-                    </div>
-                </div>
-            ),
+                );
+            },
         },
         {
             name: 'Stockout Item',
-            selector: row => row.stock_out.request.request_for.name,
+            selector: row => row.stock_out?.request?.request_for?.name ?? '',
             sortable: true,
         },
         {
@@ -91,7 +94,7 @@ const FinishedProduct = () => {
         },
         {
             name: 'Comment',
-            selector: row => row.comment,
+            selector: row => row.comment ?? '',
             sortable: true,
         },
         {
