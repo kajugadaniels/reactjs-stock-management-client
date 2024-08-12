@@ -1,96 +1,156 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import DataTable from 'react-data-table-component';
+import { SearchIcon } from '@heroicons/react/solid';
 
 const Inventory = () => {
-    const [inventory, setInventory] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const rowsPerPage = 10;
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({
+        category: '',
+        type: '',
+    });
 
     useEffect(() => {
         fetchInventory();
-    }, []);
+    }, [currentPage, filters]);
 
     const fetchInventory = async () => {
         try {
-            setLoading(true);
-            const response = await fetch(`http://127.0.0.1:8000/api/inventory`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setInventory(data);
+            const params = {
+                page: currentPage,
+                itemsPerPage,
+                ...filters,
+            };
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/inventory`, { params });
+            setItems(response.data);
+            setTotalItems(response.data.length);
             setLoading(false);
         } catch (error) {
-            console.error('Error fetching inventory:', error);
-            setError('Failed to fetch inventory data');
+            setError('Error fetching inventory');
             setLoading(false);
         }
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            [name]: value,
+        }));
+        setCurrentPage(1);
+    };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const columns = [
+        {
+            name: 'No',
+            selector: (row, index) => (currentPage - 1) * itemsPerPage + index + 1,
+            sortable: true,
+        },
+        {
+            name: 'Item',
+            selector: (row) => row.name,
+            sortable: true,
+        },
+        {
+            name: 'Category',
+            selector: (row) => row.category_name,
+            sortable: true,
+        },
+        {
+            name: 'Type',
+            selector: (row) => row.type_name,
+            sortable: true,
+        },
+        {
+            name: 'Capacity',
+            selector: (row) => `${row.capacity || 'N/A'} ${row.unit || ''}`,
+            sortable: true,
+        },
+        {
+            name: 'Stock In',
+            selector: (row) => row.total_stock_in,
+            sortable: true,
+        },
+        {
+            name: 'Stock Out',
+            selector: (row) => row.total_stock_out,
+            sortable: true,
+        },
+        {
+            name: 'Available',
+            selector: (row) => row.total_stock_in - row.total_stock_out,
+            sortable: true,
+        },
+    ];
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * rowsPerPage;
-    const indexOfFirstItem = indexOfLastItem - rowsPerPage;
-    const currentInventory = inventory.slice(indexOfFirstItem, indexOfLastItem);
+    const customStyles = {
+        // Same customStyles as in the Items.jsx example
+    };
 
-    const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(inventory.length / rowsPerPage); i++) {
-        pageNumbers.push(i);
-    }
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="min-h-screen p-4 bg-gray-100 md:p-8 mt-20">
-            <h1 className="mb-6 text-2xl font-semibold text-gray-800 md:text-3xl">Inventory: Jabana Industry</h1>
-            <p className="mb-6 text-[#93d3db]">Inventory Report</p>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg">
-                    <thead className="bg-gray-200">
-                        <tr>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Item</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Category</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Type</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Stock In</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Stock Out</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Remaining</th>
-                            <th className="px-2 py-3 text-left text-gray-700 md:px-6">Percentage</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {currentInventory.map((item, index) => (
-                            <tr key={item.id} className="transition duration-200 ease-in-out hover:bg-gray-100">
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.name}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.category}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.type}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.stockIn}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.stockOut}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.remaining}</td>
-                                <td className="px-2 py-4 text-gray-700 md:px-6">{item.percentage}%</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <div className="container py-32 mx-auto">
+            <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+                <h1 className="text-3xl font-semibold text-gray-800">Inventory</h1>
+                <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search items..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                handleFilterChange({ target: { name: 'name', value: e.target.value } });
+                            }}
+                            className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
+                        />
+                        <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
+                        <select
+                            name="category"
+                            value={filters.category}
+                            onChange={handleFilterChange}
+                            className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
+                        >
+                            <option value="">Filter by Category</option>
+                            {/* Populate category options */}
+                        </select>
+                        <select
+                            name="type"
+                            value={filters.type}
+                            onChange={handleFilterChange}
+                            className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
+                        >
+                            <option value="">Filter by Type</option>
+                            {/* Populate type options */}
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex justify-center mt-4">
-                {pageNumbers.map((number) => (
-                    <button
-                        key={number}
-                        onClick={() => paginate(number)}
-                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    >
-                        {number}
-                    </button>
-                ))}
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={items}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={totalItems}
+                    onChangePage={(page) => setCurrentPage(page)}
+                    onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
             </div>
         </div>
     );
