@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { useFinishedProducts } from '../../hooks';
+import axios from 'axios';
 
 const FinishedCreate = ({ isOpen, onClose, process }) => {
     const [itemQty, setItemQty] = useState('');
     const [brandQty, setBrandQty] = useState('');
     const [dechetQty, setDechetQty] = useState('');
     const [comment, setComment] = useState('');
-    const { addFinishedProduct, loading, error } = useFinishedProducts();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!isOpen) {
@@ -33,7 +34,8 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
         }
 
         try {
-            await addFinishedProduct({
+            setLoading(true);
+            await axios.post(`${import.meta.env.VITE_API_URL}/finished-products`, {
                 stock_out_id: process.id,
                 item_qty: itemQty,
                 brand_qty: brandQty,
@@ -46,17 +48,35 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
                 title: 'Success',
                 text: 'Finished product added successfully!',
             });
-
             onClose(); // Close the modal after successful submission
         } catch (error) {
             console.error('Error creating finished product:', error);
-
+            setError('Failed to add finished product. Please try again.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: 'Failed to add finished product. Please try again.',
             });
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const handleQuantityChange = (e, setState) => {
+        const value = e.target.value;
+        const totalInput = parseInt(itemQty) + parseInt(brandQty) + parseInt(dechetQty);
+        const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
+
+        if (totalInput + parseInt(value) > totalQty) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: `Total quantity should not exceed ${totalQty}. Please enter valid data.`,
+            });
+            return;
+        }
+
+        setState(value);
     };
 
     if (!isOpen) return null;
@@ -73,44 +93,44 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
                     <div className="mb-4">
                         <label className="block mb-2 font-medium text-zinc-700">Total Quantity: {totalQty}</label>
                         <label className="block mb-2 font-medium text-zinc-700">Item Quantity</label>
-                        <input 
-                            type="number" 
-                            placeholder="Input item quantity" 
+                        <input
+                            type="number"
+                            placeholder="Input item quantity"
                             value={itemQty}
-                            onChange={(e) => setItemQty(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                            onChange={(e) => handleQuantityChange(e, setItemQty)}
+                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                     </div>
 
                     <div className="mb-4">
                         <label className="block mb-2 font-medium text-zinc-700">Brand Quantity</label>
-                        <input 
-                            type="number" 
-                            placeholder="Input brand quantity" 
+                        <input
+                            type="number"
+                            placeholder="Input brand quantity"
                             value={brandQty}
-                            onChange={(e) => setBrandQty(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                            onChange={(e) => handleQuantityChange(e, setBrandQty)}
+                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                     </div>
 
                     <div className="mb-4">
                         <label className="block mb-2 font-medium text-zinc-700">Dechet Quantity</label>
-                        <input 
-                            type="number" 
-                            placeholder="Input dechet quantity" 
+                        <input
+                            type="number"
+                            placeholder="Input dechet quantity"
                             value={dechetQty}
-                            onChange={(e) => setDechetQty(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                            onChange={(e) => handleQuantityChange(e, setDechetQty)}
+                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                     </div>
 
                     <div className="mb-4">
                         <label className="block mb-2 font-medium text-zinc-700">Comment</label>
-                        <textarea 
-                            placeholder="Input comment" 
+                        <textarea
+                            placeholder="Input comment"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" 
+                            className="w-full p-2 border rounded-md border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         />
                     </div>
 
@@ -118,9 +138,9 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
                         <button type="button" className="text-zinc-600" onClick={onClose}>
                             Cancel
                         </button>
-                        <button 
-                            type="submit" 
-                            className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600"
+                        <button
+                            type="submit"
+                            className="px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2]"
                             disabled={loading}
                         >
                             {loading ? 'Saving...' : 'Save'}
