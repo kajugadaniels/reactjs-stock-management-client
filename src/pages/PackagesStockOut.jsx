@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
+import PackageStockForm from './PackageStockForm';
 
-const PackagesStockOut = () => {
+const PackageStockOut = () => {
     const [packageProcesses, setPackageProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     const fetchPackageProcesses = async () => {
         setLoading(true);
@@ -24,14 +27,30 @@ const PackagesStockOut = () => {
         fetchPackageProcesses();
     }, []);
 
-    const handleFinish = async (processId) => {
-        try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/package-stock-outs/${processId}`, { status: 'Finished' });
-            Swal.fire('Success', 'Process marked as finished', 'success');
-            fetchPackageProcesses();
-        } catch (error) {
-            Swal.fire('Error', 'Failed to update process status', 'error');
-        }
+    const mergedData = useMemo(() => {
+        return packageProcesses.map(process => ({
+            ...process,
+            mergedItems: process.unmergedItems.reduce((acc, item) => {
+                const existingItem = acc.find(i => i.item_id === item.item_id);
+                if (existingItem) {
+                    existingItem.quantity += item.quantity;
+                } else {
+                    acc.push({ ...item });
+                }
+                return acc;
+            }, [])
+        }));
+    }, [packageProcesses]);
+
+    const handleFinish = (row) => {
+        setSelectedItem(row);
+        setIsFormOpen(true);
+    };
+
+    const handleFormClose = () => {
+        setIsFormOpen(false);
+        setSelectedItem(null);
+        fetchPackageProcesses();
     };
 
     const columns = [
@@ -41,50 +60,43 @@ const PackagesStockOut = () => {
             sortable: true,
         },
         {
-            name: 'Item Name',
-            selector: row => row.item_name,
-            sortable: true,
+            name: 'Items',
+            cell: row => (
+                <div>
+                    {row.mergedItems.map((item, index) => (
+                        <div key={index}>
+                            {item.item_name} - {item.quantity} {item.unit}
+                            <br />
+                            <small>
+                                {item.category} | {item.type} | {item.capacity} {item.unit}
+                            </small>
+                        </div>
+                    ))}
+                </div>
+            ),
+            grow: 2,
         },
         {
-            name: 'Capacity',
-            selector: row => row.capacity,
-            sortable: true,
-        },
-        {
-            name: 'Unit',
-            selector: row => row.unit,
-            sortable: true,
-        },
-        {
-            name: 'Type',
-            selector: row => row.type,
-            sortable: true,
-        },
-        {
-            name: 'Category',
-            selector: row => row.category,
-            sortable: true,
-        },
-        {
-            name: 'Total Quantity',
-            selector: row => row.quantity,
+            name: 'Date',
+            selector: row => row.date,
             sortable: true,
         },
         {
             name: 'Status',
+            selector: row => row.status,
+            sortable: true,
             cell: row => (
                 <span className={`px-2 py-1 rounded ${row.status === 'Pending' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'}`}>
                     {row.status}
                 </span>
             ),
-            sortable: true,
         },
         {
             name: 'Actions',
             cell: row => (
                 <button
                     className={`px-4 py-2 text-white rounded ${row.status === 'Finished' ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}
-                    onClick={() => handleFinish(row.id)}
+                    onClick={() => handleFinish(row)}
                     disabled={row.status === 'Finished'}
                 >
                     {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
@@ -128,17 +140,11 @@ const PackagesStockOut = () => {
 
     return (
         <div className="container py-32 mx-auto">
-            <h1 className="mb-6 text-3xl font-semibold text-gray-800">Packages Stock Out Dashboard</h1>
+            <h1 className="mb-6 text-3xl font-semibold text-gray-800">Package Stock Out Dashboard</h1>
             <div className="mt-8 bg-white rounded-lg shadow">
                 <DataTable
                     columns={columns}
-                    data={packageProcesses.flatMap(process => 
-                        process.unmergedItems.map(item => ({
-                            id: process.id,
-                            status: process.status,
-                            ...item
-                        }))
-                    )}
+                    data={mergedData}
                     pagination
                     responsive
                     highlightOnHover
@@ -146,8 +152,13 @@ const PackagesStockOut = () => {
                     customStyles={customStyles}
                 />
             </div>
+            <PackageStockForm
+                isOpen={isFormOpen}
+                onClose={handleFormClose}
+                selectedItem={selectedItem}
+            />
         </div>
     );
 };
 
-export default PackagesStockOut;
+export default PackageStockOut;
