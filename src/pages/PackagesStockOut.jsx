@@ -28,9 +28,25 @@ const PackageStockOut = () => {
     }, []);
 
     const mergedData = useMemo(() => {
-        return packageProcesses.map(process => ({
-            ...process,
-            mergedItems: process.unmergedItems.reduce((acc, item) => {
+        // Group by request_id
+        const groupedByRequest = packageProcesses.reduce((acc, process) => {
+            if (!acc[process.request.id]) {
+                acc[process.request.id] = {
+                    id: process.id, // Add this line
+                    request_id: process.request.id,
+                    date: process.date,
+                    status: process.status,
+                    items: []
+                };
+            }
+            acc[process.request.id].items.push(...process.unmergedItems);
+            return acc;
+        }, {});
+
+        // Merge items within each request group
+        return Object.values(groupedByRequest).map(group => ({
+            ...group,
+            mergedItems: group.items.reduce((acc, item) => {
                 const existingItem = acc.find(i => i.item_id === item.item_id);
                 if (existingItem) {
                     existingItem.quantity += item.quantity;
@@ -55,8 +71,13 @@ const PackageStockOut = () => {
 
     const columns = [
         {
-            name: 'ID',
-            selector: row => row.id,
+            name: 'Request ID',
+            selector: row => row.request_id,
+            sortable: true,
+        },
+        {
+            name: 'Date',
+            selector: row => row.date,
             sortable: true,
         },
         {
@@ -75,11 +96,6 @@ const PackageStockOut = () => {
                 </div>
             ),
             grow: 2,
-        },
-        {
-            name: 'Date',
-            selector: row => row.date,
-            sortable: true,
         },
         {
             name: 'Status',

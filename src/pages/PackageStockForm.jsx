@@ -10,7 +10,7 @@ const PackageStockForm = ({ isOpen, onClose, selectedItem }) => {
         if (selectedItem && selectedItem.mergedItems) {
             setFormData(selectedItem.mergedItems.map(item => ({
                 ...item,
-                stock_out_id: selectedItem.id,
+                stock_out_id: selectedItem.id, // Changed from request_id to stock_out_id
                 finishedQuantity: item.quantity
             })));
         }
@@ -40,7 +40,8 @@ const PackageStockForm = ({ isOpen, onClose, selectedItem }) => {
             Swal.fire('Success', 'Package stocks added successfully', 'success');
             onClose();
         } catch (error) {
-            Swal.fire('Error', 'Failed to add package stocks', 'error');
+            console.error('Error submitting form:', error.response?.data || error.message);
+            Swal.fire('Error', `Failed to add package stocks: ${error.response?.data?.message || error.message}`, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -104,8 +105,8 @@ const PackageStockForm = ({ isOpen, onClose, selectedItem }) => {
                             type="submit"
                             className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
                                 isSubmitting
-                                    ? 'bg-[#00BDD6] cursor-not-allowed'
-                                    : 'bg-[#00BDD6] hover:bg-[#00BDD6]'
+                                    ? 'bg-blue-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700'
                             }`}
                             disabled={isSubmitting}
                         >
