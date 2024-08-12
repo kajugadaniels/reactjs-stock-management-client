@@ -399,7 +399,7 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                                                 onClick={() => handleAddItem(item)}
                                                 className={`flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 ${formData.items.some(selectedItem => selectedItem.id === item.id) || availableQuantities[item.id] < 1 ? 'opacity-50 pointer-events-none' : ''}`}
                                             >
-                                                {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''} - Available: {availableQuantities[item.id]}
+                                                {item.name}({item.type_name}) - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''} - Available: {availableQuantities[item.id]}
                                             </li>
                                         ))}
                                     </ul>
@@ -412,7 +412,7 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                                     key={index}
                                     className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center"
                                 >
-                                    {item.name} - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''}
+                                    {item.name}({item.type_name}) - {item.capacity || ''}{item.unit || ''} - Supplier: {item.supplier_name || ''}
                                     <input
                                         type="number"
                                         value={item.quantity}
