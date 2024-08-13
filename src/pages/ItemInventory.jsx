@@ -110,6 +110,14 @@ const ItemInventory = () => {
             name: 'Available',
             selector: (row) => row.total_stock_in - row.total_stock_out,
             sortable: true,
+            cell: row => {
+                const availableQuantity = row.total_stock_in - row.total_stock_out;
+                return (
+                    <span className={availableQuantity <= 0 ? 'text-red-600 font-semibold' : ''}>
+                        {availableQuantity <= 0 ? 'Stock Out' : availableQuantity}
+                    </span>
+                );
+            },
         },
     ];
 
