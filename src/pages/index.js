@@ -6,7 +6,6 @@ import Stock from "./Stock";
 import Inventory from "./Inventory";
 import ItemInventory from "./ItemInventory";
 import Process from './Process'
-import ProcessRawMaterials from "./ProcessRawMaterials";
 import StockIn from "./StockIn";
 import StockOut from "./StockOut";
 import ProductStockIn from "./ProductStockIn";
@@ -30,7 +29,6 @@ export {
     Inventory,
     ItemInventory,
     Process,
-    ProcessRawMaterials,
     StockIn,
     StockOut,
     ProductStockIn,
