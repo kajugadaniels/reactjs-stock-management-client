@@ -9,14 +9,38 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
         address: '',
     });
     const [loading, setLoading] = useState(false);
+    const [contactError, setContactError] = useState('');
+    const [contactValid, setContactValid] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'contact') {
+            if (value.length === 10) {
+                setContactError('');
+                setContactValid(true);
+            } else if (value.length > 10) {
+                setContactError('Contact number must be exactly 10 digits.');
+                setContactValid(false);
+            } else {
+                setContactError('Contact number must be exactly 10 digits.');
+                setContactValid(false);
+            }
+        }
+
         setFormData(prevState => ({ ...prevState, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!contactValid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please enter a valid 10-digit contact number.',
+            });
+            return;
+        }
         setLoading(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/suppliers`, formData);
@@ -63,7 +87,7 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
                     <div className="mb-4">
                         <label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="contact">Contact</label>
                         <input
-                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                            className={`w-full p-2 border ${contactValid ? 'border-green-500' : 'border-red-500'} rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]`}
                             type="text"
                             id="contact"
                             name="contact"
@@ -71,6 +95,7 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
                             onChange={handleChange}
                             required
                         />
+                        {contactError && <p className="mt-1 text-sm text-red-500">{contactError}</p>}
                     </div>
                     <div className="mb-4">
                         <label className="block mb-1 text-sm font-medium text-gray-700" htmlFor="address">Address</label>
