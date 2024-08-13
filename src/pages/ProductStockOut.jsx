@@ -1,4 +1,3 @@
-// ProductStockOut.jsx
 import React, { useEffect, useState } from 'react';
 import ProductStockOutCreate from './ProductStockOut/ProductStockOutCreate';
 import ProductStockOutReport from './reports/ProductStockOutReport';
