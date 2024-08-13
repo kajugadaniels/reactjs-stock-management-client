@@ -1,19 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { useProductStockIn } from '../hooks';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import DataTable from 'react-data-table-component';
+import { SearchIcon } from '@heroicons/react/solid';
+import Swal from 'sweetalert2';
 import ProductStockInCreate from './ProductStockIn/ProductStockInCreate';
 import ProductStockInReport from './reports/ProductStockInReport';
 
 const ProductStockIn = () => {
+    const [productStockIns, setProductStockIns] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const { productStockIns, loading, error, fetchProductStockIns } = useProductStockIn();
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchProductStockIns();
-    }, [fetchProductStockIns]);
+    }, []);
+
+    const fetchProductStockIns = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/product-stock-ins`);
+            setProductStockIns(response.data);
+            setLoading(false);
+        } catch (error) {
+            setError('Error fetching product stock ins');
+            setLoading(false);
+        }
+    };
 
     const toggleProductStockInCreateModal = () => {
         setIsCreateModalOpen(!isCreateModalOpen);
@@ -23,25 +37,97 @@ const ProductStockIn = () => {
         setIsReportModalOpen(!isReportModalOpen);
     };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+    const addProductStockIn = async (productStockIn) => {
+        try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/product-stock-ins`, productStockIn);
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Product stock in created successfully!',
+            });
+            fetchProductStockIns();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to create product stock in. Please try again.',
+            });
+            setError(error.message);
+        }
+    };
 
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const filteredProductStockIns = productStockIns.filter(
+        (stockIn) =>
+            stockIn.item_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            stockIn.package_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            stockIn.comment.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentStockIns = productStockIns.slice(indexOfFirstItem, indexOfLastItem);
+    const columns = [
+        {
+            name: 'Stock IN ID',
+            selector: (row) => `Prod-${row.id}`,
+            sortable: true,
+        },
+        {
+            name: 'Finished Product',
+            selector: (row) => row.item_name,
+            sortable: true,
+        },
+        {
+            name: 'Package Type',
+            selector: (row) => row.package_type,
+            sortable: true,
+        },
+        {
+            name: 'Quantity',
+            selector: (row) => row.quantity,
+            sortable: true,
+        },
+        {
+            name: 'Comment',
+            selector: (row) => row.comment,
+            sortable: true,
+        },
+        {
+            name: 'Date',
+            selector: (row) => new Date(row.created_at).toLocaleDateString(),
+            sortable: true,
+        },
+    ];
 
-    const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(productStockIns.length / itemsPerPage); i++) {
-        pageNumbers.push(i);
-    }
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
         <div className="p-4 mt-20">
@@ -57,50 +143,31 @@ const ProductStockIn = () => {
                 <button className="bg-green-500 text-white px-4 py-2 rounded-md" onClick={toggleProductStockInReportModal}>
                     Generate Report
                 </button>
-                <ProductStockInCreate isOpen={isCreateModalOpen} onClose={toggleProductStockInCreateModal} />
-                <ProductStockInReport isOpen={isReportModalOpen} onClose={toggleProductStockInReportModal} />
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border rounded-lg shadow-lg border-zinc-200">
-                    <thead className="bg-gray-100">
-                        <tr className="text-left text-gray-600">
-                            <th className="px-2 py-3 border-b sm:px-6">Check</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Stock IN ID</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Finished Product</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Package Type</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Quantity</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Comment</th>
-                            <th className="px-2 py-3 border-b sm:px-6">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentStockIns.map((stockIn) => (
-                            <tr key={stockIn.id} className="transition duration-200 ease-in-out hover:bg-gray-50">
-                                <td className="px-2 py-4 border-b sm:px-6"><input type="checkbox" /></td>
-                                <td className="px-2 py-4 border-b sm:px-6">Prod-{stockIn.id}</td>
-                                <td className="px-2 py-4 border-b sm:px-6">{stockIn.item_name}</td>
-                                <td className="px-2 py-4 border-b sm:px-6">{stockIn.package_type}</td>
-                                <td className="px-2 py-4 border-b sm:px-6">{stockIn.quantity}</td>
-                                <td className="px-2 py-4 border-b sm:px-6">{stockIn.comment}</td>
-                                <td className="px-2 py-4 border-b sm:px-6">{new Date(stockIn.created_at).toLocaleDateString()}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={filteredProductStockIns}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
             </div>
 
-            <div className="flex justify-center mt-4">
-                {pageNumbers.map((number) => (
-                    <button
-                        key={number}
-                        onClick={() => paginate(number)}
-                        className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                    >
-                        {number}
-                    </button>
-                ))}
-            </div>
+            {isCreateModalOpen && (
+                <ProductStockInCreate
+                    isOpen={isCreateModalOpen}
+                    onClose={toggleProductStockInCreateModal}
+                    addProductStockIn={addProductStockIn}
+                />
+            )}
+            <ProductStockInReport
+                isOpen={isReportModalOpen}
+                onClose={toggleProductStockInReportModal}
+            />
         </div>
     );
 };
