@@ -1,71 +1,181 @@
-import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import React from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+    ChartBarIcon,
+    CubeIcon,
+    TruckIcon,
+    CurrencyDollarIcon,
+    ExclamationCircleIcon
+} from '@heroicons/react/outline';
+import { Line, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 
-// Dummy data for the pie charts
-const dataKPI = [
-    [{ name: 'Completed', value: 72, fill: '#0088FE' }, { name: 'Remaining', value: 28, fill: '#00C49F' }],
-    [{ name: 'Completed', value: 60, fill: '#FFBB28' }, { name: 'Remaining', value: 40, fill: '#FF8042' }],
-    [{ name: 'Completed', value: 50, fill: '#00C49F' }, { name: 'Remaining', value: 50, fill: '#FF8042' }],
-    [{ name: 'Completed', value: 85, fill: '#0088FE' }, { name: 'Remaining', value: 15, fill: '#FFBB28' }]
-];
-
-// Dummy data for tables
-const tableData = [
-    { title: 'Raw Material Report', data: [{ metric: 'Total', value: '500 T' }, { metric: 'Processed', value: '350 T' }, { metric: 'In Queue', value: '150 T' }] },
-    { title: 'Packaging Report', data: [{ metric: 'Total', value: '220 Packs' }, { metric: 'Completed', value: '180 Packs' }, { metric: 'Pending', value: '40 Packs' }] },
-    { title: 'Dispatch Report', data: [{ metric: 'Total', value: '300 Orders' }, { metric: 'Delivered', value: '250 Orders' }, { metric: 'Pending', value: '50 Orders' }] }
-];
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
-    return (
-        <div className='mt-20'>
-            <Box sx={{ flexGrow: 1, p: 2 }}>
-                <Typography variant="h4" gutterBottom>Dashboard</Typography>
-                <Grid container spacing={2}>
-                    {/* KPI Diagrams */}
-                    {dataKPI.map((data, index) => (
-                        <Grid item xs={12} md={6} lg={3} key={index}>
-                            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Typography variant="h6" sx={{ mb: 2 }}>Stock KPI {index + 1}</Typography>
-                                <ResponsiveContainer width="100%" height={150}>
-                                    <PieChart>
-                                        <Pie dataKey="value" data={data} cx="50%" cy="50%" outerRadius={60}>
-                                            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </Paper>
-                        </Grid>
-                    ))}
-                </Grid>
-                {/* Data Tables */}
-                <Grid container spacing={2} sx={{ mt: 4 }}>
-                    {tableData.map((table, index) => (
-                        <Grid item xs={12} md={4} key={index}>
-                            <TableContainer component={Paper}>
-                                <Table sx={{ minWidth: 350 }} aria-label="simple table">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell colSpan={2}>{table.title}</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {table.data.map((row, idx) => (
-                                            <TableRow key={idx}>
-                                                <TableCell component="th" scope="row">{row.metric}</TableCell>
-                                                <TableCell align="right">{row.value}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Grid>
-                    ))}
-                </Grid>
-            </Box>
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [dashboardData, setDashboardData] = useState({
+        totalInventoryValue: 0,
+        lowStockItems: 0,
+        recentStockIns: [],
+        recentStockOuts: [],
+        topSellingItems: [],
+        inventoryTrends: {},
+        productionOverview: {},
+    });
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/dashboard`);
+            setDashboardData(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+            setError('Failed to load dashboard data');
+            setLoading(false);
+        }
+    };
+
+    const StatCard = ({ title, value, icon, color }) => (
+        <div className={`bg-white rounded-lg shadow-md p-6 flex items-center ${color}`}>
+            <div className="mr-4">{icon}</div>
+            <div>
+                <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+                <p className="text-2xl font-bold">{value}</p>
+            </div>
         </div>
     );
-}
+
+    const RecentActivityTable = ({ title, data, type }) => (
+        <div className="p-6 bg-white rounded-lg shadow-md">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800">{title}</h3>
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Date</th>
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Item</th>
+                        <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Quantity</th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                    {data.map((item, index) => (
+                        <tr key={index}>
+                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{item.date}</td>
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{item.item_name}</td>
+                            <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                {type === 'in' ? '+' : '-'}{item.quantity}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+
+    const inventoryTrendsOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Inventory Trends',
+            },
+        },
+    };
+
+    const productionOverviewOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Production Overview',
+            },
+        },
+    };
+
+    if (loading) return <div className="mt-8 text-center">Loading dashboard...</div>;
+    if (error) return <div className="mt-8 text-center text-red-600">{error}</div>;
+
+    return (
+        <div className="container px-4 py-8 mx-auto">
+            <h1 className="mb-8 text-3xl font-bold text-gray-800">Dashboard</h1>
+
+            <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Total Inventory Value"
+                    value={`$${dashboardData.totalInventoryValue.toLocaleString()}`}
+                    icon={<CurrencyDollarIcon className="w-8 h-8 text-green-500" />}
+                    color="bg-green-100"
+                />
+                <StatCard
+                    title="Low Stock Items"
+                    value={dashboardData.lowStockItems}
+                    icon={<ExclamationCircleIcon className="w-8 h-8 text-red-500" />}
+                    color="bg-red-100"
+                />
+                <StatCard
+                    title="Total Stock In"
+                    value={dashboardData.totalStockIn}
+                    icon={<TruckIcon className="w-8 h-8 text-blue-500" />}
+                    color="bg-blue-100"
+                />
+                <StatCard
+                    title="Total Stock Out"
+                    value={dashboardData.totalStockOut}
+                    icon={<CubeIcon className="w-8 h-8 text-purple-500" />}
+                    color="bg-purple-100"
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 mb-8 lg:grid-cols-2">
+                <RecentActivityTable title="Recent Stock Ins" data={dashboardData.recentStockIns} type="in" />
+                <RecentActivityTable title="Recent Stock Outs" data={dashboardData.recentStockOuts} type="out" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 mb-8 lg:grid-cols-2">
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Inventory Trends</h3>
+                    <Line options={inventoryTrendsOptions} data={dashboardData.inventoryTrends} />
+                </div>
+                <div className="p-6 bg-white rounded-lg shadow-md">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-800">Production Overview</h3>
+                    <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
+                </div>
+            </div>
+
+            <div className="p-6 bg-white rounded-lg shadow-md">
+                <h3 className="mb-4 text-lg font-semibold text-gray-800">Top Selling Items</h3>
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Item</th>
+                            <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Category</th>
+                            <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Total Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {dashboardData.topSellingItems.map((item, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{item.name}</td>
+                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{item.category}</td>
+                                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{item.totalSold}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
 
 export default Dashboard;
