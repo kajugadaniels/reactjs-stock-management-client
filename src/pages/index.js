@@ -16,7 +16,8 @@ import TotalPackegingOut from "./totalStockout/TotalPackegingOut";
 import TotalRowMaterialOut from "./totalStockout/TotalRowMaterialOut";
 import FinishedProduct from "./FinishedProduct";
 import PackagesStockOut from "./PackagesStockOut";
-import ProductionInventory from './ProductionInventory'
+import ProductionInventory from './ProductionInventory';
+import PackageStock from "./PackageStock";
 
 export {
     Login,
@@ -38,4 +39,5 @@ export {
     FinishedProduct,
     PackagesStockOut,
     ProductionInventory,
+    PackageStock
 }
