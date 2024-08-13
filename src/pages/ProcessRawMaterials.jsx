@@ -6,7 +6,7 @@ import DataTable from 'react-data-table-component';
 import { SearchIcon } from '@heroicons/react/solid';
 import FinishedCreate from './Process/FinishedCreate';
 
-const Process = () => {
+const ProcessRawMaterials = () => {
     const [processes, setProcesses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -176,4 +176,4 @@ const Process = () => {
     );
 };
 
-export default Process;
+export default ProcessRawMaterials;
