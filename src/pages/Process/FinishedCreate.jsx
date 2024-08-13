@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
-const FinishedCreate = ({ isOpen, onClose, process }) => {
+const FinishedCreate = ({ isOpen, onClose, process, onFinishedCreated }) => {
     const [itemQty, setItemQty] = useState('');
     const [brandQty, setBrandQty] = useState('');
     const [dechetQty, setDechetQty] = useState('');
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     useEffect(() => {
         if (!isOpen) {
@@ -21,14 +20,14 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const totalInput = parseInt(itemQty) + parseInt(brandQty) + parseInt(dechetQty);
-        const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
+        const totalInput = parseInt(itemQty || 0) + parseInt(brandQty || 0) + parseInt(dechetQty || 0);
+        const totalQty = process.total_quantity;
 
         if (totalInput > totalQty) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: `Total quantity should not exceed ${totalQty}. Please enter valid data.`,
+                text: `Total quantity (${totalInput}) should not exceed ${totalQty}. Please enter valid data.`,
             });
             return;
         }
@@ -47,11 +46,13 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
                 icon: 'success',
                 title: 'Success',
                 text: 'Finished product added successfully!',
+            }).then(() => {
+                onClose();
+                onFinishedCreated();
+                window.location.reload();  // Reload the page
             });
-            onClose(); // Close the modal after successful submission
         } catch (error) {
             console.error('Error creating finished product:', error);
-            setError('Failed to add finished product. Please try again.');
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -64,34 +65,19 @@ const FinishedCreate = ({ isOpen, onClose, process }) => {
 
     const handleQuantityChange = (e, setState) => {
         const value = e.target.value;
-        const totalInput = parseInt(itemQty) + parseInt(brandQty) + parseInt(dechetQty);
-        const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
-
-        if (totalInput + parseInt(value) > totalQty) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: `Total quantity should not exceed ${totalQty}. Please enter valid data.`,
-            });
-            return;
-        }
-
         setState(value);
     };
 
     if (!isOpen) return null;
-
-    const totalQty = process.request.items.reduce((total, item) => total + item.pivot.quantity, 0);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="max-w-md p-10 mx-auto bg-white rounded-md shadow-md">
                 <h2 className="text-2xl font-semibold text-zinc-800">Add Finished Product</h2>
                 <p className="mb-4 text-zinc-600">Record All Finished Product Here</p>
-                {error && <p className="text-red-500">{error}</p>}
-                <form className='w-96' onSubmit={handleSubmit}>
+                <p className="mb-4 font-medium text-zinc-700">Total Quantity: {process.total_quantity}</p>
+                <form className="w-96" onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block mb-2 font-medium text-zinc-700">Total Quantity: {totalQty}</label>
                         <label className="block mb-2 font-medium text-zinc-700">Item Quantity</label>
                         <input
                             type="number"
