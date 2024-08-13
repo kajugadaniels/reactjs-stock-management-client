@@ -18,6 +18,7 @@ import FinishedProduct from "./FinishedProduct";
 import PackagesStockOut from "./PackagesStockOut";
 import ProductionInventory from './ProductionInventory';
 import PackageStock from "./PackageStock";
+import FinishedStock from "./FinishedStock";
 
 export {
     Login,
@@ -39,5 +40,6 @@ export {
     FinishedProduct,
     PackagesStockOut,
     ProductionInventory,
-    PackageStock
+    PackageStock,
+    FinishedStock,
 }

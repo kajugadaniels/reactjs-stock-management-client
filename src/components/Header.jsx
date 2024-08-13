@@ -45,7 +45,7 @@ const Header = () => {
             </div>
 
             <ul className="items-center hidden ml-6 space-x-6 md:flex">
-                {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-products', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                     <li key={index}>
                         <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`}>
                             <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -60,13 +60,13 @@ const Header = () => {
                     <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
                         <div className='flex gap-5'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path fill="#212d31" fillRule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clipRule="evenodd"></path></svg>
-                            <h1 className='semi-bold mt-2'>James Aldrino</h1>
+                            <h1 className='semi-bold mt-2'>Jabana</h1>
                         </div>
                     </Dropdown.Toggle>
                     {isMenuOpen && (
                         <Dropdown.Menu align="right" className="flex flex-col p-4 bg-white text-foreground w-64 rounded-lg shadow-lg mt-5">
                             <div className="flex items-center mb-4">
-                                <span className="ml-2 text-lg font-semibold">James Aldrino</span>
+                                <span className="ml-2 text-lg font-semibold">Jabana</span>
                             </div>
                             <div className="flex flex-col space-y-2">
                                 <form method="POST" action="/logout" className="flex items-center justify-between p-2 rounded-lg hover:bg-muted" onSubmit={handleLogout}>
@@ -92,7 +92,7 @@ const Header = () => {
 
             {isMenuOpen && (
                 <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow top-16 md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
-                    {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-products', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                    {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                         <li key={index}>
                             <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
                                 <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -120,7 +120,7 @@ const getIconForPath = (path) => {
             return "bi:layers";
         case '/process':
             return "fa-solid:cogs";
-        case '/finished-products':
+        case '/finished-stock':
             return "ri:product-hunt-fill";
         case '/product-stock-in':
             return "ri:product-hunt-line";
@@ -142,10 +142,10 @@ const getLabelForPath = (path) => {
         case '/stock':
             return "STOCK";
         case '/inventory':
-            return "Inventory";
+            return "INVENTORY";
         case '/process':
             return "PROCESS";
-        case '/finished-products':
+        case '/finished-stock':
             return "FINISHED PRODUCTS";
         case '/product-stock-in':
             return "PRODUCT STOCK IN";
