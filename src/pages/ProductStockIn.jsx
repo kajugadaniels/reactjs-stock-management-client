@@ -137,9 +137,6 @@ const ProductStockIn = () => {
             </div>
 
             <div className="flex mb-4 space-x-2">
-                <button className="bg-[#00BDD6] text-white px-4 py-2 rounded-md" onClick={toggleProductStockInCreateModal}>
-                    Product Stock In
-                </button>
                 <button className="bg-green-500 text-white px-4 py-2 rounded-md" onClick={toggleProductStockInReportModal}>
                     Generate Report
                 </button>
