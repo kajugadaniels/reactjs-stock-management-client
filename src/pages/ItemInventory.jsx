@@ -3,7 +3,7 @@ import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import { SearchIcon } from '@heroicons/react/solid';
 
-const Inventory = () => {
+const ItemInventory = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,4 +156,4 @@ const Inventory = () => {
     );
 };
 
-export default Inventory;
+export default ItemInventory;
