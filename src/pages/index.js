@@ -3,6 +3,7 @@ import Dashboard from "./Dashboard";
 import Items from "./Items";
 import Suppliers from "./Suppliers";
 import Stock from "./Stock";
+import Inventory from "./Inventory";
 import ItemInventory from "./ItemInventory";
 import Process from "./Process";
 import StockIn from "./StockIn";
@@ -23,6 +24,7 @@ export {
     Items,
     Suppliers,
     Stock,
+    Inventory,
     ItemInventory,
     Process,
     StockIn,
