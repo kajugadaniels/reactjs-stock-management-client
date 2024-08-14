@@ -10,28 +10,28 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const [itemsResponse, categoriesResponse, typesResponse] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`),
+                axios.get(`${import.meta.env.VITE_API_URL}/categories`),
+                axios.get(`${import.meta.env.VITE_API_URL}/types`)
+            ]);
+
+            setItems(itemsResponse.data.data || []);
+            setCategories(categoriesResponse.data || []);
+            setTypes(typesResponse.data || []);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError(error.response?.data?.message || 'Failed to fetch data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const [itemsResponse, categoriesResponse, typesResponse] = await Promise.all([
-                    axios.get(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${supplier.id}`),
-                    axios.get(`${import.meta.env.VITE_API_URL}/categories`),
-                    axios.get(`${import.meta.env.VITE_API_URL}/types`)
-                ]);
-
-                setItems(itemsResponse.data.data || []);
-                setCategories(categoriesResponse.data || []);
-                setTypes(typesResponse.data || []);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setError(error.response?.data?.message || 'Failed to fetch data');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         if (supplier && isOpen) {
             fetchData();
         }
@@ -48,38 +48,20 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
             });
-    
+
             if (result.isConfirmed) {
                 const response = await axios.delete(`${import.meta.env.VITE_API_URL}/supplier-items/${id}`);
                 
                 if (response.status === 200) {
                     setItems(items.filter(item => item.id !== id));
-                    Swal.fire(
-                        'Deleted!',
-                        'The supplier item has been deleted.',
-                        'success'
-                    );
+                    Swal.fire('Deleted!', response.data.message, 'success');
                 } else {
                     throw new Error('Unexpected response status');
                 }
             }
         } catch (error) {
             console.error('Error deleting supplier item:', error);
-            if (error.response && error.response.status === 404) {
-                Swal.fire(
-                    'Error!',
-                    'This supplier item no longer exists. The list will be refreshed.',
-                    'error'
-                );
-                // Remove the non-existent item from the local state
-                setItems(items.filter(item => item.id !== id));
-            } else {
-                Swal.fire(
-                    'Error!',
-                    `Failed to delete the supplier item. Please try again later.`,
-                    'error'
-                );
-            }
+            Swal.fire('Error!', 'Failed to delete the supplier item.', 'error');
         }
     };
 
