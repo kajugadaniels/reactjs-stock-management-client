@@ -88,9 +88,9 @@ const Suppliers = () => {
                     <button onClick={() => openSuppliersEditModal(row)} className="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded hover:bg-blue-200">
                         Edit
                     </button>
-                    <button onClick={() => handleDeleteSupplier(row.id)} className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded hover:bg-red-200">
+                    {/* <button onClick={() => handleDeleteSupplier(row.id)} className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded hover:bg-red-200">
                         Delete
-                    </button>
+                    </button> */}
                     <button onClick={() => openSupplierItemsModal(row)} className="px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded hover:bg-green-200">
                         View Items
                     </button>
