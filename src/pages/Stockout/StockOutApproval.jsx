@@ -71,15 +71,6 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         }
     };
 
-    const handleQuantityChange = (event, index) => {
-        const newQuantity = parseInt(event.target.value, 10);
-        const updatedItems = [...items];
-        updatedItems[index].pivot.quantity = newQuantity;
-        setItems(updatedItems);
-        calculateTotalQuantities(updatedItems);
-        checkAvailability(updatedItems);
-    };
-
     const handleApprove = async () => {
         setLoading(true);
         setError(null);
@@ -117,8 +108,8 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-lg p-6 mx-auto bg-white rounded-lg shadow-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50">
+            <div className="w-full max-w-4xl p-6 mx-auto my-8 bg-white rounded-lg shadow-md">
                 <h2 className="mb-6 text-2xl font-semibold text-gray-800">Stock Out Approval</h2>
                 <div className="mb-6">
                     <label className="block mb-2 text-sm font-medium text-gray-600">Request ID</label>
@@ -129,35 +120,66 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                         className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                     />
                 </div>
-                {items.map((item, index) => (
-                    <div key={item.id} className="mb-6">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border border-gray-300">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th className="px-4 py-2 text-left">Item Name</th>
+                                <th className="px-4 py-2 text-left">Supplier</th>
+                                <th className="px-4 py-2 text-left">Requested Quantity</th>
+                                <th className="px-4 py-2 text-left">Available Quantity</th>
+                                <th className="px-4 py-2 text-left">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {items.map((item) => (
+                                <tr key={item.id} className="border-t border-gray-300">
+                                    <td className="px-4 py-2">{item.item.name}</td>
+                                    <td className="px-4 py-2">{item.supplier.name}</td>
+                                    <td className="px-4 py-2">{item.pivot.quantity}</td>
+                                    <td className="px-4 py-2">{availableQuantities[item.id] || 0}</td>
+                                    <td className="px-4 py-2">
+                                        <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                                            availableQuantities[item.id] >= item.pivot.quantity 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-red-100 text-red-800'
+                                        }`}>
+                                            {availableQuantities[item.id] >= item.pivot.quantity 
+                                                ? 'Available' 
+                                                : 'Not Available'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div>
                         <label className="block mb-2 text-sm font-medium text-gray-600">
-                            {item.item.name} - Supplier: {item.supplier.name}
+                            Total Raw Material Quantity
                         </label>
                         <input
-                            type="number"
-                            value={item.pivot.quantity}
-                            onChange={(event) => handleQuantityChange(event, index)}
+                            type="text"
+                            value={totalRawMaterialQuantity}
                             readOnly
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
                         />
-                        <span className={`block mt-2 text-sm ${availableQuantities[item.id] >= item.pivot.quantity ? 'text-green-500' : 'text-red-500'}`}>
-                            {availableQuantities[item.id] >= item.pivot.quantity 
-                                ? 'Available' 
-                                : `Not Available, only ${availableQuantities[item.id]} available`}
-                        </span>
                     </div>
-                ))}
-                <div className="mb-6">
-                    <label className="block mb-2 text-sm font-medium text-gray-600">
-                        Total Raw Material Quantity: {totalRawMaterialQuantity}
-                    </label>
-                    <label className="block mb-2 text-sm font-medium text-gray-600">
-                        Total Package Quantity: {totalPackageQuantity}
-                    </label>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium text-gray-600">
+                            Total Package Quantity
+                        </label>
+                        <input
+                            type="text"
+                            value={totalPackageQuantity}
+                            readOnly
+                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                        />
+                    </div>
                 </div>
-                {error && <div className="mb-4 text-sm text-red-500">{error}</div>}
-                <div className="flex justify-end space-x-4">
+                {error && <div className="mt-4 text-sm text-red-500">{error}</div>}
+                <div className="flex justify-end mt-6 space-x-4">
                     <button 
                         type="button" 
                         className="px-4 py-2 text-gray-500 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00BDD6]" 
