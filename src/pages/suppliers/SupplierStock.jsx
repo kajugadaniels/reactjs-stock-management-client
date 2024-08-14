@@ -55,31 +55,89 @@ const SupplierStock = ({ isOpen, onClose }) => {
 
     const generatePDF = (data) => {
         const doc = new jsPDF();
-        doc.text('Supplier Stock Report', 14, 15);
-        
-        const tableColumn = ["Date", "Item", "Category", "Type", "Quantity", "Initial Qty", "Plate Number", "Batch Number"];
-        const tableRows = data.map(item => [
-            item.date,
-            item.item.name,
-            item.item.category.name,
-            item.item.type.name,
-            item.quantity,
-            item.init_qty,
-            item.plate_number,
-            item.batch_number
-        ]);
+        const pageWidth = doc.internal.pageSize.width;
 
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 20
+        // Add title
+        doc.setFontSize(18);
+        doc.text('Supplier Stock Report', pageWidth / 2, 15, { align: 'center' });
+
+        // Add supplier information
+        const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
+        doc.setFontSize(12);
+        doc.text(`Supplier: ${supplier.name}`, 14, 25);
+        doc.text(`Contact: ${supplier.contact || 'N/A'}`, 14, 31);
+        doc.text(`Address: ${supplier.address || 'N/A'}`, 14, 37);
+
+        // Add date range
+        doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 45);
+
+        // Group data by date, batch_number, and plate_number
+        const groupedData = data.reduce((acc, item) => {
+            const key = `${item.date}-${item.batch_number}-${item.plate_number}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    date: item.date,
+                    batch_number: item.batch_number,
+                    plate_number: item.plate_number,
+                    items: []
+                };
+            }
+            acc[key].items.push(item);
+            return acc;
+        }, {});
+
+        let yPos = 55;
+        Object.values(groupedData).forEach((group, index) => {
+            // Add group header
+            doc.setFontSize(10);
+            doc.text(`Date: ${group.date}`, 14, yPos);
+            doc.text(`Batch Number: ${group.batch_number}`, 14, yPos + 5);
+            doc.text(`Plate Number: ${group.plate_number}`, 80, yPos + 5);
+
+            yPos += 15;
+
+            // Add items table
+            const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Initial Qty", "Registered By"];
+            const tableRows = group.items.map(item => [
+                new Date(item.created_at).toLocaleTimeString(),
+                item.item.name,
+                item.item.category.name,
+                item.item.type.name,
+                item.quantity,
+                item.init_qty,
+                item.employee.name
+            ]);
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: yPos,
+                styles: { fontSize: 8 },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 30 }
+                }
+            });
+
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            // Add page break if necessary
+            if (yPos > 270 && index < Object.values(groupedData).length - 1) {
+                doc.addPage();
+                yPos = 20;
+            }
         });
 
         doc.save('supplier_stock_report.pdf');
     };
 
     const generateCSV = (data) => {
-        const headers = ['Date', 'Item', 'Category', 'Type', 'Quantity', 'Initial Quantity', 'Plate Number', 'Batch Number'];
+        const headers = ['Date', 'Item', 'Category', 'Type', 'Quantity', 'Initial Quantity', 'Plate Number', 'Batch Number', 'Registered By'];
         const rows = data.map(item => [
             item.date,
             item.item.name,
@@ -88,7 +146,8 @@ const SupplierStock = ({ isOpen, onClose }) => {
             item.quantity,
             item.init_qty,
             item.plate_number,
-            item.batch_number
+            item.batch_number,
+            item.employee.name
         ]);
         const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -107,19 +166,19 @@ const SupplierStock = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
-            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
-                <h2 className="mb-4 text-2xl font-bold">Supplier Stock Report</h2>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+                <h2 className="text-2xl font-bold mb-4">Supplier Stock Report</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="supplier">
                             Supplier
                         </label>
                         <select
                             id="supplier"
                             value={selectedSupplier}
                             onChange={(e) => setSelectedSupplier(e.target.value)}
-                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         >
                             <option value="">Select a supplier</option>
@@ -129,7 +188,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         </select>
                     </div>
                     <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="startDate">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="startDate">
                             Start Date
                         </label>
                         <input
@@ -137,12 +196,12 @@ const SupplierStock = ({ isOpen, onClose }) => {
                             id="startDate"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="endDate">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="endDate">
                             End Date
                         </label>
                         <input
@@ -150,12 +209,12 @@ const SupplierStock = ({ isOpen, onClose }) => {
                             id="endDate"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             required
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700">
+                        <label className="block text-gray-700 text-sm font-bold mb-2">
                             Report Type
                         </label>
                         <div className="flex items-center space-x-4">
@@ -165,7 +224,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                                     value="pdf"
                                     checked={reportType === 'pdf'}
                                     onChange={() => setReportType('pdf')}
-                                    className="w-4 h-4 text-blue-600 form-radio"
+                                    className="form-radio h-4 w-4 text-blue-600"
                                 />
                                 <span className="ml-2">PDF</span>
                             </label>
@@ -175,7 +234,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                                     value="csv"
                                     checked={reportType === 'csv'}
                                     onChange={() => setReportType('csv')}
-                                    className="w-4 h-4 text-blue-600 form-radio"
+                                    className="form-radio h-4 w-4 text-blue-600"
                                 />
                                 <span className="ml-2">CSV</span>
                             </label>
@@ -192,7 +251,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 font-bold text-white bg-gray-500 rounded hover:bg-gray-700 focus:outline-none focus:shadow-outline"
+                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             disabled={loading}
                         >
                             Close
