@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
+import Swal from 'sweetalert2';
 
 const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const [items, setItems] = useState([]);
@@ -36,6 +37,52 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         }
     }, [supplier, isOpen]);
 
+    const handleDelete = async (id) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
+    
+            if (result.isConfirmed) {
+                const response = await axios.delete(`${import.meta.env.VITE_API_URL}/supplier-items/${id}`);
+                
+                if (response.status === 200) {
+                    setItems(items.filter(item => item.id !== id));
+                    Swal.fire(
+                        'Deleted!',
+                        'The supplier item has been deleted.',
+                        'success'
+                    );
+                } else {
+                    throw new Error('Unexpected response status');
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting supplier item:', error);
+            if (error.response && error.response.status === 404) {
+                Swal.fire(
+                    'Error!',
+                    'This supplier item no longer exists. The list will be refreshed.',
+                    'error'
+                );
+                // Remove the non-existent item from the local state
+                setItems(items.filter(item => item.id !== id));
+            } else {
+                Swal.fire(
+                    'Error!',
+                    `Failed to delete the supplier item. Please try again later.`,
+                    'error'
+                );
+            }
+        }
+    };
+
     const columns = [
         {
             name: 'Item ID',
@@ -61,6 +108,17 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
             name: 'Capacity',
             selector: row => `${row.capacity || 'N/A'} ${row.unit || ''}`,
             sortable: true,
+        },
+        {
+            name: 'Actions',
+            cell: row => (
+                <button
+                    onClick={() => handleDelete(row.id)}
+                    className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                    Delete
+                </button>
+            ),
         },
     ];
 
