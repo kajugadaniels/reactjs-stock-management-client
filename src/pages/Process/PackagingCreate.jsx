@@ -30,54 +30,64 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     };
 
     const handlePackageSelect = (packageStock) => {
-        setSelectedPackages([...selectedPackages, { 
-            packageStock, 
-            quantity: '', 
-            packedQuantity: 0 
-        }]);
-        setErrors({});
+        setSelectedPackages(prevPackages => {
+            const newPackages = [
+                ...prevPackages,
+                { 
+                    packageStock: JSON.parse(packageStock), 
+                    quantity: '', 
+                    packedQuantity: 0 
+                }
+            ];
+            validatePackages(newPackages);
+            return newPackages;
+        });
     };
 
     const handleQuantityChange = (index, value) => {
-        const updatedPackages = [...selectedPackages];
-        const packageItem = updatedPackages[index];
-        const newErrors = { ...errors };
-        
-        if (value === '') {
-            packageItem.quantity = '';
-            packageItem.packedQuantity = 0;
-            delete newErrors[index];
-        } else {
-            const quantity = parseInt(value);
-            if (quantity > packageItem.packageStock.quantity) {
-                newErrors[index] = `We only have ${packageItem.packageStock.quantity} of this package stock item available.`;
-            } else if (quantity * packageItem.packageStock.capacity > remainingQuantity) {
-                newErrors[index] = `This quantity exceeds the remaining finished product quantity.`;
+        setSelectedPackages(prevPackages => {
+            const updatedPackages = [...prevPackages];
+            const packageItem = updatedPackages[index];
+            
+            if (value === '') {
+                packageItem.quantity = '';
+                packageItem.packedQuantity = 0;
             } else {
-                delete newErrors[index];
+                const quantity = parseInt(value);
+                packageItem.quantity = quantity.toString();
+                packageItem.packedQuantity = quantity * packageItem.packageStock.capacity;
             }
-            packageItem.quantity = quantity.toString();
-            packageItem.packedQuantity = quantity * packageItem.packageStock.capacity;
-        }
 
-        setSelectedPackages(updatedPackages);
+            validatePackages(updatedPackages);
+            return updatedPackages;
+        });
+    };
+
+    const validatePackages = (packages) => {
+        const newErrors = {};
+        let totalPackedQuantity = 0;
+
+        packages.forEach((pkg, index) => {
+            const quantity = parseInt(pkg.quantity) || 0;
+            totalPackedQuantity += quantity * pkg.packageStock.capacity;
+
+            if (quantity > pkg.packageStock.quantity) {
+                newErrors[index] = `Exceeds available quantity (${pkg.packageStock.quantity})`;
+            } else if (totalPackedQuantity > finishedProduct.item_qty) {
+                newErrors[index] = `Exceeds remaining finished product quantity`;
+            }
+        });
+
         setErrors(newErrors);
-        updateRemainingQuantity();
+        setRemainingQuantity(Math.max(0, finishedProduct.item_qty - totalPackedQuantity));
     };
 
     const handleRemovePackage = (index) => {
-        const updatedPackages = selectedPackages.filter((_, i) => i !== index);
-        setSelectedPackages(updatedPackages);
-        const newErrors = { ...errors };
-        delete newErrors[index];
-        setErrors(newErrors);
-        updateRemainingQuantity();
-    };
-
-    const updateRemainingQuantity = () => {
-        const packedTotal = selectedPackages.reduce((total, pkg) => total + pkg.packedQuantity, 0);
-        const newRemainingQuantity = Math.max(0, finishedProduct.item_qty - packedTotal);
-        setRemainingQuantity(newRemainingQuantity);
+        setSelectedPackages(prevPackages => {
+            const updatedPackages = prevPackages.filter((_, i) => i !== index);
+            validatePackages(updatedPackages);
+            return updatedPackages;
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -117,18 +127,18 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-            <div className="relative p-8 w-full max-w-2xl bg-white rounded-lg shadow-xl">
+        <div className="fixed inset-0 flex items-center justify-center w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
+            <div className="relative w-full max-w-2xl p-8 bg-white rounded-lg shadow-xl">
                 <button 
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                    className="absolute text-gray-500 top-4 right-4 hover:text-gray-700"
                     disabled={isSubmitting || isLoading}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                <h2 className="mb-4 text-2xl font-bold text-gray-800">
                     Package {finishedProduct.stock_out?.request?.request_for?.name}
                 </h2>
                 <div className="mb-6">
@@ -146,23 +156,26 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                         <select
                             id="package-select"
                             className="w-full px-3 py-2 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
-                            onChange={(e) => handlePackageSelect(JSON.parse(e.target.value))}
+                            onChange={(e) => handlePackageSelect(e.target.value)}
                             value=""
                             disabled={remainingQuantity === 0 || isSubmitting || isLoading}
                         >
                             <option value="">Choose a package type</option>
                             {packageStocks.map((pkg) => (
                                 <option key={pkg.id} value={JSON.stringify(pkg)}>
-                                    {pkg.item_name} - {pkg.type} - {pkg.capacity}{pkg.unit} (Available: {pkg.quantity})
+                                    {pkg.item_name} - {pkg.type} - {pkg.capacity}{pkg.unit} (Capacity: {pkg.capacity}{pkg.unit}, Available: {pkg.quantity})
                                 </option>
                             ))}
                         </select>
                     </div>
                     {selectedPackages.map((pkg, index) => (
-                        <div key={index} className="mb-4 p-4 border rounded-md bg-gray-50">
-                            <div className="flex justify-between items-center mb-2">
+                        <div key={index} className="p-4 mb-4 border rounded-md bg-gray-50">
+                            <div className="flex items-center justify-between mb-2">
                                 <p className="font-medium text-gray-700">
                                     {pkg.packageStock.item_name} - {pkg.packageStock.type} - {pkg.packageStock.capacity}{pkg.packageStock.unit}
+                                    <span className="ml-2 text-sm text-gray-500">
+                                        (Capacity: {pkg.packageStock.capacity}{pkg.packageStock.unit}, Available: {pkg.packageStock.quantity})
+                                    </span>
                                 </p>
                                 <button
                                     type="button"
@@ -170,12 +183,12 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     className="text-red-500 hover:text-red-700"
                                     disabled={isSubmitting || isLoading}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             </div>
-                            <div className="mt-2 flex items-center">
+                            <div className="flex items-center mt-2">
                                 <label htmlFor={`quantity-${index}`} className="mr-2 text-sm font-medium text-gray-700">Quantity:</label>
                                 <input
                                     id={`quantity-${index}`}
@@ -183,6 +196,7 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                                     value={pkg.quantity}
                                     onChange={(e) => handleQuantityChange(index, e.target.value)}
                                     min="0"
+                                    max={pkg.packageStock.quantity}
                                     className="w-20 px-2 py-1 text-gray-700 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                                     disabled={isSubmitting || isLoading}
                                 />
