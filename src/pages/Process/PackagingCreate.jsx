@@ -30,11 +30,12 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
     };
 
     const handlePackageSelect = (packageStock) => {
+        const selectedPackage = JSON.parse(packageStock);
         setSelectedPackages(prevPackages => {
             const newPackages = [
                 ...prevPackages,
                 { 
-                    packageStock: JSON.parse(packageStock), 
+                    packageStock: selectedPackage, 
                     quantity: '', 
                     packedQuantity: 0 
                 }
@@ -162,7 +163,11 @@ const PackagingCreate = ({ isOpen, onClose, finishedProduct }) => {
                         >
                             <option value="">Choose a package type</option>
                             {packageStocks.map((pkg) => (
-                                <option key={pkg.id} value={JSON.stringify(pkg)}>
+                                <option 
+                                    key={pkg.id} 
+                                    value={JSON.stringify(pkg)}
+                                    disabled={selectedPackages.some(selectedPkg => selectedPkg.packageStock.id === pkg.id)}
+                                >
                                     {pkg.item_name} - {pkg.type} - {pkg.capacity}{pkg.unit} (Capacity: {pkg.capacity}{pkg.unit}, Available: {pkg.quantity})
                                 </option>
                             ))}
