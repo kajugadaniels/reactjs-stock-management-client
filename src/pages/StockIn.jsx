@@ -6,6 +6,7 @@ import StockInCreate from './stockIn/StockInCreate';
 import StockInDetails from './stockIn/StockInDetails';
 import StockInEdit from './stockIn/StockInEdit';
 import StockInReport from './reports/StockInReport';
+import SupplierStock from './suppliers/SupplierStock';
 
 const StockIn = () => {
     const [stockIns, setStockIns] = useState([]);
@@ -19,6 +20,7 @@ const StockIn = () => {
     const [isStockInDetailsOpen, setIsStockInDetailsOpen] = useState(false);
     const [isStockInReportOpen, setIsStockInReportOpen] = useState(false);
     const [selectedStockIn, setSelectedStockIn] = useState(null);
+    const [isSupplierStockOpen, setIsSupplierStockOpen] = useState(false);
     const [filters, setFilters] = useState({
         category: '',
         type: '',
@@ -226,6 +228,12 @@ const StockIn = () => {
                 <h1 className="text-3xl font-semibold text-gray-800">Stock In Management</h1>
                 <div className="flex space-x-2">
                     <button
+                        onClick={() => setIsSupplierStockOpen(true)}
+                        className="px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
+                    >
+                        Supplier Stock
+                    </button>
+                    <button
                         onClick={() => setIsStockInCreateOpen(true)}
                         className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
                     >
@@ -321,6 +329,13 @@ const StockIn = () => {
                     customStyles={customStyles}
                 />
             </div>
+
+            {isSupplierStockOpen && (
+                <SupplierStock
+                    isOpen={isSupplierStockOpen}
+                    onClose={() => setIsSupplierStockOpen(false)}
+                />
+            )}
 
             {isStockInCreateOpen && (
                 <StockInCreate 
