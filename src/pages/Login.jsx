@@ -135,26 +135,6 @@ const Login = () => {
                                     placeholder="*******"
                                 />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <input
-                                        id="remember_me"
-                                        name="remember_me"
-                                        type="checkbox"
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="w-4 h-4 rounded text-primary border-zinc-300 focus:ring-primary"
-                                    />
-                                    <label htmlFor="remember_me" className="block ml-2 text-sm text-zinc-900">
-                                        Remember me
-                                    </label>
-                                </div>
-                                <div className="text-sm">
-                                    <a href="#" className="font-medium text-primary hover:text-primary-dark">
-                                        Forgot your password?
-                                    </a>
-                                </div>
-                            </div>
                             <button 
                                 type="submit" 
                                 className="w-full px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
@@ -162,14 +142,6 @@ const Login = () => {
                                 Continue
                             </button>
                         </form>
-                        <div className="text-center">
-                            <p className="text-zinc-600">
-                                Don't have an account?{' '}
-                                <a href="#" className="font-medium text-primary hover:text-primary-dark">
-                                    Sign up
-                                </a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
