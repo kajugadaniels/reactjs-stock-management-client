@@ -21,27 +21,33 @@ const ProductStockOut = () => {
         setIsReportModalOpen(!isReportModalOpen);
     };
 
-    useEffect(() => {
-        const fetchStockOutData = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`);
-                const contentType = response.headers.get("content-type");
-                if (!response.ok) throw new Error('Network response was not ok.');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new TypeError("Received non-JSON response from server");
-                }
-                const data = await response.json();
-                setStockOutData(data);
-            } catch (err) {
-                setError(`Failed to fetch data: ${err.message}`);
-            } finally {
-                setIsLoading(false);
+    // Fetch stock out data
+    const fetchStockOutData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`);
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) throw new Error('Network response was not ok.');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new TypeError("Received non-JSON response from server");
             }
-        };
+            const data = await response.json();
+            setStockOutData(data);
+        } catch (err) {
+            setError(`Failed to fetch data: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchStockOutData();
     }, []);
+
+    // Handle stock out creation
+    const handleStockOutCreated = () => {
+        fetchStockOutData(); // Refresh stock out data
+    };
 
     if (isLoading) return <p className="text-center text-gray-600">Loading...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -76,9 +82,18 @@ const ProductStockOut = () => {
                         Generate Report
                     </button>
                 </div>
-                <ProductStockOutCreate isOpen={isCreateModalOpen} onClose={toggleProductStockOutCreateModal} />
-                <ProductStockOutReport isOpen={isReportModalOpen} onClose={toggleProductStockOutReportModal} />
             </div>
+            
+            <ProductStockOutCreate
+                isOpen={isCreateModalOpen}
+                onClose={toggleProductStockOutCreateModal}
+                onStockOutCreated={handleStockOutCreated}
+            />
+            <ProductStockOutReport
+                isOpen={isReportModalOpen}
+                onClose={toggleProductStockOutReportModal}
+            />
+
             <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">

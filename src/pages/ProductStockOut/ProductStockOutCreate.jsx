@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
-const ProductStockOutCreate = ({ isOpen, onClose }) => {
+const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
     const [productStockIns, setProductStockIns] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [formData, setFormData] = useState({
@@ -67,7 +67,8 @@ const ProductStockOutCreate = ({ isOpen, onClose }) => {
             if (!response.ok) throw new Error(data.message || 'An error occurred');
 
             Swal.fire('Success', 'Stock Out Created Successfully', 'success');
-            onClose();
+            onStockOutCreated(); // Notify parent to refresh data
+            onClose(); // Close the modal
         } catch (error) {
             setError(error.message);
             Swal.fire('Error', error.message, 'error');
