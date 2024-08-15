@@ -48,8 +48,7 @@ const FinishedCreate = ({ isOpen, onClose, process, onFinishedCreated }) => {
                 text: 'Finished product added successfully!',
             }).then(() => {
                 onClose();
-                onFinishedCreated();
-                window.location.reload();  // Reload the page
+                onFinishedCreated();  // Notify parent component to update data
             });
         } catch (error) {
             console.error('Error creating finished product:', error);
