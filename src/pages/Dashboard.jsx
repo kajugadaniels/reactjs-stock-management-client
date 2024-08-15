@@ -113,7 +113,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Total Inventory Value"
-                    value={`$${dashboardData.totalInventoryValue.toLocaleString()}`}
+                    value={`${dashboardData.totalInventoryValue.toLocaleString()}`}
                     icon={<CurrencyDollarIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
                     color="bg-green-100"
                 />

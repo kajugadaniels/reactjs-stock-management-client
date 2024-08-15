@@ -87,12 +87,13 @@ const Process = () => {
             name: 'Actions',
             cell: (row) => (
                 <button
-                    className={`px-6 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'}`}
-                    onClick={() => toggleFinishedCreateModal(row)}
-                    disabled={row.status === 'Finished'}
-                >
-                    {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
-                </button>
+                className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
+                onClick={() => toggleFinishedCreateModal(row)}
+                disabled={row.status === 'Finished'}
+            >
+                {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
+            </button>
+            
             ),
         },
     ];

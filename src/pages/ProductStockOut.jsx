@@ -66,23 +66,24 @@ const ProductStockOut = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen mt-20">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
-                <div>
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition mr-4"
-                        onClick={toggleProductStockOutCreateModal}
-                    >
-                        Add New Stock Out
-                    </button>
-                    <button
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
-                        onClick={toggleProductStockOutReportModal}
-                    >
-                        Generate Report
-                    </button>
-                </div>
-            </div>
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
+    <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
+    <div className="flex flex-wrap gap-2">
+        <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full sm:w-auto"
+            onClick={toggleProductStockOutCreateModal}
+        >
+            Add New Stock Out
+        </button>
+        <button
+            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition w-full sm:w-auto"
+            onClick={toggleProductStockOutReportModal}
+        >
+            Generate Report
+        </button>
+    </div>
+</div>
+
             
             <ProductStockOutCreate
                 isOpen={isCreateModalOpen}
