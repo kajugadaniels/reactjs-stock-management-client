@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const TypesCreate = ({ isOpen, onClose }) => {
     const [formData, setFormData] = useState({
@@ -112,18 +113,26 @@ const TypesCreate = ({ isOpen, onClose }) => {
             name: 'Actions',
             cell: row => (
                 <>
-                    <button 
-                        onClick={() => handleEdit(row)} 
-                        className="px-2 py-1 mr-2 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600"
+                    <button
+                        onClick={() => handleEdit(row)}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400
+               sm:px-4 sm:py-2 sm:text-sm
+               md:px-5 md:py-2.5 md:text-base"
                     >
-                        Edit
+                        <span className="hidden sm:inline">Edit</span> 
+                        <FaEdit className="inline sm:hidden text-base" /> 
                     </button>
-                    <button 
-                        onClick={() => handleDelete(row.id)} 
-                        className="px-2 py-1 text-xs font-medium text-white bg-red-500 rounded hover:bg-red-600"
+
+                    <button
+                        onClick={() => handleDelete(row.id)}
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400
+               sm:px-4 sm:py-2 sm:text-sm
+               md:px-5 md:py-2.5 md:text-base"
                     >
-                        Delete
+                        <span className="hidden sm:inline">Delete</span>
+                        <FaTrash className="inline sm:hidden text-base" /> 
                     </button>
+
                 </>
             ),
         },
@@ -131,12 +140,12 @@ const TypesCreate = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-4xl p-8 bg-white rounded-lg shadow-lg">
-                <h2 className="mb-6 text-2xl font-bold text-gray-800">
+            <div className="w-full max-w-4xl p-6 sm:p-8 bg-white rounded-lg shadow-lg">
+                <h2 className="mb-6 text-xl sm:text-2xl font-bold text-gray-800">
                     {editingType ? 'Edit Type' : 'Add a Type'}
                 </h2>
                 <form onSubmit={handleSubmit} className="mb-6">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label htmlFor="category_id" className="block mb-1 text-sm font-medium text-gray-700">Category</label>
                             <select
@@ -169,17 +178,20 @@ const TypesCreate = ({ isOpen, onClose }) => {
                             />
                         </div>
                     </div>
-                    <div className="flex justify-end mt-4 space-x-4">
+                    <div className="flex flex-col sm:flex-row justify-end mt-4 space-y-2 sm:space-y-0 sm:space-x-4">
                         <button
                             type="button"
                             onClick={() => {
                                 setEditingType(null);
                                 setFormData({ name: '', category_id: '' });
                             }}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400
+               md:px-6 md:py-3 md:text-base
+               lg:px-8 lg:py-4 lg:text-lg"
                         >
                             Cancel
                         </button>
+
                         <button
                             type="submit"
                             className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
@@ -194,12 +206,13 @@ const TypesCreate = ({ isOpen, onClose }) => {
                     columns={columns}
                     data={types}
                     pagination
+                    paginationPerPage={5}
                     highlightOnHover
                     striped
                     responsive
                 />
 
-                <div className="mt-4">
+                <div className="mt-4 text-right">
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"

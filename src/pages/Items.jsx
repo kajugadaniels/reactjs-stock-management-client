@@ -6,6 +6,7 @@ import { SearchIcon } from '@heroicons/react/solid';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import TypesCreate from './types/TypesCreate';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const Items = () => {
     const [items, setItems] = useState([]);
@@ -107,18 +108,23 @@ const Items = () => {
             name: 'Action',
             cell: (row) => (
                 <div className="flex space-x-2">
+
+
                     <button
                         onClick={() => openItemsEditModal(row)}
-                        className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="inline-flex items-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
                     >
-                        Edit
+                        <span className="hidden sm:inline">Edit</span>
+                        <FaEdit className="block sm:hidden" />
                     </button>
                     <button
                         onClick={() => handleDeleteItem(row.id)}
-                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                        className="inline-flex items-center px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                     >
-                        Delete
+                        <span className="hidden sm:inline">Delete</span>
+                        <FaTrash className="block sm:hidden" />
                     </button>
+
                 </div>
             ),
         },
@@ -180,14 +186,14 @@ const Items = () => {
                         />
                         <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
                     </div>
-                    <button 
-                        onClick={toggleItemsCreateModal} 
+                    <button
+                        onClick={toggleItemsCreateModal}
                         className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
                     >
                         Add Item
                     </button>
-                    <button 
-                        onClick={toggleTypesCreateModal} 
+                    <button
+                        onClick={toggleTypesCreateModal}
                         className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
                     >
                         Add Types
