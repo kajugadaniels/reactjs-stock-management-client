@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
@@ -75,22 +75,21 @@ const Suppliers = () => {
             name: 'Contact',
             selector: row => row.contact,
             sortable: true,
+            hide: 'sm',
         },
         {
             name: 'Address',
             selector: row => row.address,
             sortable: true,
+            hide: 'md',
         },
         {
             name: 'Action',
             cell: (row) => (
-                <div className="flex space-x-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                     <button onClick={() => openSuppliersEditModal(row)} className="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded hover:bg-blue-200">
                         Edit
                     </button>
-                    {/* <button onClick={() => handleDeleteSupplier(row.id)} className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-100 rounded hover:bg-red-200">
-                        Delete
-                    </button> */}
                     <button onClick={() => openSupplierItemsModal(row)} className="px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded hover:bg-green-200">
                         View Items
                     </button>
@@ -99,6 +98,7 @@ const Suppliers = () => {
                     </button>
                 </div>
             ),
+            grow: 2,
         }
     ];
 
@@ -115,6 +115,7 @@ const Suppliers = () => {
                 fontWeight: '600',
                 textTransform: 'uppercase',
                 color: '#374151',
+                padding: '12px 8px',
             },
         },
         rows: {
@@ -128,6 +129,11 @@ const Suppliers = () => {
                     backgroundColor: '#f3f4f6',
                 },
                 borderBottom: '1px solid #e5e7eb',
+            },
+        },
+        cells: {
+            style: {
+                padding: '12px 8px',
             },
         },
     };
@@ -155,23 +161,23 @@ const Suppliers = () => {
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="container py-32 mx-auto">
-            <div className="flex flex-col mb-8 md:flex-row md:items-center md:justify-between">
-                <h1 className="mb-4 text-3xl font-semibold text-gray-800 md:mb-0">Suppliers Management</h1>
-                <div className="flex space-x-2">
-                    <button onClick={toggleSuppliersCreateModal} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+        <div className="container py-8 mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mt-20">
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">Suppliers Management</h1>
+                <div className="flex flex-wrap gap-2">
+                    <button onClick={toggleSuppliersCreateModal} className="w-full sm:w-auto bg-[#00BDD6] text-white px-4 py-2 rounded-md text-sm">
                         Add Supplier
                     </button>
-                    <button onClick={toggleEmployeesCreateModal} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+                    <button onClick={toggleEmployeesCreateModal} className="w-full sm:w-auto bg-[#00BDD6] text-white px-4 py-2 rounded-md text-sm">
                         Add Employee
                     </button>
-                    <button onClick={toggleReportForm} className="bg-[#00BDD6] text-white px-4 py-2 rounded-md">
+                    <button onClick={toggleReportForm} className="w-full sm:w-auto bg-[#00BDD6] text-white px-4 py-2 rounded-md text-sm">
                         Generate Report
                     </button>
                 </div>
             </div>
 
-            <div className="mt-8 bg-white rounded-lg shadow">
+            <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={suppliers}
@@ -180,6 +186,7 @@ const Suppliers = () => {
                     highlightOnHover
                     pointerOnHover
                     customStyles={customStyles}
+                    noHeader
                 />
             </div>
 
