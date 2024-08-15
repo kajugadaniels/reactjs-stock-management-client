@@ -68,7 +68,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const columns = [
         {
             name: 'Item ID',
-            selector: row => row.id,
+            selector: row => row.supplier_item_id,
             sortable: true,
         },
         {
@@ -95,7 +95,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
             name: 'Actions',
             cell: row => (
                 <button
-                    onClick={() => handleDelete(row.id)}
+                    onClick={() => handleDelete(row.supplier_item_id)}
                     className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                 >
                     Delete
