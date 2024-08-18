@@ -37,7 +37,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                     endDate: endDate
                 }
             });
-            
+
             if (reportType === 'pdf') {
                 generatePDF(response.data);
             } else {
@@ -77,7 +77,6 @@ const SupplierStock = ({ isOpen, onClose }) => {
             if (!acc[key]) {
                 acc[key] = {
                     date: item.date,
-                    batch_number: item.batch_number,
                     plate_number: item.plate_number,
                     items: []
                 };
@@ -91,19 +90,19 @@ const SupplierStock = ({ isOpen, onClose }) => {
             // Add group header
             doc.setFontSize(10);
             doc.text(`Date: ${group.date}`, 14, yPos);
-            doc.text(`Batch Number: ${group.batch_number}`, 14, yPos + 5);
             doc.text(`Plate Number: ${group.plate_number}`, 80, yPos + 5);
 
             yPos += 15;
 
             // Add items table
-            const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Initial Qty", "Registered By"];
+            const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Batch Number", "Initial Qty", "Registered By"];
             const tableRows = group.items.map(item => [
                 new Date(item.created_at).toLocaleTimeString(),
                 item.item.name,
                 item.item.category.name,
                 item.item.type.name,
                 item.quantity,
+                item.batch_number,
                 item.init_qty,
                 item.employee.name
             ]);
@@ -114,13 +113,14 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 startY: yPos,
                 styles: { fontSize: 8 },
                 columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 25 },
+                    0: { cellWidth: 20 },
+                    1: { cellWidth: 20 },
+                    2: { cellWidth: 20 },
                     3: { cellWidth: 25 },
                     4: { cellWidth: 20 },
-                    5: { cellWidth: 20 },
-                    6: { cellWidth: 30 }
+                    5: { cellWidth: 25 },
+                    6: { cellWidth: 20 },
+                    7: { cellWidth: 20 }
                 }
             });
 

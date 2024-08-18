@@ -21,27 +21,33 @@ const ProductStockOut = () => {
         setIsReportModalOpen(!isReportModalOpen);
     };
 
-    useEffect(() => {
-        const fetchStockOutData = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`);
-                const contentType = response.headers.get("content-type");
-                if (!response.ok) throw new Error('Network response was not ok.');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new TypeError("Received non-JSON response from server");
-                }
-                const data = await response.json();
-                setStockOutData(data);
-            } catch (err) {
-                setError(`Failed to fetch data: ${err.message}`);
-            } finally {
-                setIsLoading(false);
+    // Fetch stock out data
+    const fetchStockOutData = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`);
+            const contentType = response.headers.get("content-type");
+            if (!response.ok) throw new Error('Network response was not ok.');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new TypeError("Received non-JSON response from server");
             }
-        };
+            const data = await response.json();
+            setStockOutData(data);
+        } catch (err) {
+            setError(`Failed to fetch data: ${err.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchStockOutData();
     }, []);
+
+    // Handle stock out creation
+    const handleStockOutCreated = () => {
+        fetchStockOutData(); // Refresh stock out data
+    };
 
     if (isLoading) return <p className="text-center text-gray-600">Loading...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -60,25 +66,35 @@ const ProductStockOut = () => {
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen mt-20">
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
-                <div>
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition mr-4"
-                        onClick={toggleProductStockOutCreateModal}
-                    >
-                        Add New Stock Out
-                    </button>
-                    <button
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition"
-                        onClick={toggleProductStockOutReportModal}
-                    >
-                        Generate Report
-                    </button>
-                </div>
-                <ProductStockOutCreate isOpen={isCreateModalOpen} onClose={toggleProductStockOutCreateModal} />
-                <ProductStockOutReport isOpen={isReportModalOpen} onClose={toggleProductStockOutReportModal} />
-            </div>
+            <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
+    <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
+    <div className="flex flex-wrap gap-2">
+        <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full sm:w-auto"
+            onClick={toggleProductStockOutCreateModal}
+        >
+            Add New Stock Out
+        </button>
+        <button
+            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition w-full sm:w-auto"
+            onClick={toggleProductStockOutReportModal}
+        >
+            Generate Report
+        </button>
+    </div>
+</div>
+
+            
+            <ProductStockOutCreate
+                isOpen={isCreateModalOpen}
+                onClose={toggleProductStockOutCreateModal}
+                onStockOutCreated={handleStockOutCreated}
+            />
+            <ProductStockOutReport
+                isOpen={isReportModalOpen}
+                onClose={toggleProductStockOutReportModal}
+            />
+
             <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">

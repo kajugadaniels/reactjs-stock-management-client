@@ -35,6 +35,16 @@ const Process = () => {
         setIsFinishedModalOpen(!isFinishedModalOpen);
     };
 
+    const handleFinishedCreated = () => {
+        // Update the specific process in the list to reflect it's finished
+        setProcesses(prevProcesses =>
+            prevProcesses.map(proc =>
+                proc.id === selectedProcess.id ? { ...proc, status: 'Finished' } : proc
+            )
+        );
+        setIsFinishedModalOpen(false);
+    };
+
     const columns = [
         {
             name: 'Item Name',
@@ -77,12 +87,13 @@ const Process = () => {
             name: 'Actions',
             cell: (row) => (
                 <button
-                    className={`px-6 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'}`}
-                    onClick={() => toggleFinishedCreateModal(row)}
-                    disabled={row.status === 'Finished'}
-                >
-                    {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
-                </button>
+                className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
+                onClick={() => toggleFinishedCreateModal(row)}
+                disabled={row.status === 'Finished'}
+            >
+                {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
+            </button>
+            
             ),
         },
     ];
@@ -119,7 +130,7 @@ const Process = () => {
 
     const filteredProcesses = useMemo(() => {
         return processes.filter(process =>
-            process.request.items.some(item => 
+            process.request.items.some(item =>
                 item.item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.item.category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.item.type.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -161,7 +172,12 @@ const Process = () => {
                 />
             </div>
 
-            <FinishedCreate isOpen={isFinishedModalOpen} onClose={() => setIsFinishedModalOpen(false)} process={selectedProcess} />
+            <FinishedCreate
+                isOpen={isFinishedModalOpen}
+                onClose={() => setIsFinishedModalOpen(false)}
+                process={selectedProcess}
+                onFinishedCreated={handleFinishedCreated}
+            />
         </div>
     );
 };

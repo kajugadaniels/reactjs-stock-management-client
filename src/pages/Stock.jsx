@@ -232,26 +232,27 @@ const Stock = () => {
             </div>
             <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
                 <h1 className="text-3xl font-semibold text-gray-800">Stock Management</h1>
-                <div className="flex space-x-2">
-                    <button
-                        onClick={() => setIsRequestItemModalOpen(true)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
-                    >
-                        Request Item
-                    </button>
-                    <button
-                        onClick={() => setIsRequestPackagingOpen(true)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2"
-                    >
-                        Request Package
-                    </button>
-                    <button
-                        onClick={() => setIsRequestReportOpen(true)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                    >
-                        Generate Report
-                    </button>
-                </div>
+                <div className="flex flex-wrap gap-2">
+    <button
+        onClick={() => setIsRequestItemModalOpen(true)}
+        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
+    >
+        Request Item
+    </button>
+    <button
+        onClick={() => setIsRequestPackagingOpen(true)}
+        className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:ring-offset-2 w-full sm:w-auto"
+    >
+        Request Package
+    </button>
+    <button
+        onClick={() => setIsRequestReportOpen(true)}
+        className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 w-full sm:w-auto"
+    >
+        Generate Report
+    </button>
+</div>
+
             </div>
 
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
