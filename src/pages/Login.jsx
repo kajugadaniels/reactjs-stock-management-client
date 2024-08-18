@@ -24,29 +24,29 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        const loginData = {
-            email,
-            password,
-        };
-
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, loginData);
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
+                email,
+                password,
+            });
+
+            const { access_token, user } = response.data.data;
+
+            localStorage.setItem('token', access_token);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            if (rememberMe) {
+                localStorage.setItem('email', email);
+            } else {
+                localStorage.removeItem('email');
+            }
 
             Swal.fire({
                 icon: 'success',
                 title: 'Login Successful',
                 text: 'Welcome back!',
             });
-            localStorage.setItem('token', response.data.data.token);
-            localStorage.setItem('user', JSON.stringify({
-                name: response.data.data.name,
-                role: response.data.data.role
-            }));
-            if (rememberMe) {
-                localStorage.setItem('email', email);
-            } else {
-                localStorage.removeItem('email');
-            }
+
             navigate('/dashboard');
         } catch (error) {
             Swal.fire({
@@ -119,6 +119,19 @@ const Login = () => {
                                     className="flex-grow w-full gap-10 px-4 py-2 pl-10 border rounded-md text-zinc-900 placeholder-zinc-500 bg-zinc-100 border-zinc-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent "
                                     placeholder="*******"
                                 />
+                            </div>
+                            <div className="flex items-center">
+                                <input
+                                    id="remember-me"
+                                    name="remember-me"
+                                    type="checkbox"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                />
+                                <label htmlFor="remember-me" className="block ml-2 text-sm text-gray-900">
+                                    Remember me
+                                </label>
                             </div>
                             <button 
                                 type="submit" 
