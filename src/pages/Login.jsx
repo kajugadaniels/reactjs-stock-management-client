@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -21,52 +23,39 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true);
         const loginData = {
             email,
             password,
         };
 
         try {
-            const response = await fetch('http://localhost:8000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(loginData),
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, loginData);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Welcome back!',
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'Welcome back!',
-                });
-                localStorage.setItem('token', data.data.token);
-                localStorage.setItem('user', JSON.stringify({
-                    name: data.data.name,
-                    role: data.data.role
-                }));
-                if (rememberMe) {
-                    localStorage.setItem('email', email);
-                } else {
-                    localStorage.removeItem('email');
-                }
-                navigate('/dashboard');
+            localStorage.setItem('token', response.data.data.token);
+            localStorage.setItem('user', JSON.stringify({
+                name: response.data.data.name,
+                role: response.data.data.role
+            }));
+            if (rememberMe) {
+                localStorage.setItem('email', email);
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: data.message || 'Login failed',
-                });
+                localStorage.removeItem('email');
             }
+            navigate('/dashboard');
         } catch (error) {
             Swal.fire({
                 icon: 'error',
-                title: 'Network Error',
-                text: 'An error occurred. Please try again.',
+                title: 'Login Failed',
+                text: error.response?.data?.message || 'An error occurred. Please try again.',
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -77,9 +66,6 @@ const Login = () => {
             setRememberMe(true);
         }
     }, []);
-
-
-    
 
     return (
         <div className="flex items-start justify-center min-h-screen bg-white">
@@ -101,7 +87,6 @@ const Login = () => {
                             <p className="text-zinc-600">Log in to your account</p>
                         </div>
 
-                        
                         <form className="space-y-6" onSubmit={handleLogin}>
                             <div className="space-y-1">
                                 <label htmlFor="email" className="sr-only">
@@ -138,8 +123,9 @@ const Login = () => {
                             <button 
                                 type="submit" 
                                 className="w-full px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+                                disabled={loading}
                             >
-                                Continue
+                                {loading ? 'Logging in...' : 'Continue'}
                             </button>
                         </form>
                     </div>
