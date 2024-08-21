@@ -19,6 +19,7 @@ import FinishedProduct from "./FinishedProduct";
 import ProductionInventory from './ProductionInventory';
 import PackageStock from "./PackageStock";
 import FinishedStock from "./FinishedStock";
+import ChangePassword from "./ChangePassword";
 
 export {
     Login,
@@ -42,4 +43,5 @@ export {
     ProductionInventory,
     PackageStock,
     FinishedStock,
+    ChangePassword,
 }

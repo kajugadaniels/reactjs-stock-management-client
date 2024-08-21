@@ -75,19 +75,33 @@ const Header = () => {
                         </div>
                     </Dropdown.Toggle>
                     {isMenuOpen && (
-                        <Dropdown.Menu align="right" className="flex flex-col w-64 p-4 mt-5 bg-white rounded-lg shadow-lg text-foreground">
-                            <div className="flex items-center mb-4">
-                                <span className="ml-2 text-lg font-semibold">Jabana</span>
-                            </div>
-                            <div className="flex flex-col space-y-2">
-                                <Dropdown.Item as="button" onClick={handleLogout} className="flex items-center w-full text-left">
-                                    <div className='flex gap-5'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="none" stroke="#43badb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 6.5C4.159 8.148 3 10.334 3 13a9 9 0 1 0 18 0c0-2.666-1.159-4.852-3-6.5M12 2v9m0-9c-.7 0-2.008 1.994-2.5 2.5M12 2c.7 0 2.008 1.994 2.5 2.5" color="#43badb"></path></svg>
-                                        Logout
+                        <Dropdown show={isMenuOpen} onToggle={toggleMenu}>
+                            <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
+                                <div className='flex gap-5'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path fill="#212d31" fillRule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clipRule="evenodd"></path></svg>
+                                    <h1 className='semi-bold mt-2'>Jabana</h1>
+                                </div>
+                            </Dropdown.Toggle>
+                            {isMenuOpen && (
+                                <Dropdown.Menu align="right" className="flex flex-col p-4 bg-white text-foreground w-64 rounded-lg shadow-lg mt-5">
+                                    <div className="flex items-center mb-4">
+                                        <span className="ml-2 text-lg font-semibold">Jabana</span>
                                     </div>
-                                </Dropdown.Item>
-                            </div>
-                        </Dropdown.Menu>
+                                    <div className="flex flex-col space-y-2">
+                                        <Link to="/change-password" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                                            <Icon icon="mdi:key-change" className="mr-2" />
+                                            Change Password
+                                        </Link>
+                                        <Dropdown.Item as="button" onClick={handleLogout} className="w-full text-left flex items-center">
+                                            <div className='flex gap-5'>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 24 24"><path fill="none" stroke="#43badb" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 6.5C4.159 8.148 3 10.334 3 13a9 9 0 1 0 18 0c0-2.666-1.159-4.852-3-6.5M12 2v9m0-9c-.7 0-2.008 1.994-2.5 2.5M12 2c.7 0 2.008 1.994 2.5 2.5" color="#43badb"></path></svg>
+                                                Logout
+                                            </div>
+                                        </Dropdown.Item>
+                                    </div>
+                                </Dropdown.Menu>
+                            )}
+                        </Dropdown>
                     )}
                 </Dropdown>
 
