@@ -1,16 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 import CreateUser from './users/CreateUser';
 
 const Users = () => {
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/users`);
+            setUsers(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setError('Failed to fetch users');
+            setLoading(false);
+        }
+    };
 
     const toggleCreateUserModal = () => {
         setIsCreateUserModalOpen(!isCreateUserModalOpen);
     };
 
-    const users = [
-        { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+    const handleEdit = (user) => {
+        // Implement edit functionality
+        console.log('Edit user:', user);
+    };
+
+    const handleDelete = async (userId) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                await axios.delete(`${import.meta.env.VITE_API_URL}/users/${userId}`);
+                Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                fetchUsers(); // Refresh the user list
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            Swal.fire('Error', 'Failed to delete user', 'error');
+        }
+    };
+
+    const columns = [
+        {
+            name: 'Name',
+            selector: row => row.name,
+            sortable: true,
+        },
+        {
+            name: 'Email',
+            selector: row => row.email,
+            sortable: true,
+        },
+        {
+            name: 'Role',
+            selector: row => row.role,
+            sortable: true,
+        },
+        {
+            name: 'Actions',
+            cell: row => (
+                <>
+                    <button 
+                        onClick={() => handleEdit(row)} 
+                        className="px-4 py-1 mr-2 text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none"
+                    >
+                        Edit
+                    </button>
+                    <button 
+                        onClick={() => handleDelete(row.id)} 
+                        className="px-4 py-1 text-sm font-medium text-red-600 hover:text-red-800 focus:outline-none"
+                    >
+                        Delete
+                    </button>
+                </>
+            ),
+        },
     ];
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+            },
+        },
+    };
+
+    if (loading) return <div className="text-center mt-8">Loading users...</div>;
+    if (error) return <div className="text-center mt-8 text-red-600">{error}</div>;
 
     return (
         <div className="container py-32 mx-auto">
@@ -25,38 +141,18 @@ const Users = () => {
                     </button>
                 </div>
             </div>
-
             <div className="mt-8 bg-white rounded-lg shadow">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Name</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Email</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Role</th>
-                            <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left" >Action</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {users.map((user) => (
-                            <tr key={user.id}>
-                                <td className="px-6 py-4 text-sm text-gray-900">{user.name}</td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{user.email}</td>
-                                <td className="px-6 py-4 text-sm text-gray-900">{user.role}</td>
-                                <td className="px-6 py-4 text-sm text-gray-900">
-                                    <button className="px-4 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 focus:outline-none">
-                                        Edit
-                                    </button>
-                                    <button className="px-4 py-1 text-sm font-medium text-red-600 hover:text-red-800 focus:outline-none">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <DataTable
+                    columns={columns}
+                    data={users}
+                    pagination
+                    highlightOnHover
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                />
             </div>
-
-            {isCreateUserModalOpen && <CreateUser isOpen={isCreateUserModalOpen} onClose={toggleCreateUserModal} />}
+            {isCreateUserModalOpen && <CreateUser isOpen={isCreateUserModalOpen} onClose={toggleCreateUserModal} onUserCreated={fetchUsers} />}
         </div>
     );
 };
