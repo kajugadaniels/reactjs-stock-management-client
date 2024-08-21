@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const ChangePassword = () => {
     const [formData, setFormData] = useState({
+        user_id: '',
         current_password: '',
         new_password: '',
         new_password_confirmation: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        // Retrieve user information from local storage
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.id) {
+            setFormData(prevState => ({ ...prevState, user_id: user.id }));
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'User information not found. Please log in again.',
+                icon: 'error',
+            });
+        }
+    }, []);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,6 +66,7 @@ const ChangePassword = () => {
                 icon: 'success',
             });
             setFormData({
+                ...formData,
                 current_password: '',
                 new_password: '',
                 new_password_confirmation: '',
