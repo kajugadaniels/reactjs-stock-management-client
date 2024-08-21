@@ -10,6 +10,7 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
         password_confirmation: '',
         role: 'User',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,6 +18,28 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
+
+        // Frontend validation
+        if (formData.password !== formData.password_confirmation) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Passwords do not match',
+                icon: 'error',
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (formData.password.length < 8) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Password must be at least 8 characters long',
+                icon: 'error',
+            });
+            setIsSubmitting(false);
+            return;
+        }
 
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/register`, formData);
@@ -30,9 +53,11 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
         } catch (error) {
             Swal.fire({
                 title: 'Error',
-                text: 'Failed to create user',
+                text: error.response?.data?.message || 'Failed to create user',
                 icon: 'error',
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -118,14 +143,16 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
                             type="button"
                             className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                             onClick={onClose}
+                            disabled={isSubmitting}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             className="px-4 py-2 text-sm font-medium text-white bg-[#00BDD6] rounded-md hover:bg-[#00a8c2] focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
+                            disabled={isSubmitting}
                         >
-                            Create
+                            {isSubmitting ? 'Creating...' : 'Create'}
                         </button>
                     </div>
                 </form>
