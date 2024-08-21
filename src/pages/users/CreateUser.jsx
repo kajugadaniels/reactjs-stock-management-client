@@ -42,7 +42,7 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
         }
 
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/register`, formData);
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, formData);
             Swal.fire({
                 title: 'Success',
                 text: 'User created successfully',
@@ -51,9 +51,17 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
             onClose();
             fetchUsers();
         } catch (error) {
+            console.error('Error creating user:', error.response?.data);
+            let errorMessage = 'Failed to create user';
+            if (error.response?.data?.errors) {
+                const errors = error.response.data.errors;
+                errorMessage = Object.values(errors).flat().join('\n');
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
             Swal.fire({
                 title: 'Error',
-                text: error.response?.data?.message || 'Failed to create user',
+                text: errorMessage,
                 icon: 'error',
             });
         } finally {
