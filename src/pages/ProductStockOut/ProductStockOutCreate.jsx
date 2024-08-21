@@ -28,7 +28,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
 
     const fetchProductStockIns = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/product-stock-ins');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-ins`);
             const data = await response.json();
             const filteredData = data.filter(item => item.quantity >= 0);
             setProductStockIns(filteredData);
@@ -39,7 +39,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
 
     const fetchEmployees = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/employees');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/employees`);
             const data = await response.json();
             setEmployees(data);
         } catch (err) {
@@ -58,7 +58,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:8000/api/product-stock-out', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/check-auth', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/check-auth`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

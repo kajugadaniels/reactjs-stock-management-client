@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -9,46 +9,63 @@ const Login = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: location.state.error,
+            });
+        }
+    }, [location]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
                 email,
                 password,
             });
 
-            if (response.status === 200) {
-                // Login successful
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Login Successful',
-                    text: 'You have successfully logged in.',
-                }).then(() => {
-                    // TODO: Handle successful login (e.g., store token, redirect to dashboard)
-                    navigate('/dashboard');
-                });
+            const { access_token, user } = response.data.data;
+
+            localStorage.setItem('token', access_token);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            if (rememberMe) {
+                localStorage.setItem('email', email);
             } else {
-                // Login failed
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: 'Invalid email or password.',
-                });
+                localStorage.removeItem('email');
             }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Login Successful',
+                text: 'Welcome back!',
+            });
+
+            navigate('/dashboard');
         } catch (error) {
-            console.error('Login error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'Login Error',
-                text: 'An error occurred while logging in. Please try again later.',
+                title: 'Login Failed',
+                text: error.response?.data?.message || 'An error occurred. Please try again.',
             });
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('email');
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberMe(true);
+        }
+    }, []);
 
     return (
         <div className="flex items-start justify-center min-h-screen bg-white">
@@ -116,8 +133,8 @@ const Login = () => {
                                     Remember me
                                 </label>
                             </div>
-                            <button
-                                type="submit"
+                            <button 
+                                type="submit" 
                                 className="w-full px-4 py-2 text-white bg-[#00BDD6] rounded-md hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
                                 disabled={loading}
                             >
