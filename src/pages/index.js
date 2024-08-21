@@ -1,5 +1,6 @@
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+import Users from "./Users";
 import Items from "./Items";
 import Suppliers from "./Suppliers";
 import Stock from "./Stock";
@@ -22,6 +23,7 @@ import FinishedStock from "./FinishedStock";
 export {
     Login,
     Dashboard,
+    Users,
     Items,
     Suppliers,
     Stock,

@@ -56,7 +56,7 @@ const Header = () => {
             </div>
 
             <ul className="items-center hidden ml-6 space-x-6 md:flex">
-                {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                {['/dashboard', '/users', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                     <li key={index}>
                         <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`}>
                             <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -98,7 +98,7 @@ const Header = () => {
 
             {isMenuOpen && (
                 <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow top-16 md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
-                    {['/dashboard', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                    {['/dashboard', '/users', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
                         <li key={index}>
                             <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
                                 <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
@@ -116,6 +116,8 @@ const getIconForPath = (path) => {
     switch (path) {
         case '/dashboard':
             return "ic:baseline-dashboard";
+        case '/users':
+            return "ic:baseline-person";
         case '/items':
             return "mdi:cart";
         case '/suppliers':
@@ -141,6 +143,8 @@ const getLabelForPath = (path) => {
     switch (path) {
         case '/dashboard':
             return "DASHBOARD";
+        case '/users':
+            return "USERS";
         case '/items':
             return "ITEMS";
         case '/suppliers':
