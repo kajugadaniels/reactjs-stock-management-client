@@ -42,7 +42,7 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
         }
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/register`, formData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/register`, formData);
             Swal.fire({
                 title: 'Success',
                 text: 'User created successfully',
@@ -51,14 +51,28 @@ const CreateUser = ({ isOpen, onClose, fetchUsers }) => {
             onClose();
             fetchUsers();
         } catch (error) {
-            console.error('Error creating user:', error.response?.data);
+            console.error('Error creating user:', error);
+            
             let errorMessage = 'Failed to create user';
-            if (error.response?.data?.errors) {
-                const errors = error.response.data.errors;
-                errorMessage = Object.values(errors).flat().join('\n');
-            } else if (error.response?.data?.message) {
-                errorMessage = error.response.data.message;
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                if (error.response.data && error.response.data.errors) {
+                    const errors = error.response.data.errors;
+                    errorMessage = Object.keys(errors).map(key => errors[key].join(', ')).join('\n');
+                } else if (error.response.data && error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                }
+                console.error('Server responded with:', error.response.status, error.response.data);
+            } else if (error.request) {
+                // The request was made but no response was received
+                console.error('No response received:', error.request);
+                errorMessage = 'No response from server. Please check your internet connection.';
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                console.error('Error setting up request:', error.message);
             }
+
             Swal.fire({
                 title: 'Error',
                 text: errorMessage,
