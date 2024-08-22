@@ -10,6 +10,7 @@ const Header = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [userName, setUserName] = useState('User');
+    const [userRole, setUserRole] = useState('');
     const activeLinkClass = "text-[#00BDD6] border-b-2 border-[#00BDD6]";
     const inactiveLinkClass = "text-black";
 
@@ -17,6 +18,7 @@ const Header = () => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user && user.name) {
             setUserName(user.name);
+            setUserRole(user.role);
         }
     }, []);
 
@@ -34,18 +36,15 @@ const Header = () => {
                 }
             });
 
-            // Clear authentication data
             localStorage.removeItem('token');
             localStorage.removeItem('user');
 
-            // Show success message
             Swal.fire({
                 icon: 'success',
                 title: 'Logged Out',
                 text: 'You have been successfully logged out.',
             });
 
-            // Redirect to login page
             navigate('/');
         } catch (error) {
             console.error('Error logging out:', error);
@@ -57,6 +56,21 @@ const Header = () => {
         }
     };
 
+    const navItems = [
+        { path: '/dashboard', label: 'DASHBOARD', icon: 'ic:baseline-dashboard', roles: ['Manager', 'Production', 'Storekeeper'] },
+        { path: '/users', label: 'USERS', icon: 'ic:baseline-person', roles: ['Manager'] },
+        { path: '/items', label: 'ITEMS', icon: 'mdi:cart', roles: ['Manager'] },
+        { path: '/suppliers', label: 'SUPPLIERS', icon: 'tabler:stack', roles: ['Manager', 'Storekeeper'] },
+        { path: '/stock', label: 'STOCK', icon: 'ph:cube-bold', roles: ['Manager', 'Storekeeper'] },
+        { path: '/inventory', label: 'INVENTORY', icon: 'bi:layers', roles: ['Manager', 'Storekeeper', 'Production'] },
+        { path: '/process', label: 'PROCESS', icon: 'fa-solid:cogs', roles: ['Manager', 'Production'] },
+        { path: '/finished-stock', label: 'FINISHED PRODUCTS', icon: 'ri:product-hunt-fill', roles: ['Manager', 'Production'] },
+        { path: '/product-stock-in', label: 'PRODUCT STOCK IN', icon: 'ri:product-hunt-line', roles: ['Manager', 'Production'] },
+        { path: '/product-stock-out', label: 'PRODUCT STOCK OUT', icon: 'ri:product-hunt-fill', roles: ['Manager', 'Production'] },
+    ];
+
+    const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
+
     return (
         <nav className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
             <div className="flex items-center space-x-4">
@@ -64,11 +78,11 @@ const Header = () => {
             </div>
 
             <ul className="items-center hidden ml-6 space-x-6 md:flex">
-                {['/dashboard', '/users', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                {filteredNavItems.map((item, index) => (
                     <li key={index}>
-                        <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
-                            <span>{getLabelForPath(path)}</span>
+                        <Link to={item.path} className={`flex items-center space-x-2 ${location.pathname === item.path ? activeLinkClass : inactiveLinkClass}`}>
+                            <Icon icon={item.icon} width="1.3em" height="1.3em" />
+                            <span>{item.label}</span>
                         </Link>
                     </li>
                 ))}
@@ -108,11 +122,11 @@ const Header = () => {
 
             {isMenuOpen && (
                 <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow top-16 md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
-                    {['/dashboard', '/users', '/items', '/suppliers', '/stock', '/inventory', '/process', '/finished-stock', '/product-stock-in', '/product-stock-out'].map((path, index) => (
+                    {filteredNavItems.map((item, index) => (
                         <li key={index}>
-                            <Link to={path} className={`flex items-center space-x-2 ${location.pathname === path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
-                                <Icon icon={getIconForPath(path)} width="1.3em" height="1.3em" />
-                                <span>{getLabelForPath(path)}</span>
+                            <Link to={item.path} className={`flex items-center space-x-2 ${location.pathname === item.path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
+                                <Icon icon={item.icon} width="1.3em" height="1.3em" />
+                                <span>{item.label}</span>
                             </Link>
                         </li>
                     ))}
@@ -120,60 +134,6 @@ const Header = () => {
             )}
         </nav>
     );
-};
-
-const getIconForPath = (path) => {
-    switch (path) {
-        case '/dashboard':
-            return "ic:baseline-dashboard";
-        case '/users':
-            return "ic:baseline-person";
-        case '/items':
-            return "mdi:cart";
-        case '/suppliers':
-            return "tabler:stack";
-        case '/stock':
-            return "ph:cube-bold";
-        case '/inventory':
-            return "bi:layers";
-        case '/process':
-            return "fa-solid:cogs";
-        case '/finished-stock':
-            return "ri:product-hunt-fill";
-        case '/product-stock-in':
-            return "ri:product-hunt-line";
-        case '/product-stock-out':
-            return "ri:product-hunt-fill";
-        default:
-            return "";
-    }
-};
-
-const getLabelForPath = (path) => {
-    switch (path) {
-        case '/dashboard':
-            return "DASHBOARD";
-        case '/users':
-            return "USERS";
-        case '/items':
-            return "ITEMS";
-        case '/suppliers':
-            return "SUPPLIERS";
-        case '/stock':
-            return "STOCK";
-        case '/inventory':
-            return "INVENTORY";
-        case '/process':
-            return "PROCESS";
-        case '/finished-stock':
-            return "FINISHED PRODUCTS";
-        case '/product-stock-in':
-            return "PRODUCT STOCK IN";
-        case '/product-stock-out':
-            return "PRODUCT STOCK OUT";
-        default:
-            return "";
-    }
 };
 
 export default Header;
