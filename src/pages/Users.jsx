@@ -3,9 +3,12 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 import CreateUser from './users/CreateUser';
+import EditUser from './users/EditUser';
 
 const Users = () => {
     const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+    const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,9 +33,13 @@ const Users = () => {
         setIsCreateUserModalOpen(!isCreateUserModalOpen);
     };
 
+    const toggleEditUserModal = () => {
+        setIsEditUserModalOpen(!isEditUserModalOpen);
+    };
+
     const handleEdit = (user) => {
-        // Implement edit functionality
-        console.log('Edit user:', user);
+        setSelectedUser(user);
+        toggleEditUserModal();
     };
 
     const handleDelete = async (userId) => {
@@ -153,6 +160,7 @@ const Users = () => {
                 />
             </div>
             {isCreateUserModalOpen && <CreateUser isOpen={isCreateUserModalOpen} onClose={toggleCreateUserModal} onUserCreated={fetchUsers} />}
+            {isEditUserModalOpen && <EditUser isOpen={isEditUserModalOpen} onClose={toggleEditUserModal} user={selectedUser} onUserUpdated={fetchUsers} />}
         </div>
     );
 };
