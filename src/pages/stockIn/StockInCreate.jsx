@@ -10,30 +10,27 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
         batch_number: '',
         comment: '',
         date: '',
-        registered_by: '',
         loading_payment_status: false,
     });
     const [suppliers, setSuppliers] = useState([]);
-    const [employees, setEmployees] = useState([]);
     const [availableItems, setAvailableItems] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
         if (isOpen) {
             fetchInitialData();
             resetForm();
+            const user = JSON.parse(localStorage.getItem('user'));
+            setCurrentUser(user);
         }
     }, [isOpen]);
 
     const fetchInitialData = async () => {
         setLoading(true);
         try {
-            const [suppliersResponse, employeesResponse] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/suppliers`),
-                axios.get(`${import.meta.env.VITE_API_URL}/employees`)
-            ]);
+            const suppliersResponse = await axios.get(`${import.meta.env.VITE_API_URL}/suppliers`);
             setSuppliers(suppliersResponse.data);
-            setEmployees(employeesResponse.data);
         } catch (error) {
             console.error('Error fetching initial data:', error);
             Swal.fire('Error', 'Failed to fetch initial data', 'error');
@@ -50,7 +47,6 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
             batch_number: '',
             comment: '',
             date: '',
-            registered_by: '',
             loading_payment_status: false,
         });
         setAvailableItems([]);
@@ -152,7 +148,8 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                 item_id: item.item_id,
                 quantity: item.quantity,
                 init_qty: item.init_qty
-            }))
+            })),
+            registered_by: currentUser.id // Use the current user's ID
         };
 
         try {
@@ -295,21 +292,13 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
                                 Registered By
                             </label>
-                            <select
+                            <input
+                                type="text"
                                 id="registered_by"
-                                name="registered_by"
-                                value={formData.registered_by}
-                                onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 rounded"
-                                required
-                            >
-                                <option value="">Select Employee</option>
-                                {employees.map(employee => (
-                                    <option key={employee.id} value={employee.id}>
-                                        {employee.name}
-                                    </option>
-                                ))}
-                            </select>
+                                value={currentUser ? currentUser.name : ''}
+                                className="w-full p-3 border border-gray-300 rounded bg-gray-100"
+                                disabled
+                            />
                         </div>
                         <div className="w-1/3">
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
