@@ -7,8 +7,20 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
     const [stockInDetails, setStockInDetails] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [userRole, setUserRole] = useState('');
 
     useEffect(() => {
+        if (stockInId) {
+            fetchStockInDetails();
+        }
+    }, [stockInId]);
+
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.role) {
+            setUserRole(user.role);
+        }
+
         if (stockInId) {
             fetchStockInDetails();
         }
@@ -65,7 +77,9 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
             downloadButton.style.visibility = 'visible'; 
         });
     };
-    
+
+    const canViewRegisteredBy = !['Production', 'Storekeeper'].includes(userRole);
+
     if (!isOpen) return null;
 
     return (
@@ -118,8 +132,10 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Plate Number</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Batch Number</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Date</th>
-                                                <th className="px-4 py-2 text-left text-gray-700 border">Loading Payment Status</th>
-                                                <th className="px-4 py-2 text-left text-gray-700 border">Registered By</th>
+                                                {canViewRegisteredBy && (
+                                                    <th className="px-4 py-2 text-left text-gray-700 border">Registered By</th>
+                                                )}
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Payment Status</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Comment</th>
                                             </tr>
                                         </thead>
@@ -134,7 +150,9 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.batch_number}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{new Date(stockInDetails.date).toLocaleDateString()}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
-                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.employee.name}</td>
+                                                {canViewRegisteredBy && (
+                                                    <td className="px-4 py-2 text-gray-600 border">{stockInDetails.registered_by.name}</td>
+                                                )}
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.comment || 'N/A'}</td>
                                             </tr>
                                         </tbody>
