@@ -61,7 +61,7 @@ const Header = () => {
         { path: '/users', label: 'USERS', icon: 'ic:baseline-person', roles: ['Manager'] },
         { path: '/items', label: 'ITEMS', icon: 'mdi:cart', roles: ['Manager'] },
         { path: '/suppliers', label: 'SUPPLIERS', icon: 'tabler:stack', roles: ['Manager', 'Storekeeper'] },
-        { path: '/stock', label: 'STOCK', icon: 'ph:cube-bold', roles: ['Manager', 'Storekeeper'] },
+        { path: '/stock', label: 'STOCK', icon: 'ph:cube-bold', roles: ['Manager', 'Storekeeper', 'Production'] },
         { path: '/inventory', label: 'INVENTORY', icon: 'bi:layers', roles: ['Manager', 'Storekeeper', 'Production'] },
         { path: '/process', label: 'PROCESS', icon: 'fa-solid:cogs', roles: ['Manager', 'Production'] },
         { path: '/finished-stock', label: 'FINISHED PRODUCTS', icon: 'ri:product-hunt-fill', roles: ['Manager', 'Production'] },
@@ -91,22 +91,22 @@ const Header = () => {
             <div className="flex items-center space-x-4">
                 <Dropdown show={isMenuOpen} onToggle={toggleMenu}>
                     <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
-                        <div className='flex gap-5 items-center'>
+                        <div className='flex items-center gap-5'>
                             <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path fill="#212d31" fillRule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clipRule="evenodd"></path></svg>
                             <span className='mt-2 semi-bold'>{userName}</span>
                         </div>
                     </Dropdown.Toggle>
                     {isMenuOpen && (
-                        <Dropdown.Menu align="right" className="flex flex-col p-4 bg-white text-foreground w-64 rounded-lg shadow-lg mt-5">
+                        <Dropdown.Menu align="right" className="flex flex-col w-64 p-4 mt-5 bg-white rounded-lg shadow-lg text-foreground">
                             <div className="flex items-center mb-4">
                                 <span className="ml-2 text-lg font-semibold">{userName}</span>
                             </div>
                             <div className="flex flex-col space-y-2">
-                                <Link to="/change-password" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                                <Link to="/change-password" className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100">
                                     <Icon icon="mdi:key-change" className="mr-2" />
                                     Change Password
                                 </Link>
-                                <Dropdown.Item as="button" onClick={handleLogout} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                                <Dropdown.Item as="button" onClick={handleLogout} className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100">
                                     <Icon icon="mdi:power" className="mr-2" />
                                     Logout
                                 </Dropdown.Item>
