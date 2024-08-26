@@ -57,16 +57,16 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
             Swal.fire('Error', 'Please select at least one item.', 'error');
             return;
         }
-    
+
         setIsAdding(true);
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/supplier-items`, {
                 supplier_id: supplier.id,
                 item_ids: selectedItems.map(item => item.id)
             });
-            
+
             const { created_items, existing_items } = response.data;
-            
+
             let message = '';
             if (created_items.length > 0) {
                 message += `${created_items.length} item(s) added successfully. `;
@@ -75,7 +75,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                 const existingItemNames = existing_items.map(item => item.item.name).join(', ');
                 message += `Supplier already supplies these item(s): ${existingItemNames}.`;
             }
-    
+
             Swal.fire({
                 title: 'Success',
                 html: message,
@@ -106,31 +106,33 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-y-auto">
+            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-xl m-4 max-h-[90vh] flex flex-col">
                 <h2 className="mb-4 text-2xl font-semibold">Add Items to {supplier.name}</h2>
-                
-                {/* Selected Items Badges */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {selectedItems.map(item => (
-                        <span key={item.id} className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center">
-                            {item.name} - {item.category_name || ''} - {item.type_name || ''} {item.capacity || ''}{item.unit}
-                            <button onClick={() => removeSelectedItem(item.id)} className="ml-1 text-green-600 hover:text-green-800">
-                                ×
-                            </button>
-                        </span>
-                    ))}
+
+                {/* Scrollable Selected Items Area */}
+                <div className={`mb-4 ${selectedItems.length > 5 ? 'max-h-[200px] overflow-y-auto' : ''}`}>
+                    <div className="flex flex-wrap gap-2">
+                        {selectedItems.map(item => (
+                            <span key={item.id} className="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full flex items-center">
+                                {item.name} - {item.category_name || ''} - {item.type_name || ''} {item.capacity || ''}{item.unit}
+                                <button onClick={() => removeSelectedItem(item.id)} className="ml-1 text-green-600 hover:text-green-800">
+                                    ×
+                                </button>
+                            </span>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Custom Select Dropdown */}
-                <div className="relative" ref={dropdownRef}>
+                <div className="relative mb-4" ref={dropdownRef}>
                     <button
                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                         className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00BDD6]"
                     >
                         Select items...
                     </button>
-                    
+
                     {isDropdownOpen && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
                             <div className="p-2">
@@ -163,7 +165,7 @@ const AddItemToSupplier = ({ isOpen, onClose, supplier }) => {
                     )}
                 </div>
 
-                <div className="flex justify-end mt-6 space-x-4">
+                <div className="flex justify-end space-x-4">
                     <button
                         onClick={onClose}
                         className="px-4 py-2 text-gray-800 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
