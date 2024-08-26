@@ -16,19 +16,20 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
         const { name, value } = e.target;
 
         if (name === 'contact') {
-            if (value.length === 10) {
-                setContactError('');
-                setContactValid(true);
-            } else if (value.length > 10) {
-                setContactError('Contact number must be exactly 10 digits.');
+            const digitsOnly = value.replace(/\D/g, '');
+            const limitedInput = digitsOnly.slice(0, 13);
+            
+            if (limitedInput.length < 10) {
+                setContactError('Contact number must be 10-13 digits.');
                 setContactValid(false);
             } else {
-                setContactError('Contact number must be exactly 10 digits.');
-                setContactValid(false);
+                setContactError('');
+                setContactValid(true);
             }
+            setFormData(prevState => ({ ...prevState, [name]: limitedInput }));
+        } else {
+            setFormData(prevState => ({ ...prevState, [name]: value }));
         }
-
-        setFormData(prevState => ({ ...prevState, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
@@ -37,7 +38,7 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Please enter a valid 10-digit contact number.',
+                text: 'Please enter a valid contact number (10-13 digits).',
             });
             return;
         }
@@ -94,6 +95,7 @@ const SuppliersCreate = ({ isOpen, onClose, onSupplierCreated }) => {
                             value={formData.contact}
                             onChange={handleChange}
                             required
+                            maxLength={13}
                         />
                         {contactError && <p className="mt-1 text-sm text-red-500">{contactError}</p>}
                     </div>
