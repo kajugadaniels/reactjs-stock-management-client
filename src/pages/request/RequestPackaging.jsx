@@ -28,6 +28,7 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
     const [packagesItems, setPackagesItems] = useState([]);
     const [availableQuantities, setAvailableQuantities] = useState({});
     const [quantityErrors, setQuantityErrors] = useState({});
+    const [selectedPersonPhone, setSelectedPersonPhone] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,14 +44,14 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                 setPackagesItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
                 setAllItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
                 setDisplayedItems(packagesItemsResponse.data.filter(item => item.quantity > 0));
-                
+
                 // Set initial available quantities
                 const initialQuantities = {};
                 packagesItemsResponse.data.forEach(item => {
                     initialQuantities[item.id] = item.quantity;
                 });
                 setAvailableQuantities(initialQuantities);
-                
+
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -87,6 +88,11 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
             ...formData,
             [name]: value,
         });
+
+        if (name === 'contact_person_id') {
+            const selectedPerson = employees.find(emp => emp.id === parseInt(value));
+            setSelectedPersonPhone(selectedPerson ? selectedPerson.contact : '');
+        }
     };
 
     const handleRequestFromChange = (e) => {
@@ -128,7 +134,7 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
         const item = formData.items[index];
         const currentQuantity = item.quantity;
         const availableQuantity = availableQuantities[item.id] + currentQuantity;
-        
+
         if (newQuantity > availableQuantity) {
             setQuantityErrors(prev => ({
                 ...prev,
@@ -178,17 +184,17 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
             Swal.fire('Error', 'Please correct the quantity errors before submitting.', 'error');
             return;
         }
-    
+
         setLoading(true);
         setErrors({});
-    
+
         let finalRequestFrom = requestFrom;
         if (requestFrom === 'Outside Clients') {
             finalRequestFrom = `Outside Clients: ${outsideClient}`;
         } else if (requestFrom === 'Others') {
             finalRequestFrom = otherRequestFrom;
         }
-    
+
         const requestData = {
             contact_person_id: parseInt(formData.contact_person_id),
             requester_name: formData.requester_name,
@@ -201,10 +207,10 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                 quantity: parseInt(item.quantity)
             }))
         };
-    
+
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/requests`, requestData);
-            
+
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -222,14 +228,15 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                 setRequestFrom('');
                 setOtherRequestFrom('');
                 setOutsideClient('');
+                setSelectedPersonPhone('');
                 onClose();
-                
+
                 if (typeof fetchRequests === 'function') {
                     fetchRequests();
                 } else {
                     console.warn('fetchRequests is not a function. Please ensure it is passed as a prop to the RequestPackaging component.');
                 }
-    
+
                 // Reload the page after successful submission
                 window.location.reload();
             });
@@ -289,6 +296,18 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                             </select>
                             {errors.contact_person_id && <p className="mt-2 text-xs text-red-500">{errors.contact_person_id}</p>}
                         </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="contact_person_phone">Phone number</label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                id="contact_person_phone"
+                                name="contact_person_phone"
+                                value={selectedPersonPhone}
+                                readOnly
+                            />
+                        </div>
+                    </div>
 
                         <div>
                             <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="requester_name">Requester Name</label>
@@ -304,7 +323,6 @@ const RequestPackaging = ({ isOpen, onClose, fetchRequests }) => {
                             />
                             {errors.requester_name && <p className="mt-2 text-xs text-red-500">{errors.requester_name}</p>}
                         </div>
-                    </div>
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
