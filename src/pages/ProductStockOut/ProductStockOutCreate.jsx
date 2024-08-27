@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
     const [productStockIns, setProductStockIns] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [selectedPersonPhone, setSelectedPersonPhone] = useState('');
     const [formData, setFormData] = useState({
         prod_stock_in_id: '',
         employee_id: '',
@@ -53,6 +54,15 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+
+        if (name === 'employee_id') {
+            const selectedEmployee = employees.find(emp => emp.id === parseInt(value));
+            setSelectedPersonPhone(selectedEmployee ? selectedEmployee.contact : '');
+            setFormData(prev => ({
+                ...prev,
+                contact: selectedEmployee ? selectedEmployee.contact : ''
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -96,23 +106,6 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">Product Stock In</label>
-                                <select
-                                    name="prod_stock_in_id"
-                                    value={formData.prod_stock_in_id}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                >
-                                    <option value="">Select Product Stock In</option>
-                                    {productStockIns.map(stockIn => (
-                                        <option key={stockIn.id} value={stockIn.id}>
-                                            {stockIn.item_name} - {stockIn.quantity} units
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
                                 <label className="block mb-1 text-sm font-medium text-gray-700">Employee</label>
                                 <select
                                     name="employee_id"
@@ -125,6 +118,34 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                                     {employees && employees.length > 0 && employees.map(employee => (
                                         <option key={employee.id} value={employee.id}>
                                             {employee.name || 'No Name'}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="contact_person_phone">Phone number</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                    id="contact_person_phone"
+                                    name="contact_person_phone"
+                                    value={selectedPersonPhone}
+                                    readOnly
+                                />
+                            </div>
+                            <div>
+                                <label className="block mb-1 text-sm font-medium text-gray-700">Product Stock In</label>
+                                <select
+                                    name="prod_stock_in_id"
+                                    value={formData.prod_stock_in_id}
+                                    onChange={handleChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    <option value="">Select Product Stock In</option>
+                                    {productStockIns.map(stockIn => (
+                                        <option key={stockIn.id} value={stockIn.id}>
+                                            {stockIn.item_name} - {stockIn.quantity} units
                                         </option>
                                     ))}
                                 </select>
@@ -151,7 +172,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                                     required
                                 />
                             </div>
-                            <div>
+                            {/* <div>
                                 <label className="block mb-1 text-sm font-medium text-gray-700">Contact</label>
                                 <input
                                     type="text"
@@ -161,7 +182,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                                     className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 />
-                            </div>
+                            </div> */}
                             <div>
                                 <label className="block mb-1 text-sm font-medium text-gray-700">Batch</label>
                                 <input
