@@ -296,7 +296,7 @@ const CreateRequest = ({ isOpen, onClose, fetchRequests }) => {
                         </div>
                     </div>
 
-                    <div>   
+                    <div>
                         <label className="block mb-1 text-sm font-medium text-gray-600" htmlFor="requester_name">Requester Name</label>
                         <input
                             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#00BDD6] focus:border-[#00BDD6]"

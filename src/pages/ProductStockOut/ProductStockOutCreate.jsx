@@ -172,7 +172,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                                     required
                                 />
                             </div>
-                            {/* <div>
+                            <div>
                                 <label className="block mb-1 text-sm font-medium text-gray-700">Contact</label>
                                 <input
                                     type="text"
@@ -182,7 +182,7 @@ const ProductStockOutCreate = ({ isOpen, onClose, onStockOutCreated }) => {
                                     className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                     required
                                 />
-                            </div> */}
+                            </div>
                             <div>
                                 <label className="block mb-1 text-sm font-medium text-gray-700">Batch</label>
                                 <input

@@ -60,7 +60,8 @@ const StockIn = () => {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-ins`, { params: filters });
-            setStockIns(response.data);
+            const sortedData = response.data.sort((a, b) => b.id - a.id); // Sort data in descending order
+            setStockIns(sortedData);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching stock ins:', error);
@@ -75,7 +76,7 @@ const StockIn = () => {
             setFilters(prevFilters => ({
                 ...prevFilters,
                 [name]: value,
-                type: '' // Reset type when category changes
+                type: '' 
             }));
             if (value) {
                 const typesForCategory = allTypes.filter(type => type.category_id.toString() === value);
