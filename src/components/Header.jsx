@@ -8,7 +8,8 @@ import Swal from 'sweetalert2';
 const Header = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [userName, setUserName] = useState('User');
     const [userRole, setUserRole] = useState('');
     const activeLinkClass = "text-[#00BDD6] border-b-2 border-[#00BDD6]";
@@ -22,8 +23,14 @@ const Header = () => {
         }
     }, []);
 
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+    const toggleNav = () => {
+        setIsNavOpen(!isNavOpen);
+        if (isProfileOpen) setIsProfileOpen(false);
+    };
+
+    const toggleProfile = () => {
+        setIsProfileOpen(!isProfileOpen);
+        if (isNavOpen) setIsNavOpen(false);
     };
 
     const handleLogout = async (event) => {
@@ -72,65 +79,47 @@ const Header = () => {
     const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
 
     return (
-        <nav className="fixed top-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
+        <nav className="fixed top-0 left-0 z-50 flex flex-wrap items-center justify-between w-full p-4 bg-gray-200 shadow dark:bg-card-foreground text-card-foreground dark:text-customgray">
             <div className="flex items-center space-x-4">
                 <img src="images/logo.jpeg" alt="Jabana" className="w-10 h-10 rounded-full sm:w-14 sm:h-14" />
             </div>
 
-            <ul className="items-center hidden ml-6 space-x-6 md:flex">
-                {filteredNavItems.map((item, index) => (
-                    <li key={index}>
-                        <Link to={item.path} className={`flex items-center space-x-2 ${location.pathname === item.path ? activeLinkClass : inactiveLinkClass}`}>
-                            <Icon icon={item.icon} width="1.3em" height="1.3em" />
-                            <span>{item.label}</span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-
-            <div className="flex items-center space-x-4">
-                <Dropdown show={isMenuOpen} onToggle={toggleMenu}>
-                    <Dropdown.Toggle variant="transparent" id="dropdown-custom-components" className="p-0">
-                        <div className='flex items-center gap-5'>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" viewBox="0 0 24 24"><path fill="#212d31" fillRule="evenodd" d="M8 7a4 4 0 1 1 8 0a4 4 0 0 1-8 0m0 6a5 5 0 0 0-5 5a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3a5 5 0 0 0-5-5z" clipRule="evenodd"></path></svg>
-                            <span className='mt-2 semi-bold'>{userName}</span>
-                        </div>
-                    </Dropdown.Toggle>
-                    {isMenuOpen && (
-                        <Dropdown.Menu align="right" className="flex flex-col w-64 p-4 mt-5 bg-white rounded-lg shadow-lg text-foreground">
-                            <div className="flex items-center mb-4">
-                                <span className="ml-2 text-lg font-semibold">{userName}</span>
-                            </div>
-                            <div className="flex flex-col space-y-2">
-                                <Link to="/change-password" className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100">
-                                    <Icon icon="mdi:key-change" className="mr-2" />
-                                    Change Password
-                                </Link>
-                                <Dropdown.Item as="button" onClick={handleLogout} className="flex items-center px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100">
-                                    <Icon icon="mdi:power" className="mr-2" />
-                                    Logout
-                                </Dropdown.Item>
-                            </div>
-                        </Dropdown.Menu>
-                    )}
-                </Dropdown>
-
-                <button onClick={toggleMenu} className="text-xl text-black focus:outline-none md:hidden">
-                    <Icon icon={isMenuOpen ? "bi:justify" : "bi:justify-left"} />
+            <div className="flex items-center md:order-2">
+                <button onClick={toggleProfile} className="flex items-center space-x-2 focus:outline-none">
+                    <Icon icon="mdi:account-circle" width="2em" height="2em" />
+                    <span className="hidden md:inline">{userName}</span>
+                </button>
+                <button onClick={toggleNav} className="p-2 ml-2 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                    <Icon icon={isNavOpen ? "ic:round-close" : "ic:round-menu"} width="1.5em" height="1.5em" />
                 </button>
             </div>
 
-            {isMenuOpen && (
-                <ul className="absolute right-0 flex flex-col p-2 space-y-2 bg-gray-200 rounded-md shadow top-16 md:hidden dark:bg-card-foreground text-card-foreground dark:text-customgray">
+            <div className={`${isNavOpen ? 'block' : 'hidden'} w-full md:block md:w-auto md:order-1`}>
+                <ul className="flex flex-col p-4 mt-4 font-medium border border-gray-100 rounded-lg md:p-0 bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-transparent">
                     {filteredNavItems.map((item, index) => (
                         <li key={index}>
-                            <Link to={item.path} className={`flex items-center space-x-2 ${location.pathname === item.path ? activeLinkClass : inactiveLinkClass}`} onClick={toggleMenu}>
-                                <Icon icon={item.icon} width="1.3em" height="1.3em" />
+                            <Link 
+                                to={item.path} 
+                                className={`flex items-center py-2 pl-3 pr-4 ${location.pathname === item.path ? activeLinkClass : inactiveLinkClass} rounded md:p-0`}
+                                onClick={() => setIsNavOpen(false)}
+                            >
+                                <Icon icon={item.icon} width="1.3em" height="1.3em" className="mr-2" />
                                 <span>{item.label}</span>
                             </Link>
                         </li>
                     ))}
                 </ul>
+            </div>
+
+            {isProfileOpen && (
+                <div className="absolute right-0 z-10 w-48 py-2 mt-2 bg-white rounded-md shadow-xl top-16">
+                    <Link to="/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                        Change Password
+                    </Link>
+                    <button onClick={handleLogout} className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">
+                        Logout
+                    </button>
+                </div>
             )}
         </nav>
     );

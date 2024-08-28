@@ -199,7 +199,7 @@ const Stock = () => {
     const canAccessStockLinks = ['Manager', 'Storekeeper'].includes(userRole);
 
     return (
-        <div className="p-4 mt-20">
+        <div className="p-16 mt-20">
             {canAccessStockLinks && (
                 <div className="flex flex-wrap gap-4 mb-6">
                     <Link to='/products'>
