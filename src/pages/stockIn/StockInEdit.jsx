@@ -6,19 +6,19 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
     const [formData, setFormData] = useState({
         supplier_id: '',
         item_id: null,
-        init_qty: 1, // Default init_qty to 1
+        init_qty: 1,
+        package_qty: 0,
         plate_number: '',
         batch_number: '',
         comment: '',
         date: '',
-        registered_by: '',
         loading_payment_status: false,
     });
     const [suppliers, setSuppliers] = useState([]);
-    const [employees, setEmployees] = useState([]);
     const [availableItems, setAvailableItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
         if (isOpen && stockIn) {
@@ -27,32 +27,29 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                 supplier_id: stockIn.supplier_id,
                 item_id: stockIn.item ? stockIn.item.id : null,
                 init_qty: stockIn.init_qty || 1,
+                package_qty: stockIn.package_qty || 0,
                 plate_number: stockIn.plate_number,
                 batch_number: stockIn.batch_number,
                 comment: stockIn.comment,
                 date: stockIn.date,
-                registered_by: stockIn.registered_by,
                 loading_payment_status: stockIn.loading_payment_status,
             });
+            const user = JSON.parse(localStorage.getItem('user'));
+            setCurrentUser(user);
         }
     }, [isOpen, stockIn]);
 
     const fetchInitialData = async () => {
         setLoading(true);
         try {
-            const [suppliersResponse, employeesResponse] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/suppliers`),
-                axios.get(`${import.meta.env.VITE_API_URL}/employees`)
-            ]);
+            const suppliersResponse = await axios.get(`${import.meta.env.VITE_API_URL}/suppliers`);
             setSuppliers(suppliersResponse.data);
-            setEmployees(employeesResponse.data);
 
             if (stockIn.supplier_id) {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}/supplier-items/supplier/${stockIn.supplier_id}`);
                 const items = response.data.data || response.data;
                 setAvailableItems(Array.isArray(items) ? items : []);
 
-                // Set the selected item if it exists
                 if (stockIn.item) {
                     const selectedItem = items.find(item => item.id === stockIn.item.id);
                     if (selectedItem) {
@@ -82,7 +79,7 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
 
     const handleSupplierChange = async (e) => {
         const supplierId = e.target.value;
-        setFormData(prevState => ({ ...prevState, supplier_id: supplierId, item_id: null })); // Reset the item_id
+        setFormData(prevState => ({ ...prevState, supplier_id: supplierId, item_id: null }));
         setSelectedItem(null);
         if (supplierId) {
             try {
@@ -111,7 +108,8 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                 setFormData(prevState => ({
                     ...prevState,
                     item_id: selectedItem.id,
-                    init_qty: 1 // Reset init_qty to 1 when a new item is selected
+                    init_qty: 1,
+                    package_qty: 0
                 }));
             }
         } else {
@@ -126,7 +124,14 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
     const handleItemQuantityChange = (init_qty) => {
         setFormData(prevState => ({
             ...prevState,
-            init_qty: parseInt(init_qty, 10) || 1 // Ensure init_qty is at least 1
+            init_qty: parseInt(init_qty, 10) || 1
+        }));
+    };
+
+    const handlePackageQtyChange = (package_qty) => {
+        setFormData(prevState => ({
+            ...prevState,
+            package_qty: parseInt(package_qty, 10) || 0
         }));
     };
 
@@ -134,7 +139,10 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.put(`${import.meta.env.VITE_API_URL}/stock-ins/${stockIn.id}`, formData);
+            const response = await axios.put(`${import.meta.env.VITE_API_URL}/stock-ins/${stockIn.id}`, {
+                ...formData,
+                registered_by: currentUser.id
+            });
             Swal.fire({
                 title: 'Success',
                 text: 'Stock In updated successfully',
@@ -219,6 +227,16 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                         value={formData.init_qty}
                                         onChange={(e) => handleItemQuantityChange(e.target.value)}
                                         className="w-20 p-1 border border-gray-300 rounded"
+                                        placeholder="Quantity (KG)"
+                                        required
+                                    />
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.package_qty}
+                                        onChange={(e) => handlePackageQtyChange(e.target.value)}
+                                        className="w-20 p-1 border border-gray-300 rounded"
+                                        placeholder="Package Qty"
                                         required
                                     />
                                 </div>
@@ -272,26 +290,17 @@ const StockInEdit = ({ isOpen, onClose, stockIn, onStockInUpdated }) => {
                                 required
                             />
                         </div>
-
                         <div>
                             <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="registered_by">
                                 Registered By
                             </label>
-                            <select
+                            <input
+                                type="text"
                                 id="registered_by"
-                                name="registered_by"
-                                value={formData.registered_by}
-                                onChange={handleInputChange}
-                                className="w-full p-3 border border-gray-300 rounded"
-                                required
-                            >
-                                <option value="">Select Employee</option>
-                                {employees.map(employee => (
-                                    <option key={employee.id} value={employee.id}>
-                                        {employee.name}
-                                    </option>
-                                ))}
-                            </select>
+                                value={currentUser ? currentUser.name : ''}
+                                className="w-full p-3 border border-gray-300 rounded bg-gray-100"
+                                disabled
+                            />
                         </div>
                     </div>
                     <div>
