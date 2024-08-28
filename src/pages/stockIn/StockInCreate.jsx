@@ -109,7 +109,8 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                 capacity: selectedItem.capacity,
                                 unit: selectedItem.unit,
                                 quantity: quantity,
-                                init_qty: quantity // Set init_qty to match the initial quantity
+                                init_qty: quantity,
+                                package_qty: 0
                             }]
                         };
                     }
@@ -131,6 +132,18 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
         }));
     };
 
+    const handlePackageQtyChange = (itemId, packageQty) => {
+        setFormData(prevState => ({
+            ...prevState,
+            items: prevState.items.map(item =>
+                item.item_id === itemId ? {
+                    ...item,
+                    package_qty: parseInt(packageQty, 10)
+                } : item
+            )
+        }));
+    };
+
     const handleItemRemove = (itemId) => {
         setFormData(prevState => ({
             ...prevState,
@@ -147,9 +160,10 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
             items: formData.items.map(item => ({
                 item_id: item.item_id,
                 quantity: item.quantity,
-                init_qty: item.init_qty
+                init_qty: item.init_qty,
+                package_qty: item.package_qty
             })),
-            registered_by: currentUser.id // Use the current user's ID
+            registered_by: currentUser.id
         };
 
         try {
@@ -227,35 +241,58 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                         {formData.items.length === 0 ? (
                             <p className="text-gray-500">No items selected</p>
                         ) : (
-                            <div className="space-y-2">
-                                {formData.items.map(item => (
-                                    <div key={item.item_id} className="flex items-center justify-between p-2 bg-gray-100 rounded">
-                                        <div>
-                                            {item.name} - {item.category_name} - {item.type_name} {item.capacity} {item.unit}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={item.quantity}
-                                                onChange={(e) => handleItemQuantityChange(item.item_id, e.target.value)}
-                                                className="w-20 p-1 border border-gray-300 rounded"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleItemRemove(item.item_id)}
-                                                className="px-2 py-1 text-red-500 bg-white border border-red-500 rounded hover:bg-red-500 hover:text-white"
-                                            >
-                                                Remove
-                                            </button>
-                                            <input
-                                                type="hidden"
-                                                name={`items[${item.item_id}][init_qty]`}
-                                                value={item.init_qty}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-white border border-gray-300">
+                                    <thead>
+                                        <tr className="bg-gray-100">
+                                            <th className="px-4 py-2 text-left border-b">Item Details</th>
+                                            <th className="px-4 py-2 text-center border-b">Quantity (KG)</th>
+                                            <th className="px-4 py-2 text-center border-b">Package Qty</th>
+                                            <th className="px-4 py-2 text-center border-b">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {formData.items.map(item => (
+                                            <tr key={item.item_id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-2 border-b">
+                                                    <div className="font-semibold">{item.name}</div>
+                                                    <div className="text-sm text-gray-600">
+                                                        {item.category_name} - {item.type_name} {item.capacity} {item.unit}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 border-b">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleItemQuantityChange(item.item_id, e.target.value)}
+                                                        className="w-full p-2 border border-gray-300 rounded text-center"
+                                                        placeholder="Quantity in KG"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2 border-b">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={item.package_qty}
+                                                        onChange={(e) => handlePackageQtyChange(item.item_id, e.target.value)}
+                                                        className="w-full p-2 border border-gray-300 rounded text-center"
+                                                        placeholder="Package Quantity"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2 border-b text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleItemRemove(item.item_id)}
+                                                        className="px-3 py-1 text-sm text-red-500 bg-white border border-red-500 rounded hover:bg-red-500 hover:text-white"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>
