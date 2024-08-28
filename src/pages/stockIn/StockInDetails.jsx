@@ -101,6 +101,7 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                         <div id="invoice" className="p-4 border rounded-lg">
                             <div className="mb-8">
                                 <h4 className="mb-2 text-lg font-semibold text-[#00BDD6]">Supplier Information</h4>
+                                <span>{new Date(stockInDetails.date).toLocaleDateString()}</span>
                                 <table className="min-w-full bg-white">
                                     <thead>
                                         <tr>
@@ -129,9 +130,9 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Category</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Type</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Quantity</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Package Qty</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Plate Number</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Batch Number</th>
-                                                <th className="px-4 py-2 text-left text-gray-700 border">Date</th>
                                                 {canViewRegisteredBy && (
                                                     <th className="px-4 py-2 text-left text-gray-700 border">Registered By</th>
                                                 )}
@@ -146,9 +147,9 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.category.name}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.item.type.name}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.init_qty}</td>
+                                                <td className="px-4 py-2 text-gray-600 border">{stockInDetails.package_qty}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.plate_number}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.batch_number}</td>
-                                                <td className="px-4 py-2 text-gray-600 border">{new Date(stockInDetails.date).toLocaleDateString()}</td>
                                                 <td className="px-4 py-2 text-gray-600 border">{stockInDetails.loading_payment_status ? 'Paid' : 'Unpaid'}</td>
                                                 {canViewRegisteredBy && (
                                                     <td className="px-4 py-2 text-gray-600 border">{stockInDetails.registered_by.name}</td>
