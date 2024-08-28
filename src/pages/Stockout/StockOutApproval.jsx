@@ -8,6 +8,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     const [error, setError] = useState(null);
     const [isAvailable, setIsAvailable] = useState(false);
     const [availableQuantities, setAvailableQuantities] = useState({});
+    const [packageQuantities, setPackageQuantities] = useState({});
     const [totalRawMaterialQuantity, setTotalRawMaterialQuantity] = useState(0);
     const [totalPackageQuantity, setTotalPackageQuantity] = useState(0);
 
@@ -55,20 +56,33 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
             const stockResponses = await Promise.all(stockPromises);
             
             const availability = {};
+            const packageQty = {};
             stockResponses.forEach((response, index) => {
                 availability[items[index].id] = response.data.quantity;
+                packageQty[items[index].id] = response.data.package_qty;
             });
 
             setAvailableQuantities(availability);
+            setPackageQuantities(packageQty);
             const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
             setIsAvailable(allAvailable);
         } catch (error) {
             setError('Failed to fetch stock details');
             setIsAvailable(false);
             setAvailableQuantities({});
+            setPackageQuantities({});
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePackageQtyChange = (itemId, value) => {
+        const newValue = Math.min(Math.max(0, parseInt(value) || 0), packageQuantities[itemId]);
+        setItems(prevItems => 
+            prevItems.map(item => 
+                item.id === itemId ? { ...item, package_qty: newValue } : item
+            )
+        );
     };
 
     const handleApprove = async () => {
@@ -77,7 +91,11 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs`, {
                 request_id: requestId,
-                items: items.map(item => ({ item_id: item.id, quantity: item.pivot.quantity })),
+                items: items.map(item => ({ 
+                    item_id: item.id, 
+                    quantity: item.pivot.quantity,
+                    package_qty: item.package_qty || 0
+                })),
                 total_raw_material_quantity: totalRawMaterialQuantity,
                 total_package_quantity: totalPackageQuantity,
                 date: new Date().toISOString().split('T')[0],
@@ -128,6 +146,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                                 <th className="px-4 py-2 text-left">Supplier</th>
                                 <th className="px-4 py-2 text-left">Requested Quantity</th>
                                 <th className="px-4 py-2 text-left">Available Quantity</th>
+                                <th className="px-4 py-2 text-left">Package Quantity</th>
                                 <th className="px-4 py-2 text-left">Status</th>
                             </tr>
                         </thead>
@@ -138,6 +157,17 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                                     <td className="px-4 py-2">{item.supplier.name}</td>
                                     <td className="px-4 py-2">{item.pivot.quantity}</td>
                                     <td className="px-4 py-2">{availableQuantities[item.id] || 0}</td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="number"
+                                            value={item.package_qty || 0}
+                                            onChange={(e) => handlePackageQtyChange(item.id, e.target.value)}
+                                            max={packageQuantities[item.id]}
+                                            min="0"
+                                            className="w-20 px-2 py-1 border border-gray-300 rounded"
+                                        />
+                                        /{packageQuantities[item.id] || 0}
+                                    </td>
                                     <td className="px-4 py-2">
                                         <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
                                             availableQuantities[item.id] >= item.pivot.quantity 
