@@ -332,7 +332,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
 
                     <div className="flex items-center">
                         <label className="block text-sm font-bold text-gray-700" htmlFor="loading_payment_status">
-                            Loading Payment Status
+                        off/loading payment status
                         </label>
                         <input
                             type="checkbox"
