@@ -62,6 +62,9 @@ const StockOut = () => {
                             <div className="text-xs text-gray-600">
                                 {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
                             </div>
+                            <div className="text-xs text-gray-600">
+                                Package Qty {row.package_qty || 'N/A'}
+                            </div>
                         </div>
                     ))}
                 </div>
