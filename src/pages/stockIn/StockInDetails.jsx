@@ -1,7 +1,7 @@
+import axios from 'axios';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 const StockInDetails = ({ isOpen, onClose, stockInId }) => {
     const [stockInDetails, setStockInDetails] = useState(null);
