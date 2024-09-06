@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    ChartBarIcon,
-    CubeIcon,
+    BeakerIcon,
+    ArchiveIcon,
     TruckIcon,
-    CurrencyDollarIcon,
-    ExclamationCircleIcon,
+    CubeIcon,
     SearchIcon
 } from '@heroicons/react/outline';
-import { Line, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import DataTable from 'react-data-table-component';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [dashboardData, setDashboardData] = useState({
-        totalInventoryValue: 0,
-        lowStockItems: 0,
+        rawMaterialsStockIn: 0,
+        rawMaterialsStockOut: 0,
+        packagesStockIn: 0,
+        packagesStockOut: 0,
         recentStockIns: [],
         recentStockOuts: [],
-        topSellingItems: [],
         inventoryTrends: {},
         productionOverview: {},
     });
@@ -39,7 +39,8 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchDashboardData();
-        fetchData();
+        fetchCategories();
+        fetchTypes();
     }, []);
 
     useEffect(() => {
@@ -48,8 +49,19 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/dashboard`);
-            setDashboardData(response.data);
+            const [dashboardResponse, rawMaterialsResponse, packagesResponse] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/dashboard`),
+                axios.get(`${import.meta.env.VITE_API_URL}/inventory/raw-materials`),
+                axios.get(`${import.meta.env.VITE_API_URL}/inventory/packages`)
+            ]);
+
+            setDashboardData({
+                ...dashboardResponse.data,
+                rawMaterialsStockIn: rawMaterialsResponse.data.stockIn,
+                rawMaterialsStockOut: rawMaterialsResponse.data.stockOut,
+                packagesStockIn: packagesResponse.data.stockIn,
+                packagesStockOut: packagesResponse.data.stockOut,
+            });
             setLoading(false);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
@@ -58,23 +70,23 @@ const Dashboard = () => {
         }
     };
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchCategories = async () => {
         try {
-            const [categoriesResponse, typesResponse] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/categories`),
-                axios.get(`${import.meta.env.VITE_API_URL}/types`)
-            ]);
-
-            const filteredCategories = categoriesResponse.data.filter(category => category.name !== 'Finished');
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
+            const filteredCategories = response.data.filter(category => category.name !== 'Finished');
             setCategories(filteredCategories);
-            setAllTypes(typesResponse.data);
-            setFilteredTypes(typesResponse.data);
-            setLoading(false);
         } catch (error) {
-            console.error('Error fetching data:', error);
-            setError('Error fetching data');
-            setLoading(false);
+            console.error('Error fetching categories:', error);
+        }
+    };
+
+    const fetchTypes = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/types`);
+            setAllTypes(response.data);
+            setFilteredTypes(response.data);
+        } catch (error) {
+            console.error('Error fetching types:', error);
         }
     };
 
@@ -178,10 +190,10 @@ const Dashboard = () => {
         },
         {
             name: 'Available',
-            selector: (row) => row.total_stock_in - row.total_stock_out,
+            selector: (row) => row.available_quantity,
             sortable: true,
             cell: row => {
-                const availableQuantity = row.total_stock_in - row.total_stock_out;
+                const availableQuantity = row.available_quantity;
                 return (
                     <span className={availableQuantity <= 0 ? 'text-red-600 font-semibold' : ''}>
                         {availableQuantity <= 0 ? 'Stock Out' : availableQuantity}
@@ -221,19 +233,6 @@ const Dashboard = () => {
         },
     };
 
-    const inventoryTrendsOptions = {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: 'Inventory Trends',
-            },
-        },
-    };
-
     const productionOverviewOptions = {
         responsive: true,
         plugins: {
@@ -256,98 +255,91 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                    title="Total Inventory Value"
-                    value={`${dashboardData.totalInventoryValue.toLocaleString()}`}
-                    icon={<CurrencyDollarIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
-                    color="bg-green-100"
-                />
-                <StatCard
-                    title="Low Stock Items"
-                    value={dashboardData.lowStockItems}
-                    icon={<ExclamationCircleIcon className="w-6 h-6 md:w-8 md:h-8 text-red-500" />}
-                    color="bg-red-100"
-                />
-                <StatCard
-                    title="Total Stock In"
-                    value={dashboardData.totalStockIn}
-                    icon={<TruckIcon className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />}
+                    title="Raw Materials Stock In"
+                    value={dashboardData.rawMaterialsStockIn.toLocaleString()}
+                    icon={<BeakerIcon className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />}
                     color="bg-blue-100"
                 />
                 <StatCard
-                    title="Total Stock Out"
-                    value={dashboardData.totalStockOut}
+                    title="Raw Materials Stock Out"
+                    value={dashboardData.rawMaterialsStockOut.toLocaleString()}
+                    icon={<TruckIcon className="w-6 h-6 md:w-8 md:h-8 text-red-500" />}
+                    color="bg-red-100"
+                />
+                <StatCard
+                    title="Packages Stock In"
+                    value={dashboardData.packagesStockIn.toLocaleString()}
+                    icon={<ArchiveIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
+                    color="bg-green-100"
+                />
+                <StatCard
+                    title="Packages Stock Out"
+                    value={dashboardData.packagesStockOut.toLocaleString()}
                     icon={<CubeIcon className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />}
                     color="bg-purple-100"
                 />
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">
-                <RecentActivityTable title="Recent Stock Ins" data={dashboardData.recentStockIns} type="in" />
-                <RecentActivityTable title="Recent Stock Outs" data={dashboardData.recentStockOuts} type="out" />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">
                 <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
-                    <div className="p-4 md:p-6 bg-white rounded-lg shadow-md mt-8">
-                        <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Inventory Details</h3>
-                        <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-3">
-                            <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">Category</label>
-                                <select
-                                    name="category"
-                                    value={filters.category}
+                    <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Inventory Details</h3>
+                    <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-3">
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">Category</label>
+                            <select
+                                name="category"
+                                value={filters.category}
+                                onChange={handleFilterChange}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
+                            <select
+                                name="type"
+                                value={filters.type}
+                                onChange={handleFilterChange}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                            >
+                                <option value="">All Types</option>
+                                {filteredTypes.map((type) => (
+                                    <option key={type.id} value={type.id}>{type.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">Search</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Search items..."
+                                    value={filters.name}
                                     onChange={handleFilterChange}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                >
-                                    <option value="">All Categories</option>
-                                    {categories.map((category) => (
-                                        <option key={category.id} value={category.id}>{category.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
-                                <select
-                                    name="type"
-                                    value={filters.type}
-                                    onChange={handleFilterChange}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                >
-                                    <option value="">All Types</option>
-                                    {filteredTypes.map((type) => (
-                                        <option key={type.id} value={type.id}>{type.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block mb-1 text-sm font-medium text-gray-700">Search</label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        placeholder="Search items..."
-                                        value={filters.name}
-                                        onChange={handleFilterChange}
-                                        className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                    />
-                                    <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
-                                </div>
+                                    className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                                />
+                                <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
                             </div>
                         </div>
-                        <DataTable
-                            columns={columns}
-                            data={items}
-                            pagination
-                            paginationPerPage={5}
-                            responsive
-                            highlightOnHover
-                            striped
-                            progressPending={loading}
-                            progressComponent={<div>Loading...</div>}
-                            noDataComponent={<div className="p-4">No inventory records found</div>}
-                            customStyles={customStyles}
-                        />
                     </div>
+                    <DataTable
+                        columns={columns}
+                        data={items}
+                        pagination
+                        paginationPerPage={5}
+                        responsive
+                        highlightOnHover
+                        striped
+                        progressPending={loading}
+                        progressComponent={<div>Loading...</div>}
+                        noDataComponent={<div className="p-4">No inventory records found</div>}
+                        customStyles={customStyles}
+                    />
                 </div>
                 <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
                     <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Production Overview</h3>
@@ -355,28 +347,9 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="p-4 md:p-6 bg-white rounded-lg shadow-md mt-8">
-                <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Top Selling Items</h3>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Item</th>
-                                <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Category</th>
-                                <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Total Sold</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {dashboardData.topSellingItems.map((item, index) => (
-                                <tr key={index}>
-                                    <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm font-medium text-gray-900 whitespace-nowrap">{item.name}</td>
-                                    <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm text-gray-500 whitespace-nowrap">{item.category}</td>
-                                    <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm text-gray-500 whitespace-nowrap">{item.totalSold}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">
+                <RecentActivityTable title="Recent Stock Ins" data={dashboardData.recentStockIns} type="in" />
+                <RecentActivityTable title="Recent Stock Outs" data={dashboardData.recentStockOuts} type="out" />
             </div>
         </div>
     );
