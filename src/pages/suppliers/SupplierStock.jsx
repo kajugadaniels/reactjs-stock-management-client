@@ -37,129 +37,142 @@ const SupplierStock = ({ isOpen, onClose }) => {
                     endDate: endDate
                 }
             });
-
+    
+            console.log('API Response:', response.data);
+    
             if (reportType === 'pdf') {
                 generatePDF(response.data);
             } else {
                 generateCSV(response.data);
             }
-
+    
             Swal.fire('Success', 'Report generated and downloaded successfully', 'success');
         } catch (error) {
             console.error('Error generating report:', error);
-            Swal.fire('Error', 'Failed to generate report', 'error');
+            console.error('Error details:', error.response?.data); // Log the error response data
+            Swal.fire('Error', `Failed to generate report: ${error.message}`, 'error');
         } finally {
             setLoading(false);
         }
     };
 
     const generatePDF = (data) => {
-        const doc = new jsPDF();
-        const pageWidth = doc.internal.pageSize.width;
+        try {
+            const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.width;
 
-        // Add title
-        doc.setFontSize(18);
-        doc.text('Supplier Stock Report', pageWidth / 2, 15, { align: 'center' });
+            // Add title
+            doc.setFontSize(18);
+            doc.text('Supplier Stock Report', pageWidth / 2, 15, { align: 'center' });
 
-        // Add supplier information
-        const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
-        doc.setFontSize(12);
-        doc.text(`Supplier: ${supplier.name}`, 14, 25);
-        doc.text(`Contact: ${supplier.contact || 'N/A'}`, 14, 31);
-        doc.text(`Address: ${supplier.address || 'N/A'}`, 14, 37);
+            // Add supplier information
+            const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
+            doc.setFontSize(12);
+            doc.text(`Supplier: ${supplier?.name || 'N/A'}`, 14, 25);
+            doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 31);
+            doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 37);
 
-        // Add date range
-        doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 45);
+            // Add date range
+            doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 45);
 
-        // Group data by date, batch_number, and plate_number
-        const groupedData = data.reduce((acc, item) => {
-            const key = `${item.date}-${item.batch_number}-${item.plate_number}`;
-            if (!acc[key]) {
-                acc[key] = {
-                    date: item.date,
-                    plate_number: item.plate_number,
-                    items: []
-                };
-            }
-            acc[key].items.push(item);
-            return acc;
-        }, {});
+            // Group data by date, batch_number, and plate_number
+            const groupedData = data.reduce((acc, item) => {
+                const key = `${item.date}-${item.batch_number}-${item.plate_number}`;
+                if (!acc[key]) {
+                    acc[key] = {
+                        date: item.date,
+                        plate_number: item.plate_number,
+                        items: []
+                    };
+                }
+                acc[key].items.push(item);
+                return acc;
+            }, {});
 
-        let yPos = 55;
-        Object.values(groupedData).forEach((group, index) => {
-            // Add group header
-            doc.setFontSize(10);
-            doc.text(`Date: ${group.date}`, 14, yPos);
-            doc.text(`Plate Number: ${group.plate_number}`, 80, yPos + 5);
+            let yPos = 55;
+            Object.values(groupedData).forEach((group, index) => {
+                // Add group header
+                doc.setFontSize(10);
+                doc.text(`Date: ${group.date || 'N/A'}`, 14, yPos);
+                doc.text(`Plate Number: ${group.plate_number || 'N/A'}`, 80, yPos + 5);
 
-            yPos += 15;
+                yPos += 15;
 
-            // Add items table
-            const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Batch Number", "Initial Qty", "Registered By"];
-            const tableRows = group.items.map(item => [
-                new Date(item.created_at).toLocaleTimeString(),
-                item.item.name,
-                item.item.category.name,
-                item.item.type.name,
-                item.quantity,
-                item.batch_number,
-                item.init_qty,
-                item.employee.name
-            ]);
+                // Add items table
+                const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Batch Number", "Initial Qty", "Registered By"];
+                const tableRows = group.items.map(item => [
+                    new Date(item.created_at).toLocaleTimeString(),
+                    item.item?.name || 'N/A',
+                    item.item?.category?.name || 'N/A',
+                    item.item?.type?.name || 'N/A',
+                    item.quantity || 'N/A',
+                    item.batch_number || 'N/A',
+                    item.init_qty || 'N/A',
+                    item.employee?.name || 'N/A'
+                ]);
 
-            doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: yPos,
-                styles: { fontSize: 8 },
-                columnStyles: {
-                    0: { cellWidth: 20 },
-                    1: { cellWidth: 20 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 25 },
-                    4: { cellWidth: 20 },
-                    5: { cellWidth: 25 },
-                    6: { cellWidth: 20 },
-                    7: { cellWidth: 20 }
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: yPos,
+                    styles: { fontSize: 8 },
+                    columnStyles: {
+                        0: { cellWidth: 20 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 20 },
+                        3: { cellWidth: 25 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 25 },
+                        6: { cellWidth: 20 },
+                        7: { cellWidth: 20 }
+                    }
+                });
+
+                yPos = doc.lastAutoTable.finalY + 10;
+
+                // Add page break if necessary
+                if (yPos > 270 && index < Object.values(groupedData).length - 1) {
+                    doc.addPage();
+                    yPos = 20;
                 }
             });
 
-            yPos = doc.lastAutoTable.finalY + 10;
-
-            // Add page break if necessary
-            if (yPos > 270 && index < Object.values(groupedData).length - 1) {
-                doc.addPage();
-                yPos = 20;
-            }
-        });
-
-        doc.save('supplier_stock_report.pdf');
+            doc.save('supplier_stock_report.pdf');
+        } catch (error) {
+            console.error('Error in generatePDF:', error);
+            throw error; // Re-throw the error to be caught in handleSubmit
+        }
     };
 
     const generateCSV = (data) => {
-        const headers = ['Date', 'Item', 'Category', 'Type', 'Quantity', 'Initial Quantity', 'Plate Number', 'Batch Number', 'Registered By'];
-        const rows = data.map(item => [
-            item.date,
-            item.item.name,
-            item.item.category.name,
-            item.item.type.name,
-            item.quantity,
-            item.init_qty,
-            item.plate_number,
-            item.batch_number,
-            item.employee.name
-        ]);
-        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'supplier_stock_report.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        try {
+            const headers = ['Date', 'Item', 'Category', 'Type', 'Quantity', 'Initial Quantity', 'Plate Number', 'Batch Number', 'Registered By'];
+            const rows = data.map(item => [
+                item.date || 'N/A',
+                item.item?.name || 'N/A',
+                item.item?.category?.name || 'N/A',
+                item.item?.type?.name || 'N/A',
+                item.quantity || 'N/A',
+                item.init_qty || 'N/A',
+                item.plate_number || 'N/A',
+                item.batch_number || 'N/A',
+                item.employee?.name || 'N/A'
+            ]);
+            const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'supplier_stock_report.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('Error in generateCSV:', error);
+            throw error; // Re-throw the error to be caught in handleSubmit
         }
     };
 
