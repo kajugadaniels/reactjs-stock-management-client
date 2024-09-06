@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import Swal from 'sweetalert2';
 import CreateUser from './users/CreateUser';
 import EditUser from './users/EditUser';
 
@@ -57,7 +57,7 @@ const Users = () => {
             if (result.isConfirmed) {
                 await axios.delete(`${import.meta.env.VITE_API_URL}/users/${userId}`);
                 Swal.fire('Deleted!', 'User has been deleted.', 'success');
-                fetchUsers(); // Refresh the user list
+                fetchUsers(); 
             }
         } catch (error) {
             console.error('Error deleting user:', error);
@@ -95,7 +95,7 @@ const Users = () => {
                         onClick={() => handleDelete(row.id)} 
                         className="px-4 py-1 text-sm font-medium text-red-600 hover:text-red-800 focus:outline-none"
                     >
-                        Delete
+                        Delet
                     </button>
                 </>
             ),

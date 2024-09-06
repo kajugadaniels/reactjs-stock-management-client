@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
-    ChartBarIcon,
     CubeIcon,
-    TruckIcon,
-    CurrencyDollarIcon,
-    ExclamationCircleIcon
+    ExclamationCircleIcon,
+    TruckIcon
 } from '@heroicons/react/outline';
-import { Line, Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import axios from 'axios';
+import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import React, { useEffect, useState } from 'react';
+import { Bar, Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
@@ -112,14 +110,16 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
-                    title="Total Inventory Value"
-                    value={`${dashboardData.totalInventoryValue.toLocaleString()}`}
-                    icon={<CurrencyDollarIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
+                    title="Total Packaging"
+                    value={'1'}
+                    // value={`${dashboardData.totalInventoryValue.toLocaleString()}`}
+                    icon={<ExclamationCircleIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
                     color="bg-green-100"
                 />
                 <StatCard
-                    title="Low Stock Items"
-                    value={dashboardData.lowStockItems}
+                    title="Total Raw Material"
+                    value={'1'}
+                    // value={dashboardData.lowStockItems}
                     icon={<ExclamationCircleIcon className="w-6 h-6 md:w-8 md:h-8 text-red-500" />}
                     color="bg-red-100"
                 />
@@ -153,7 +153,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="p-4 md:p-6 bg-white rounded-lg shadow-md mt-8">
+            {/* <div className="p-4 md:p-6 bg-white rounded-lg shadow-md mt-8">
                 <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Top Selling Items</h3>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -175,7 +175,7 @@ const Dashboard = () => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

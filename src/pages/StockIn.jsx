@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import Swal from 'sweetalert2';
+import StockInReport from './reports/StockInReport';
 import StockInCreate from './stockIn/StockInCreate';
 import StockInDetails from './stockIn/StockInDetails';
 import StockInEdit from './stockIn/StockInEdit';
-import StockInReport from './reports/StockInReport';
 import SupplierStock from './suppliers/SupplierStock';
 
 const StockIn = () => {

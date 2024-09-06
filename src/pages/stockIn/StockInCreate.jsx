@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 
 const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
@@ -246,8 +246,8 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                     <thead>
                                         <tr className="bg-gray-100">
                                             <th className="px-4 py-2 text-left border-b">Item Details</th>
-                                            <th className="px-4 py-2 text-center border-b">Quantity (KG)</th>
-                                            <th className="px-4 py-2 text-center border-b">Package Qty</th>
+                                            <th className="px-4 py-2 text-center border-b">Quantity</th>
+                                            <th className="px-4 py-2 text-center border-b">Number Of Sacks</th>
                                             <th className="px-4 py-2 text-center border-b">Action</th>
                                         </tr>
                                     </thead>
