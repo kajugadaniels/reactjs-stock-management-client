@@ -1,12 +1,12 @@
 import {
     CubeIcon,
     ExclamationCircleIcon,
-    SearchIcon,
     TruckIcon
 } from '@heroicons/react/outline';
+import axios from 'axios';
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
-import DataTable from 'react-data-table-component';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
 
