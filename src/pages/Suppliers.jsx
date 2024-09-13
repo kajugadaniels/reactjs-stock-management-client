@@ -109,7 +109,7 @@ const Suppliers = () => {
             ignoreRowClick: true,
             allowOverflow: true,
             button: true,
-            minWidth: '200px',
+            
         }
     ];
 
