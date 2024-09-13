@@ -91,15 +91,17 @@ const Suppliers = () => {
         },
         {
             name: 'Action',
+            wrap: true,
+            minWidth: '200px',
             cell: (row) => (
-                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                    <button onClick={() => openSuppliersEditModal(row)} className="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded hover:bg-blue-200">
+                <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-2">
+                    <button onClick={() => openSuppliersEditModal(row)} className="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded hover:bg-blue-200 w-14">
                         Edit
                     </button>
-                    <button onClick={() => openSupplierItemsModal(row)} className="px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded hover:bg-green-200">
+                    <button onClick={() => openSupplierItemsModal(row)} className="px-2 py-1 text-xs font-semibold text-green-600 bg-green-100 rounded hover:bg-green-200 w-14">
                         View Items
                     </button>
-                    <button onClick={() => openAddItemToSupplierModal(row)} className="px-2 py-1 text-xs font-semibold text-yellow-600 bg-yellow-100 rounded hover:bg-yellow-200">
+                    <button onClick={() => openAddItemToSupplierModal(row)} className="px-2 py-1 text-xs font-semibold text-yellow-600 bg-yellow-100 rounded hover:bg-yellow-200 w-14">
                         Add Item
                     </button>
                 </div>
@@ -142,7 +144,7 @@ const Suppliers = () => {
         },
         cells: {
             style: {
-                padding: '12px 8px',
+                padding: '20px 20px',
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
             },

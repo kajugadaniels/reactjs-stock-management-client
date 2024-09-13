@@ -83,6 +83,8 @@ const Users = () => {
         },
         {
             name: 'Actions',
+            wrap: true,
+            minWidth: '300px',
             cell: row => (
                 <>
                     <button 
@@ -95,7 +97,7 @@ const Users = () => {
                         onClick={() => handleDelete(row.id)} 
                         className="px-4 py-1 text-sm font-medium text-red-600 hover:text-red-800 focus:outline-none"
                     >
-                        Delet
+                        Delete
                     </button>
                 </>
             ),
