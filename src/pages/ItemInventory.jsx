@@ -155,7 +155,7 @@ const ItemInventory = () => {
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="container py-32 mx-auto">
+        <div className="container mx-auto">
             <h1 className="mb-6 text-3xl font-semibold text-gray-800">Inventory</h1>
             <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-3">
                 <div>

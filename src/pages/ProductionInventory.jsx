@@ -115,12 +115,12 @@ const ProductionInventory = () => {
         },
     };
 
-    if (loading) return <div className="text-center mt-5">Loading...</div>;
-    if (error) return <div className="text-center mt-5 text-red-500">{error}</div>;
+    if (loading) return <div className="mt-5 text-center">Loading...</div>;
+    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="container mx-auto py-32">
-            <h1 className="text-2xl font-bold mb-4">Production Inventory</h1>
+        <div className="container mx-auto">
+            <h1 className="mb-4 text-2xl font-bold">Production Inventory</h1>
             <DataTable
                 columns={columns}
                 data={filteredItems}
