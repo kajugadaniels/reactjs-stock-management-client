@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import RequestReport from './reports/RequestReport';
 import CreateRequest from './request/CreateRequest';
-import StockOutApproval from './Stockout/StockOutApproval';
 import RequestDetails from './request/RequestDetails';
 import RequestPackaging from './request/RequestPackaging';
-import RequestReport from './reports/RequestReport';
+import StockOutApproval from './Stockout/StockOutApproval';
 
 const Stock = () => {
     const [requests, setRequests] = useState([]);
@@ -285,6 +285,7 @@ const Stock = () => {
                         placeholder="Enter requester name"
                     />
                 </div>
+                
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
                     <input

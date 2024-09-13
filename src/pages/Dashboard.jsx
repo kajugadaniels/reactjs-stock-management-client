@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
-    BeakerIcon,
     ArchiveIcon,
-    TruckIcon,
+    BeakerIcon,
     CubeIcon,
-    SearchIcon
+    TruckIcon
 } from '@heroicons/react/outline';
+import axios from 'axios';
+import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
+import React, { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import DataTable from 'react-data-table-component';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -31,10 +30,16 @@ const Dashboard = () => {
     const [categories, setCategories] = useState([]);
     const [allTypes, setAllTypes] = useState([]);
     const [filteredTypes, setFilteredTypes] = useState([]);
+
+
+  const today = new Date();
+    const localDate = today.toLocaleDateString('en-CA');
+
     const [filters, setFilters] = useState({
-        category: '',
-        type: '',
-        name: '',
+        category: '',  
+        type: '',       
+        name: '',       
+        date: localDate   
     });
 
     useEffect(() => {
@@ -103,6 +108,9 @@ const Dashboard = () => {
         }
     };
 
+  
+ 
+
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         if (name === 'category') {
@@ -169,24 +177,14 @@ const Dashboard = () => {
             cell: row => (
                 <div>
                     <div>{row.name}</div>
-                    <div className="text-xs text-gray-500">
+                    {/* <div className="text-xs text-gray-500">
                         {row.category_name} - {row.type_name}
-                    </div>
-                    <div className="text-xs text-gray-500">
+                    </div> */}
+                    {/* <div className="text-xs text-gray-500">
                         {row.capacity} {row.unit}
-                    </div>
+                    </div> */}
                 </div>
             ),
-        },
-        {
-            name: 'Stock In',
-            selector: (row) => row.total_stock_in,
-            sortable: true,
-        },
-        {
-            name: 'Stock Out',
-            selector: (row) => row.total_stock_out,
-            sortable: true,
         },
         {
             name: 'Available',
@@ -201,6 +199,17 @@ const Dashboard = () => {
                 );
             },
         },
+        {
+            name: 'Stock In',
+            selector: (row) => row.total_stock_in,
+            sortable: true,
+        },
+        {
+            name: 'Stock Out',
+            selector: (row) => row.total_stock_out,
+            sortable: true,
+        },
+        
     ];
 
     const customStyles = {
@@ -312,7 +321,21 @@ const Dashboard = () => {
                                 ))}
                             </select>
                         </div>
+
                         <div>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">Date</label>
+                            <input
+                                type="date"
+                                name="date"
+                                value={filters.date}
+                                onChange={handleFilterChange}
+                                max={localDate}   
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
+                            />
+                            
+                        </div>
+
+                        {/* <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">Search</label>
                             <div className="relative">
                                 <input
@@ -325,7 +348,7 @@ const Dashboard = () => {
                                 />
                                 <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <DataTable
                         columns={columns}
