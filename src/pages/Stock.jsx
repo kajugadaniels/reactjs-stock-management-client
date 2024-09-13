@@ -28,10 +28,6 @@ const Stock = () => {
     const [userRole, setUserRole] = useState('');
 
     useEffect(() => {
-        fetchRequests();
-    }, [filters]);
-
-    useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user && user.role) {
             setUserRole(user.role);
@@ -118,6 +114,7 @@ const Stock = () => {
             name: 'Item',
             selector: row => row.items[0]?.item?.name || '',
             sortable: true,
+
             cell: row => (
                 <div>
                     {row.items.map((item, index) => (
@@ -130,24 +127,29 @@ const Stock = () => {
                     ))}
                 </div>
             ),
-            grow: 1,
+            grow: 2,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Request For & Quantity',
             selector: row => `${row.request_for?.name || ''} (${row.quantity})`,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Requester',
             selector: row => `${row.request_from || ''} (${row.requester_name})`,
             sortable: true,
+            wrap: true,
+            minWidth: '150px',
         },
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    row.status === 'Pending' 
-                        ? 'bg-yellow-100 text-yellow-800' 
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : row.status === 'Cancelled'
                             ? 'bg-red-100 text-red-800'
                             : 'bg-green-100 text-green-800'
@@ -155,11 +157,12 @@ const Stock = () => {
                     {row.status}
                 </span>
             ),
+            minWidth: '100px',
         },
         {
             name: 'Actions',
             cell: row => (
-                <div className="flex space-x-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                     <button
                         onClick={() => openDetailsModal(row.id)}
                         className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
@@ -172,7 +175,7 @@ const Stock = () => {
                                 onClick={() => openStockOutModal(row.id)}
                                 className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
                             >
-                                Approve Stock Out
+                                Approve
                             </button>
                             <button
                                 onClick={() => handleCancel(row.id)}
@@ -184,6 +187,10 @@ const Stock = () => {
                     )}
                 </div>
             ),
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+            minWidth: '200px',
         },
     ];
 
@@ -200,6 +207,7 @@ const Stock = () => {
                 fontWeight: '600',
                 textTransform: 'uppercase',
                 color: '#374151',
+                padding: '12px 8px',
             },
         },
         rows: {
@@ -213,6 +221,13 @@ const Stock = () => {
                     backgroundColor: '#f3f4f6',
                 },
                 borderBottom: '1px solid #e5e7eb',
+            },
+        },
+        cells: {
+            style: {
+                padding: '12px 8px',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
             },
         },
     };
@@ -235,7 +250,7 @@ const Stock = () => {
     const canAccessStockLinks = ['Manager', 'Storekeeper'].includes(userRole);
 
     return (
-        <div className="p-16 mt-20">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-16 mt-20">
             {canAccessStockLinks && (
                 <div className="flex flex-wrap gap-4 mb-6">
                     <Link to='/products'>
@@ -272,7 +287,7 @@ const Stock = () => {
                 </div>
             )}
             <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
-                <h1 className="text-3xl font-semibold text-gray-800">Stock Management</h1>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">Stock Management</h1>
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={() => setIsRequestItemModalOpen(true)}
@@ -293,10 +308,9 @@ const Stock = () => {
                         Generate Report
                     </button>
                 </div>
-
             </div>
 
-            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Status</label>
                     <select
@@ -321,7 +335,6 @@ const Stock = () => {
                         placeholder="Enter requester name"
                     />
                 </div>
-                
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">Start Date</label>
                     <input
@@ -344,7 +357,7 @@ const Stock = () => {
                 </div>
             </div>
 
-            <div className="mt-8 bg-white rounded-lg shadow">
+            <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={requests}
@@ -353,7 +366,7 @@ const Stock = () => {
                     highlightOnHover
                     striped
                     progressPending={loading}
-                    progressComponent={<div>Loading...</div>}
+                    progressComponent={<div className="p-4">Loading...</div>}
                     noDataComponent={<div className="p-4">No requests found</div>}
                     customStyles={customStyles}
                 />

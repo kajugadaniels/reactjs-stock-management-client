@@ -36,7 +36,6 @@ const Process = () => {
     };
 
     const handleFinishedCreated = () => {
-        // Update the specific process in the list to reflect it's finished
         setProcesses(prevProcesses =>
             prevProcesses.map(proc =>
                 proc.id === selectedProcess.id ? { ...proc, status: 'Finished' } : proc
@@ -48,6 +47,8 @@ const Process = () => {
     const columns = [
         {
             name: 'Item Name',
+            wrap: true,
+            minWidth: '300px',
             cell: row => (
                 <div>
                     {row.request.items.map(item => (
@@ -64,19 +65,27 @@ const Process = () => {
             name: 'Stockout Item',
             selector: row => row.request.request_for.name,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Category',
             selector: row => row.request.items[0]?.item.category.name,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Total Quantity',
             selector: row => row.total_quantity,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Status',
+            wrap: true,
+            minWidth: '150px',
             cell: row => (
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                     {row.status}
@@ -85,15 +94,17 @@ const Process = () => {
         },
         {
             name: 'Actions',
+            wrap: true,
+            minWidth: '200px',
             cell: (row) => (
                 <button
-                className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
-                onClick={() => toggleFinishedCreateModal(row)}
-                disabled={row.status === 'Finished'}
-            >
-                {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
-            </button>
-            
+                    className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
+                    onClick={() => toggleFinishedCreateModal(row)}
+                    disabled={row.status === 'Finished'}
+                >
+                    {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                </button>
+
             ),
         },
     ];

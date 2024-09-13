@@ -1,14 +1,15 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import DataTable from 'react-data-table-component';
+import { SearchIcon } from '@heroicons/react/solid';
 import {
     ArchiveIcon,
     BeakerIcon,
     CubeIcon,
     TruckIcon
 } from '@heroicons/react/outline';
-import axios from 'axios';
-import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
-import React, { useEffect, useState } from 'react';
-import { Bar } from 'react-chartjs-2';
-import DataTable from 'react-data-table-component';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -30,26 +31,25 @@ const Dashboard = () => {
     const [categories, setCategories] = useState([]);
     const [allTypes, setAllTypes] = useState([]);
     const [filteredTypes, setFilteredTypes] = useState([]);
+    const [productionInventory, setProductionInventory] = useState([]);
+    const [filterText, setFilterText] = useState('');
 
-
-  const today = new Date();
+    const today = new Date();
     const localDate = today.toLocaleDateString('en-CA');
 
     const [filters, setFilters] = useState({
-        category: '',  
-        type: '',       
-        name: '',       
-        date: localDate   
+        category: '',
+        type: '',
+        name: '',
+        date: localDate
     });
 
     useEffect(() => {
         fetchDashboardData();
         fetchCategories();
         fetchTypes();
-    }, []);
-
-    useEffect(() => {
         fetchInventory();
+        fetchProductionInventory();
     }, [filters]);
 
     const fetchDashboardData = async () => {
@@ -108,6 +108,18 @@ const Dashboard = () => {
         }
     };
 
+<<<<<<< HEAD
+=======
+    const fetchProductionInventory = async () => {
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/production-inventory`);
+            setProductionInventory(response.data);
+        } catch (error) {
+            console.error('Error fetching production inventory:', error);
+            setError('Failed to fetch production inventory data');
+        }
+    };
+>>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -135,29 +147,29 @@ const Dashboard = () => {
         <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 flex items-center ${color} mb-4 md:mb-0`}>
             <div className="mr-4">{icon}</div>
             <div>
-                <h3 className="text-sm md:text-lg font-semibold text-gray-800">{title}</h3>
-                <p className="text-xl md:text-2xl font-bold">{value}</p>
+                <h3 className="text-sm font-semibold text-gray-800 md:text-lg">{title}</h3>
+                <p className="text-xl font-bold md:text-2xl">{value}</p>
             </div>
         </div>
     );
 
     const RecentActivityTable = ({ title, data, type }) => (
-        <div className="p-4 md:p-6 bg-white rounded-lg shadow-md overflow-x-auto">
-            <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">{title}</h3>
+        <div className="p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
+            <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">{title}</h3>
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Date</th>
-                        <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Item</th>
-                        <th className="px-4 py-2 md:px-6 md:py-3 text-xs md:text-sm font-medium tracking-wider text-left text-gray-500 uppercase">Quantity</th>
+                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Date</th>
+                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Item</th>
+                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Quantity</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                     {data.map((item, index) => (
                         <tr key={index}>
-                            <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm text-gray-500 whitespace-nowrap">{item.date}</td>
-                            <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm font-medium text-gray-900 whitespace-nowrap">{item.item_name}</td>
-                            <td className="px-4 py-2 md:px-6 md:py-4 text-xs md:text-sm text-gray-500 whitespace-nowrap">
+                            <td className="px-4 py-2 text-xs text-gray-500 md:px-6 md:py-4 md:text-sm whitespace-nowrap">{item.date}</td>
+                            <td className="px-4 py-2 text-xs font-medium text-gray-900 md:px-6 md:py-4 md:text-sm whitespace-nowrap">{item.item_name}</td>
+                            <td className="px-4 py-2 text-xs text-gray-500 md:px-6 md:py-4 md:text-sm whitespace-nowrap">
                                 {type === 'in' ? '+' : '-'}{item.quantity}
                             </td>
                         </tr>
@@ -167,7 +179,7 @@ const Dashboard = () => {
         </div>
     );
 
-    const columns = [
+    const inventoryColumns = [
         {
             name: 'Item',
             selector: (row) => row.name,
@@ -175,12 +187,12 @@ const Dashboard = () => {
             cell: row => (
                 <div>
                     <div>{row.name}</div>
-                    {/* <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500">
                         {row.category_name} - {row.type_name}
-                    </div> */}
-                    {/* <div className="text-xs text-gray-500">
+                    </div>
+                    <div className="text-xs text-gray-500">
                         {row.capacity} {row.unit}
-                    </div> */}
+                    </div>
                 </div>
             ),
         },
@@ -207,7 +219,42 @@ const Dashboard = () => {
             selector: (row) => row.total_stock_out,
             sortable: true,
         },
-        
+    ];
+
+    const productionColumns = [
+        {
+            name: 'Item Name',
+            selector: row => row.item_name,
+            sortable: true,
+        },
+        {
+            name: 'Package Type',
+            selector: row => row.package_type,
+            sortable: true,
+        },
+        {
+            name: 'Total Stock In (KG)',
+            selector: row => row.total_stock_in,
+            sortable: true,
+        },
+        {
+            name: 'Total Stock Out',
+            selector: row => row.total_stock_out,
+            sortable: true,
+        },
+        {
+            name: 'Available Quantity',
+            selector: row => row.available_quantity,
+            sortable: true,
+            cell: row => {
+                const availableQuantity = row.total_stock_in - row.total_stock_out;
+                return (
+                    <span className={availableQuantity <= 0 ? 'text-red-600 font-semibold' : ''}>
+                        {availableQuantity <= 0 ? 'Stock Out' : availableQuantity}
+                    </span>
+                );
+            },
+        },
     ];
 
     const customStyles = {
@@ -240,7 +287,29 @@ const Dashboard = () => {
         },
     };
 
+<<<<<<< HEAD
     
+=======
+    const productionFilteredItems = productionInventory.filter(
+        item => item.item_name && item.item_name.toLowerCase().includes(filterText.toLowerCase()),
+    );
+
+    const subHeaderComponentMemo = React.useMemo(() => {
+        return (
+            <div className="relative">
+                <input
+                    type="text"
+                    placeholder="Filter by Item Name"
+                    className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
+                    value={filterText}
+                    onChange={e => setFilterText(e.target.value)}
+                />
+                <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
+            </div>
+        );
+    }, [filterText]);
+
+>>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
     const productionOverviewOptions = {
         scales: {
             xAxes: [{
@@ -291,43 +360,59 @@ const Dashboard = () => {
     //     },
     // };
 
-    if (loading) return <div className="mt-8 text-center">Loading dashboard...</div>;
-    if (error) return <div className="mt-8 text-center text-red-600">{error}</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <div className="w-16 h-16 mb-4 ease-linear border-8 border-t-8 border-gray-200 rounded-full loader"></div>
+                    <p className="text-xl font-semibold text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <p className="text-xl font-semibold text-red-600">Error: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container px-4 py-8 mx-auto mt-20">
-            <h1 className="mb-8 text-2xl md:text-3xl font-bold text-gray-800">Dashboard</h1>
+            <h1 className="mb-8 text-2xl font-bold text-gray-800 md:text-3xl">Dashboard</h1>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Raw Materials Stock In"
                     value={dashboardData.rawMaterialsStockIn.toLocaleString()}
-                    icon={<BeakerIcon className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />}
+                    icon={<BeakerIcon className="w-6 h-6 text-blue-500 md:w-8 md:h-8" />}
                     color="bg-blue-100"
                 />
                 <StatCard
                     title="Raw Materials Stock Out"
                     value={dashboardData.rawMaterialsStockOut.toLocaleString()}
-                    icon={<TruckIcon className="w-6 h-6 md:w-8 md:h-8 text-red-500" />}
+                    icon={<TruckIcon className="w-6 h-6 text-red-500 md:w-8 md:h-8" />}
                     color="bg-red-100"
                 />
                 <StatCard
                     title="Packages Stock In"
                     value={dashboardData.packagesStockIn.toLocaleString()}
-                    icon={<ArchiveIcon className="w-6 h-6 md:w-8 md:h-8 text-green-500" />}
+                    icon={<ArchiveIcon className="w-6 h-6 text-green-500 md:w-8 md:h-8" />}
                     color="bg-green-100"
                 />
                 <StatCard
                     title="Packages Stock Out"
                     value={dashboardData.packagesStockOut.toLocaleString()}
-                    icon={<CubeIcon className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />}
+                    icon={<CubeIcon className="w-6 h-6 text-purple-500 md:w-8 md:h-8" />}
                     color="bg-purple-100"
                 />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">
-                <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
-                    <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Inventory Details</h3>
+            <div className="flex flex-col mt-6 mb-6 space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+                <div className="flex-1 p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
+                    <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Item Inventory</h3>
                     <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-3">
                         <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">Category</label>
@@ -357,7 +442,6 @@ const Dashboard = () => {
                                 ))}
                             </select>
                         </div>
-
                         <div>
                             <label className="block mb-1 text-sm font-medium text-gray-700">Date</label>
                             <input
@@ -368,13 +452,15 @@ const Dashboard = () => {
                                 max={localDate}   
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                             />
-                            
                         </div>
+<<<<<<< HEAD
 
                       
+=======
+>>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
                     </div>
                     <DataTable
-                        columns={columns}
+                        columns={inventoryColumns}
                         data={items}
                         pagination
                         paginationPerPage={5}
@@ -387,16 +473,31 @@ const Dashboard = () => {
                         customStyles={customStyles}
                     />
                 </div>
+<<<<<<< HEAD
                 <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
                         <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Production Overview</h3>
                         <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
                     </div>
 
+=======
+
+                <div className="flex-1 p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
+                    <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Production Inventory</h3>
+                    <DataTable
+                        columns={productionColumns}
+                        data={productionFilteredItems}
+                        pagination
+                        customStyles={customStyles}
+                        subHeader
+                        subHeaderComponent={subHeaderComponentMemo}
+                    />
+                </div>
+>>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">
-                <RecentActivityTable title="Recent Stock Ins" data={dashboardData.recentStockIns} type="in" />
-                <RecentActivityTable title="Recent Stock Outs" data={dashboardData.recentStockOuts} type="out" />
+            <div className="p-4 bg-white rounded-lg shadow-md md:p-6">
+                <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Production Overview</h3>
+                <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
             </div>
         </div>
     );

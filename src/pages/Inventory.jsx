@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardListIcon, CubeIcon } from '@heroicons/react/outline';
-import ItemInventory from './ItemInventory';  // Import ItemInventory component
-import ProductionInventory from './ProductionInventory';  // Import ProductionInventory component
+import ItemInventory from './ItemInventory'; 
+import ProductionInventory from './ProductionInventory'; 
 
 const InventoryCard = ({ title, description, icon, onClick, isSelected }) => (
     <div
