@@ -55,6 +55,8 @@ const FinishedProduct = () => {
     const columns = [
         {
             name: 'Item',
+            wrap: true,
+            minWidth: '200px',
             selector: row => row.stock_out?.request?.items[0]?.item?.name ?? '',
             sortable: true,
             cell: row => {
@@ -74,11 +76,15 @@ const FinishedProduct = () => {
         },
         {
             name: 'Stockout Item',
+            wrap: true,
+            minWidth: '200px',
             selector: row => row.stock_out?.request?.request_for?.name ?? '',
             sortable: true,
         },
         {
             name: 'Item Quantity',
+            wrap: true,
+            minWidth: '200px',
             selector: row => `${row.item_qty} KG`,
             sortable: true,
         },
@@ -86,19 +92,27 @@ const FinishedProduct = () => {
             name: 'Brand Quantity',
             selector: row => `${row.brand_qty} KG`,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Dechet Quantity',
             selector: row => `${row.dechet_qty} KG`,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Comment',
             selector: row => row.comment ?? '',
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Actions',
+            wrap: true,
+            minWidth: '200px',
             cell: (row) => (
                 <div className="flex space-x-2">
                     {row.item_qty > 0 && (
@@ -152,7 +166,7 @@ const FinishedProduct = () => {
             <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <h1 className="text-3xl font-semibold text-gray-800">Finished Products</h1>
                 <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
-                    <button 
+                    <button
                         onClick={toggleReportModal}
                         className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                     >

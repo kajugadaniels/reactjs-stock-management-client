@@ -220,7 +220,7 @@ const Items = () => {
                 </div>
             </div>
 
-            <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
+            <div className="mt-8  bg-white rounded-lg shadow overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={filteredItems}
@@ -231,6 +231,7 @@ const Items = () => {
                     customStyles={customStyles}
                     defaultSortFieldId={1}
                     defaultSortAsc={true}
+                    padding={30}
                 />
             </div>
 

@@ -108,8 +108,6 @@ const Dashboard = () => {
         }
     };
 
-<<<<<<< HEAD
-=======
     const fetchProductionInventory = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/production-inventory`);
@@ -119,7 +117,6 @@ const Dashboard = () => {
             setError('Failed to fetch production inventory data');
         }
     };
->>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -287,9 +284,6 @@ const Dashboard = () => {
         },
     };
 
-<<<<<<< HEAD
-    
-=======
     const productionFilteredItems = productionInventory.filter(
         item => item.item_name && item.item_name.toLowerCase().includes(filterText.toLowerCase()),
     );
@@ -309,7 +303,6 @@ const Dashboard = () => {
         );
     }, [filterText]);
 
->>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
     const productionOverviewOptions = {
         scales: {
             xAxes: [{
@@ -453,11 +446,6 @@ const Dashboard = () => {
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                             />
                         </div>
-<<<<<<< HEAD
-
-                      
-=======
->>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
                     </div>
                     <DataTable
                         columns={inventoryColumns}
@@ -473,13 +461,6 @@ const Dashboard = () => {
                         customStyles={customStyles}
                     />
                 </div>
-<<<<<<< HEAD
-                <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
-                        <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Production Overview</h3>
-                        <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
-                    </div>
-
-=======
 
                 <div className="flex-1 p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
                     <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Production Inventory</h3>
@@ -492,7 +473,6 @@ const Dashboard = () => {
                         subHeaderComponent={subHeaderComponentMemo}
                     />
                 </div>
->>>>>>> bc67ea22d6a398f16ba8345c91913fcdac441d0e
             </div>
 
             <div className="p-4 bg-white rounded-lg shadow-md md:p-6">
