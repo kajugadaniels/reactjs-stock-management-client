@@ -197,6 +197,8 @@ const Dashboard = () => {
             name: 'Available',
             selector: (row) => row.available_quantity,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
             cell: row => {
                 const availableQuantity = row.available_quantity;
                 return (
@@ -213,6 +215,8 @@ const Dashboard = () => {
         },
         {
             name: 'Stock Out',
+            wrap: true,
+            minWidth: '200px',
             selector: (row) => row.total_stock_out,
             sortable: true,
         },
@@ -221,6 +225,8 @@ const Dashboard = () => {
     const productionColumns = [
         {
             name: 'Item',
+            wrap: true,
+            minWidth: '200px',
             selector: (row) => row.item_name,
             sortable: true,
             cell: row => (
@@ -234,6 +240,8 @@ const Dashboard = () => {
         },
         {
             name: 'Available',
+            wrap: true,
+            minWidth: '200px',
             selector: row => row.available_quantity,
             sortable: true,
             cell: row => {
