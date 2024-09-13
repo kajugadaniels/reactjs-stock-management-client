@@ -303,8 +303,37 @@ const Dashboard = () => {
         );
     }, [filterText]);
 
-    if (loading) return <div className="mt-8 text-center">Loading dashboard...</div>;
-    if (error) return <div className="mt-8 text-center text-red-600">{error}</div>;
+    const productionOverviewOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Production Overview',
+            },
+        },
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <div className="w-16 h-16 mb-4 ease-linear border-8 border-t-8 border-gray-200 rounded-full loader"></div>
+                    <p className="text-xl font-semibold text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <p className="text-xl font-semibold text-red-600">Error: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="container px-4 py-8 mx-auto mt-20">
@@ -337,7 +366,7 @@ const Dashboard = () => {
                 />
             </div>
 
-            <div className="flex flex-col mt-6 space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+            <div className="flex flex-col mt-6 mb-6 space-y-4 md:flex-row md:space-y-0 md:space-x-4">
                 <div className="flex-1 p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
                     <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Item Inventory</h3>
                     <div className="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2 md:grid-cols-3">
@@ -409,9 +438,9 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 mt-8 lg:grid-cols-2">
-                <RecentActivityTable title="Recent Stock Ins" data={dashboardData.recentStockIns} type="in" />
-                <RecentActivityTable title="Recent Stock Outs" data={dashboardData.recentStockOuts} type="out" />
+            <div className="p-4 bg-white rounded-lg shadow-md md:p-6">
+                <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">Production Overview</h3>
+                <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
             </div>
         </div>
     );
