@@ -114,6 +114,7 @@ const Stock = () => {
             name: 'Item',
             selector: row => row.items[0]?.item?.name || '',
             sortable: true,
+
             cell: row => (
                 <div>
                     {row.items.map((item, index) => (
@@ -135,7 +136,7 @@ const Stock = () => {
             selector: row => `${row.request_for?.name || ''} (${row.quantity})`,
             sortable: true,
             wrap: true,
-            minWidth: '150px',
+            minWidth: '300px',
         },
         {
             name: 'Requester',
@@ -147,9 +148,8 @@ const Stock = () => {
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    row.status === 'Pending' 
-                        ? 'bg-yellow-100 text-yellow-800' 
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : row.status === 'Cancelled'
                             ? 'bg-red-100 text-red-800'
                             : 'bg-green-100 text-green-800'

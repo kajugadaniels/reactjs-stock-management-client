@@ -64,16 +64,22 @@ const Process = () => {
             name: 'Stockout Item',
             selector: row => row.request.request_for.name,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Category',
             selector: row => row.request.items[0]?.item.category.name,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Total Quantity',
             selector: row => row.total_quantity,
             sortable: true,
+            wrap: true,
+            minWidth: '200px',
         },
         {
             name: 'Status',
@@ -87,13 +93,13 @@ const Process = () => {
             name: 'Actions',
             cell: (row) => (
                 <button
-                className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
-                onClick={() => toggleFinishedCreateModal(row)}
-                disabled={row.status === 'Finished'}
-            >
-                {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
-            </button>
-            
+                    className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${row.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
+                    onClick={() => toggleFinishedCreateModal(row)}
+                    disabled={row.status === 'Finished'}
+                >
+                    {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                </button>
+
             ),
         },
     ];
