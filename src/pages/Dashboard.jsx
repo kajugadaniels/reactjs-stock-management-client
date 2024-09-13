@@ -244,8 +244,24 @@ const Dashboard = () => {
         },
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center">
+                    <div className="w-16 h-16 mb-4 ease-linear border-8 border-t-8 border-gray-200 rounded-full loader"></div>
+                    <p className="text-xl font-semibold text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+    
+    if (error) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <p className="text-xl font-semibold text-red-600">Error: {error}</p>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 py-32 space-y-4">
