@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import React, { useEffect, useState } from 'react';
+import Swal from 'sweetalert2';
 
 const SupplierStock = ({ isOpen, onClose }) => {
     const [suppliers, setSuppliers] = useState([]);
@@ -49,7 +49,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
             Swal.fire('Success', 'Report generated and downloaded successfully', 'success');
         } catch (error) {
             console.error('Error generating report:', error);
-            console.error('Error details:', error.response?.data); // Log the error response data
+            console.error('Error details:', error.response?.data); 
             Swal.fire('Error', `Failed to generate report: ${error.message}`, 'error');
         } finally {
             setLoading(false);
@@ -140,7 +140,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
             doc.save('supplier_stock_report.pdf');
         } catch (error) {
             console.error('Error in generatePDF:', error);
-            throw error; // Re-throw the error to be caught in handleSubmit
+            throw error;
         }
     };
 
@@ -181,7 +181,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
             <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Supplier Stock Report</h2>
+                <h2 className="text-2xl font-bold mb-4">Supplier Deliver Note Report</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="supplier">

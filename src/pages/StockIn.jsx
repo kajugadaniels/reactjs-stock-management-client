@@ -237,7 +237,7 @@ const StockIn = () => {
                         onClick={() => setIsSupplierStockOpen(true)}
                         className="px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2"
                     >
-                        Supplier Stock
+                        Supplier Delivery Note
                     </button>
                     <button
                         onClick={() => setIsStockInCreateOpen(true)}
