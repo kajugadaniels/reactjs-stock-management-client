@@ -7,9 +7,7 @@ import Swal from 'sweetalert2';
 const SupplierStock = ({ isOpen, onClose }) => {
     const [suppliers, setSuppliers] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [reportType, setReportType] = useState('pdf');
+    const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -33,23 +31,19 @@ const SupplierStock = ({ isOpen, onClose }) => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 params: {
                     supplier_id: selectedSupplier,
-                    startDate: startDate,
-                    endDate: endDate
+                    startDate: date,  // Using the same date for startDate and endDate
+                    endDate: date
                 }
             });
     
-            console.log('API Response:', response.data);
-    
-            if (reportType === 'pdf') {
+            if (response.data.length > 0) {
                 generatePDF(response.data);
             } else {
-                generateCSV(response.data);
+                Swal.fire('No Data', 'No stock records found for the selected supplier and date.', 'info');
             }
-    
-            Swal.fire('Success', 'Report generated and downloaded successfully', 'success');
         } catch (error) {
             console.error('Error generating report:', error);
-            console.error('Error details:', error.response?.data); 
+            console.error('Error details:', error.response?.data); // Log the error response data
             Swal.fire('Error', `Failed to generate report: ${error.message}`, 'error');
         } finally {
             setLoading(false);
@@ -63,17 +57,18 @@ const SupplierStock = ({ isOpen, onClose }) => {
 
             // Add title
             doc.setFontSize(18);
-            doc.text('Supplier Stock Report', pageWidth / 2, 15, { align: 'center' });
+            doc.text('Jabana Maize Milling', pageWidth / 2, 15, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.text('Supplier Stock Report', pageWidth / 2, 25, { align: 'center' });
 
             // Add supplier information
             const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
             doc.setFontSize(12);
-            doc.text(`Supplier: ${supplier?.name || 'N/A'}`, 14, 25);
-            doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 31);
-            doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 37);
-
-            // Add date range
-            doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 45);
+            doc.text(`Supplier: ${supplier?.name || 'N/A'}`, 14, 35);
+            doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 41);
+            doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 47);
+            doc.text(`Date: ${date}`, 14, 53);
 
             // Group data by date, batch_number, and plate_number
             const groupedData = data.reduce((acc, item) => {
@@ -89,7 +84,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 return acc;
             }, {});
 
-            let yPos = 55;
+            let yPos = 60;
             Object.values(groupedData).forEach((group, index) => {
                 // Add group header
                 doc.setFontSize(10);
@@ -137,10 +132,34 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 }
             });
 
-            doc.save('supplier_stock_report.pdf');
+            // Add signature section
+            doc.text('Supplier Signature:', 14, yPos + 10);
+            doc.line(50, yPos + 10, 150, yPos + 10); // Signature line
+
+            const pdfData = doc.output('datauristring');
+
+            // Open the PDF in a new tab
+            const newTab = window.open();
+            newTab.document.write(`
+                <html>
+                <head><title>Supplier Stock Report</title></head>
+                <body>
+                    <iframe src="${pdfData}" style="width:100%; height:100%;" frameborder="0"></iframe>
+                    <button onclick="downloadPDF()">Download as PDF</button>
+                    <script>
+                        function downloadPDF() {
+                            const link = document.createElement('a');
+                            link.href = "${pdfData}";
+                            link.download = "supplier_stock_report.pdf";
+                            link.click();
+                        }
+                    </script>
+                </body>
+                </html>
+            `);
         } catch (error) {
             console.error('Error in generatePDF:', error);
-            throw error;
+            throw error; // Re-throw the error to be caught in handleSubmit
         }
     };
 
@@ -181,17 +200,17 @@ const SupplierStock = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
             <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Supplier Deliver Note Report</h2>
+                <h2 className="text-2xl font-bold mb-4">Supplier Stock Report</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="supplier">
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier">
                             Supplier
                         </label>
                         <select
                             id="supplier"
                             value={selectedSupplier}
                             onChange={(e) => setSelectedSupplier(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             required
                         >
                             <option value="">Select a supplier</option>
@@ -201,57 +220,17 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         </select>
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="startDate">
-                            Start Date
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                            Date
                         </label>
                         <input
                             type="date"
-                            id="startDate"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             required
                         />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="endDate">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            id="endDate"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2">
-                            Report Type
-                        </label>
-                        <div className="flex items-center space-x-4">
-                            <label className="inline-flex items-center">
-                                <input
-                                    type="radio"
-                                    value="pdf"
-                                    checked={reportType === 'pdf'}
-                                    onChange={() => setReportType('pdf')}
-                                    className="form-radio h-4 w-4 text-blue-600"
-                                />
-                                <span className="ml-2">PDF</span>
-                            </label>
-                            <label className="inline-flex items-center">
-                                <input
-                                    type="radio"
-                                    value="csv"
-                                    checked={reportType === 'csv'}
-                                    onChange={() => setReportType('csv')}
-                                    className="form-radio h-4 w-4 text-blue-600"
-                                />
-                                <span className="ml-2">CSV</span>
-                            </label>
-                        </div>
                     </div>
                     <div className="flex justify-between">
                         <button
@@ -264,7 +243,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            className="px-4 py-2 font-bold text-white bg-gray-500 rounded hover:bg-gray-700 focus:outline-none focus:shadow-outline"
                             disabled={loading}
                         >
                             Close

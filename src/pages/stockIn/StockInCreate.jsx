@@ -9,7 +9,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
         plate_number: '',
         batch_number: '',
         comment: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         loading_payment_status: false,
     });
     const [suppliers, setSuppliers] = useState([]);
@@ -46,7 +46,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
             plate_number: '',
             batch_number: '',
             comment: '',
-            date: '',
+            date: new Date().toISOString().split('T')[0],
             loading_payment_status: false,
         });
         setAvailableItems([]);
@@ -266,7 +266,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                                         min="1"
                                                         value={item.quantity}
                                                         onChange={(e) => handleItemQuantityChange(item.item_id, e.target.value)}
-                                                        className="w-full p-2 border border-gray-300 rounded text-center"
+                                                        className="w-full p-2 text-center border border-gray-300 rounded"
                                                         placeholder="Quantity in KG"
                                                     />
                                                 </td>
@@ -276,11 +276,11 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                                         min="0"
                                                         value={item.package_qty}
                                                         onChange={(e) => handlePackageQtyChange(item.item_id, e.target.value)}
-                                                        className="w-full p-2 border border-gray-300 rounded text-center"
+                                                        className="w-full p-2 text-center border border-gray-300 rounded"
                                                         placeholder="Package Quantity"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2 border-b text-center">
+                                                <td className="px-4 py-2 text-center border-b">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleItemRemove(item.item_id)}
@@ -333,7 +333,7 @@ const StockInCreate = ({ isOpen, onClose, onStockInCreated }) => {
                                 type="text"
                                 id="registered_by"
                                 value={currentUser ? currentUser.name : ''}
-                                className="w-full p-3 border border-gray-300 rounded bg-gray-100"
+                                className="w-full p-3 bg-gray-100 border border-gray-300 rounded"
                                 disabled
                             />
                         </div>
