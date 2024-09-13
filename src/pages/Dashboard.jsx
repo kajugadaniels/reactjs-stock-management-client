@@ -108,8 +108,6 @@ const Dashboard = () => {
         }
     };
 
-  
- 
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -242,18 +240,56 @@ const Dashboard = () => {
         },
     };
 
+    
     const productionOverviewOptions = {
+        scales: {
+            xAxes: [{
+                type: 'time',
+                time: {
+                    unit: 'month',
+                    displayFormats: {
+                        month: 'MMMM' 
+                    }
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Month'
+                }
+            }],
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Quantity'
+                }
+            }]
+        },
         responsive: true,
         plugins: {
             legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: 'Production Overview',
-            },
-        },
+                position: 'top'
+            }
+        }
     };
+    
+    
+
+
+    // const productionOverviewOptions = {
+    //     responsive: true,
+    //     plugins: {
+    //         legend: {
+    //             position: 'top',
+    //         },
+    //         title: {
+    //             display: true,
+    //             text: 'Production Overview',
+                
+    //         },
+    //     },
+    // };
 
     if (loading) return <div className="mt-8 text-center">Loading dashboard...</div>;
     if (error) return <div className="mt-8 text-center text-red-600">{error}</div>;
@@ -335,20 +371,7 @@ const Dashboard = () => {
                             
                         </div>
 
-                        {/* <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-700">Search</label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    name="name"
-                                    placeholder="Search items..."
-                                    value={filters.name}
-                                    onChange={handleFilterChange}
-                                    className="w-full p-2 pl-10 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
-                                />
-                                <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
-                            </div>
-                        </div> */}
+                      
                     </div>
                     <DataTable
                         columns={columns}
@@ -365,9 +388,10 @@ const Dashboard = () => {
                     />
                 </div>
                 <div className="p-4 md:p-6 bg-white rounded-lg shadow-md">
-                    <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Production Overview</h3>
-                    <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
-                </div>
+                        <h3 className="mb-4 text-sm md:text-lg font-semibold text-gray-800">Production Overview</h3>
+                        <Bar options={productionOverviewOptions} data={dashboardData.productionOverview} />
+                    </div>
+
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-8">

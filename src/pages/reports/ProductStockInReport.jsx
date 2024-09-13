@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import React, { useState } from 'react';
 
 const ProductStockInReport = ({ isOpen, onClose }) => {
@@ -29,7 +31,7 @@ const ProductStockInReport = ({ isOpen, onClose }) => {
             const data = await response.json();
             console.log('Received data:', data);
             if (data && data.length > 0) {
-                generateCSV(data);
+                generatePDF(data);
             } else {
                 console.error('No data received or empty data array');
                 // Show an error message to the user here if needed
@@ -41,32 +43,30 @@ const ProductStockInReport = ({ isOpen, onClose }) => {
         setLoading(false);
     };
 
-    const generateCSV = (data) => {
-        const headers = ['Stock In ID', 'Item Name', 'Package Type', 'Quantity', 'Date', 'Status', 'Comment'];
-        const csvContent = [
-            headers.join(','),
-            ...data.map(item => [
-                item.id,
-                item.item_name,
-                item.package_type,
-                item.quantity,
-                item.created_at,
-                item.status,
-                item.comment
-            ].join(','))
-        ].join('\n');
+    const generatePDF = (data) => {
+        const doc = new jsPDF();
+        doc.text('Product Stock In Report', 14, 20);
+        doc.setFontSize(12);
+        doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 14, 30);
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `product_stock_in_report_${formData.startDate}_${formData.endDate}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        const headers = [['Stock In ID', 'Item Name', 'Package Type', 'Quantity', 'Date', 'Status', 'Comment']];
+        const rows = data.map(item => [
+            item.id,
+            item.item_name,
+            item.package_type,
+            item.quantity,
+            item.created_at,
+            item.status,
+            item.comment
+        ]);
+
+        doc.autoTable({
+            head: headers,
+            body: rows,
+            startY: 40,
+        });
+
+        doc.save(`product_stock_in_report_${formData.startDate}_${formData.endDate}.pdf`);
     };
 
     if (!isOpen) return null;
@@ -110,7 +110,7 @@ const ProductStockInReport = ({ isOpen, onClose }) => {
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             disabled={loading}
                         >
-                            {loading ? 'Generating...' : 'Generate CSV Report'}
+                            {loading ? 'Generating...' : 'Generate PDF Report'}
                         </button>
                         <button
                             type="button"
