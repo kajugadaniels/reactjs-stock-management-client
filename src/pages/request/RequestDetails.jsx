@@ -75,7 +75,15 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                         </div>
                         <div>
                             <strong className="block text-gray-700">Status:</strong>
-                            <p className={`text-gray-900 ${details.status === 'Pending' ? 'text-red-600' : 'text-green-600'}`}>{details.status}</p>
+                            <p className={`text-gray-900 ${
+                                details.status === 'Pending' 
+                                    ? 'text-yellow-600' 
+                                    : details.status === 'Cancelled'
+                                        ? 'text-red-600'
+                                        : 'text-green-600'
+                            }`}>
+                                {details.status}
+                            </p>
                         </div>
                         <div>
                             <strong className="block text-gray-700">Request For:</strong>
