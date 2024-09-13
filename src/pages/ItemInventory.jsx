@@ -63,7 +63,7 @@ const ItemInventory = () => {
             setFilters(prevFilters => ({
                 ...prevFilters,
                 [name]: value,
-                type: '' 
+                type: ''
             }));
             if (value) {
                 const typesForCategory = allTypes.filter(type => type.category_id.toString() === value);
@@ -82,6 +82,8 @@ const ItemInventory = () => {
     const columns = [
         {
             name: 'Item',
+            wrap: true,
+            minWidth: '300px',
             selector: (row) => row.name,
             sortable: true,
             cell: row => (
@@ -101,21 +103,21 @@ const ItemInventory = () => {
             selector: (row) => row.total_stock_in,
             sortable: true,
             wrap: true,
-            minWidth: '120px',
+            minWidth: '300px',
         },
         {
             name: 'Stock Out',
             selector: (row) => row.total_stock_out,
             sortable: true,
             wrap: true,
-            minWidth: '150px',
+            minWidth: '300px',
         },
         {
             name: 'Available',
             selector: (row) => row.total_stock_in - row.total_stock_out,
             sortable: true,
             wrap: true,
-            minWidth: '150px',
+            minWidth: '300px',
             cell: row => {
                 const availableQuantity = row.total_stock_in - row.total_stock_out;
                 return (

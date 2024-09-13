@@ -68,31 +68,43 @@ const ProductStockIn = () => {
             name: 'Stock IN ID',
             selector: (row) => `Prod-${row.id}`,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Finished Product',
             selector: (row) => row.item_name,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Package Type',
             selector: (row) => row.package_type,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Quantity',
             selector: (row) => row.quantity,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Comment',
             selector: (row) => row.comment,
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
         {
             name: 'Date',
             selector: (row) => new Date(row.created_at).toLocaleDateString(),
             sortable: true,
+            wrap: true,
+            minWidth: '300px',
         },
     ];
 
