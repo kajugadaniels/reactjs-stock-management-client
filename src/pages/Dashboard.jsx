@@ -220,27 +220,20 @@ const Dashboard = () => {
 
     const productionColumns = [
         {
-            name: 'Item Name',
-            selector: row => row.item_name,
+            name: 'Item',
+            selector: (row) => row.item_name,
             sortable: true,
+            cell: row => (
+                <div>
+                    <div>{row.item_name}</div>
+                    <div className="text-xs text-gray-500">
+                        {row.package_type}
+                    </div>
+                </div>
+            ),
         },
         {
-            name: 'Package Type',
-            selector: row => row.package_type,
-            sortable: true,
-        },
-        {
-            name: 'Total Stock In (KG)',
-            selector: row => row.total_stock_in,
-            sortable: true,
-        },
-        {
-            name: 'Total Stock Out',
-            selector: row => row.total_stock_out,
-            sortable: true,
-        },
-        {
-            name: 'Available Quantity',
+            name: 'Available',
             selector: row => row.available_quantity,
             sortable: true,
             cell: row => {
@@ -251,6 +244,16 @@ const Dashboard = () => {
                     </span>
                 );
             },
+        },
+        {
+            name: 'Stock In',
+            selector: row => row.total_stock_in,
+            sortable: true,
+        },
+        {
+            name: 'Stock Out',
+            selector: row => row.total_stock_out,
+            sortable: true,
         },
     ];
 
@@ -303,55 +306,55 @@ const Dashboard = () => {
         );
     }, [filterText]);
 
-    const productionOverviewOptions = {
-        scales: {
-            xAxes: [{
-                type: 'time',
-                time: {
-                    unit: 'month',
-                    displayFormats: {
-                        month: 'MMMM' 
-                    }
-                },
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Month'
-                }
-            }],
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
-                },
-                scaleLabel: {
-                    display: true,
-                    labelString: 'Quantity'
-                }
-            }]
-        },
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top'
-            }
-        }
-    };
-    
-    
-
-
     // const productionOverviewOptions = {
+    //     scales: {
+    //         xAxes: [{
+    //             type: 'time',
+    //             time: {
+    //                 unit: 'month',
+    //                 displayFormats: {
+    //                     month: 'MMMM' 
+    //                 }
+    //             },
+    //             scaleLabel: {
+    //                 display: true,
+    //                 labelString: 'Month'
+    //             }
+    //         }],
+    //         yAxes: [{
+    //             ticks: {
+    //                 beginAtZero: true
+    //             },
+    //             scaleLabel: {
+    //                 display: true,
+    //                 labelString: 'Quantity'
+    //             }
+    //         }]
+    //     },
     //     responsive: true,
     //     plugins: {
     //         legend: {
-    //             position: 'top',
-    //         },
-    //         title: {
-    //             display: true,
-    //             text: 'Production Overview',
-                
-    //         },
-    //     },
+    //             position: 'top'
+    //         }
+    //     }
     // };
+
+
+
+
+    const productionOverviewOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Production Overview',
+
+            },
+        },
+    };
 
     if (loading) {
         return (
@@ -363,7 +366,7 @@ const Dashboard = () => {
             </div>
         );
     }
-    
+
     if (error) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -442,7 +445,7 @@ const Dashboard = () => {
                                 name="date"
                                 value={filters.date}
                                 onChange={handleFilterChange}
-                                max={localDate}   
+                                max={localDate}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                             />
                         </div>
