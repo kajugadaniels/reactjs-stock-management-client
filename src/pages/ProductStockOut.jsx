@@ -67,24 +67,24 @@ const ProductStockOut = () => {
     return (
         <div className="p-6 bg-gray-50 min-h-screen mt-20">
             <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
-    <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
-    <div className="flex flex-wrap gap-2">
-        <button
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full sm:w-auto"
-            onClick={toggleProductStockOutCreateModal}
-        >
-            Add New Stock Out
-        </button>
-        <button
-            className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition w-full sm:w-auto"
-            onClick={toggleProductStockOutReportModal}
-        >
-            Generate Report
-        </button>
-    </div>
-</div>
+                <h1 className="text-2xl font-semibold text-gray-800">Product Stock Out</h1>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full sm:w-auto"
+                        onClick={toggleProductStockOutCreateModal}
+                    >
+                        Add New Stock Out
+                    </button>
+                    <button
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition w-full sm:w-auto"
+                        onClick={toggleProductStockOutReportModal}
+                    >
+                        Generate Report
+                    </button>
+                </div>
+            </div>
 
-            
+
             <ProductStockOutCreate
                 isOpen={isCreateModalOpen}
                 onClose={toggleProductStockOutCreateModal}
@@ -99,16 +99,16 @@ const ProductStockOut = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock OUT ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plate Number</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">L P S</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Stock OUT ID</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Location</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Employee</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Item Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Batch</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Client Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Quantity</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Plate Number</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">L P S</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Date</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
