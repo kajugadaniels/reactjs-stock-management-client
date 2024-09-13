@@ -149,10 +149,10 @@ const Stock = () => {
             name: 'Status',
             cell: row => (
                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : row.status === 'Cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-green-100 text-green-800'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : row.status === 'Cancelled'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
                     }`}>
                     {row.status}
                 </span>
@@ -162,10 +162,10 @@ const Stock = () => {
         {
             name: 'Actions',
             cell: row => (
-                <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+                <div className="flex flex-col px-10 space-y-3 sm:flex-row sm:space-y-0 sm:space-x-2">
                     <button
                         onClick={() => openDetailsModal(row.id)}
-                        className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="px-1 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 w-16"
                     >
                         View Details
                     </button>
@@ -173,13 +173,13 @@ const Stock = () => {
                         <>
                             <button
                                 onClick={() => openStockOutModal(row.id)}
-                                className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+                                className="px-1 py-1 text-xs font-medium text-green-600 bg-green-100 rounded hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300 w-16"
                             >
                                 Approve
                             </button>
                             <button
                                 onClick={() => handleCancel(row.id)}
-                                className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                className="px-1 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300 w-14"
                             >
                                 Cancel
                             </button>
@@ -369,6 +369,7 @@ const Stock = () => {
                     progressComponent={<div className="p-4">Loading...</div>}
                     noDataComponent={<div className="p-4">No requests found</div>}
                     customStyles={customStyles}
+                    width={30}
                 />
             </div>
 
