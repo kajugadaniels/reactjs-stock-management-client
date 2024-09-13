@@ -248,7 +248,7 @@ const Dashboard = () => {
     if (error) return <div>Error: {error}</div>;
 
     return (
-        <div className="p-4 space-y-4">
+        <div className="p-4 py-32 space-y-4">
             <h2 className="text-2xl font-semibold">Dashboard</h2>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
