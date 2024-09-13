@@ -91,6 +91,28 @@ const Stock = () => {
         }));
     };
 
+    const handleCancel = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs/cancel/${id}`);
+                Swal.fire('Cancelled!', 'Request has been cancelled.', 'success');
+                fetchRequests();
+            } catch (error) {
+                Swal.fire('Error!', 'Failed to cancel request.', 'error');
+            }
+        }
+    };
+
     const columns = [
         {
             name: 'Item',
@@ -123,7 +145,13 @@ const Stock = () => {
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    row.status === 'Pending' 
+                        ? 'bg-yellow-100 text-yellow-800' 
+                        : row.status === 'Cancelled'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
+                    }`}>
                     {row.status}
                 </span>
             ),
@@ -139,12 +167,20 @@ const Stock = () => {
                         View Details
                     </button>
                     {userRole !== 'Production' && row.status === 'Pending' && (
-                        <button
-                            onClick={() => openStockOutModal(row.id)}
-                            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
-                        >
-                            Approve Stock Out
-                        </button>
+                        <>
+                            <button
+                                onClick={() => openStockOutModal(row.id)}
+                                className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+                            >
+                                Approve Stock Out
+                            </button>
+                            <button
+                                onClick={() => handleCancel(row.id)}
+                                className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                            >
+                                Cancel
+                            </button>
+                        </>
                     )}
                 </div>
             ),
@@ -240,7 +276,7 @@ const Stock = () => {
                 <div className="flex flex-wrap gap-2">
                     <button
                         onClick={() => setIsRequestItemModalOpen(true)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-full sm:w-auto"
+                        className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
                     >
                         Request Item
                     </button>
@@ -252,7 +288,7 @@ const Stock = () => {
                     </button>
                     <button
                         onClick={() => setIsRequestReportOpen(true)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 w-full sm:w-auto"
+                        className="w-full px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:w-auto"
                     >
                         Generate Report
                     </button>
