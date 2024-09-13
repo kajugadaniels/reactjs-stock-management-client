@@ -7,9 +7,7 @@ import 'jspdf-autotable';
 const SupplierStock = ({ isOpen, onClose }) => {
     const [suppliers, setSuppliers] = useState([]);
     const [selectedSupplier, setSelectedSupplier] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [reportType, setReportType] = useState('pdf');
+    const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -33,18 +31,16 @@ const SupplierStock = ({ isOpen, onClose }) => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-ins`, {
                 params: {
                     supplier_id: selectedSupplier,
-                    startDate: startDate,
-                    endDate: endDate
+                    startDate: date,  // Using the same date for startDate and endDate
+                    endDate: date
                 }
             });
     
-            console.log('API Response:', response.data);
-    
-            if (reportType === 'pdf') {
+            if (response.data.length > 0) {
                 generatePDF(response.data);
+            } else {
+                Swal.fire('No Data', 'No stock records found for the selected supplier and date.', 'info');
             }
-    
-            Swal.fire('Success', 'Report generated successfully', 'success');
         } catch (error) {
             console.error('Error generating report:', error);
             Swal.fire('Error', `Failed to generate report: ${error.message}`, 'error');
@@ -60,17 +56,18 @@ const SupplierStock = ({ isOpen, onClose }) => {
 
             // Add title
             doc.setFontSize(18);
-            doc.text('Supplier Stock Report', pageWidth / 2, 15, { align: 'center' });
+            doc.text('Jabana Maize Milling', pageWidth / 2, 15, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.text('Supplier Stock Report', pageWidth / 2, 25, { align: 'center' });
 
             // Add supplier information
             const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
             doc.setFontSize(12);
-            doc.text(`Supplier: ${supplier?.name || 'N/A'}`, 14, 25);
-            doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 31);
-            doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 37);
-
-            // Add date range
-            doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 45);
+            doc.text(`Supplier: ${supplier?.name || 'N/A'}`, 14, 35);
+            doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 41);
+            doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 47);
+            doc.text(`Date: ${date}`, 14, 53);
 
             // Group data by date, batch_number, and plate_number
             const groupedData = data.reduce((acc, item) => {
@@ -86,7 +83,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 return acc;
             }, {});
 
-            let yPos = 55;
+            let yPos = 60;
             Object.values(groupedData).forEach((group, index) => {
                 // Add group header
                 doc.setFontSize(10);
@@ -134,7 +131,11 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 }
             });
 
-            const pdfData = doc.output('datauristring'); // Generate PDF as data URI
+            // Add signature section
+            doc.text('Supplier Signature:', 14, yPos + 10);
+            doc.line(50, yPos + 10, 150, yPos + 10); // Signature line
+
+            const pdfData = doc.output('datauristring');
 
             // Open the PDF in a new tab
             const newTab = window.open();
@@ -157,7 +158,6 @@ const SupplierStock = ({ isOpen, onClose }) => {
             `);
         } catch (error) {
             console.error('Error in generatePDF:', error);
-            throw error; // Re-throw the error to be caught in handleSubmit
         }
     };
 
@@ -166,7 +166,8 @@ const SupplierStock = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 flex items-center justify-center w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
             <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
-                <h2 className="mb-4 text-2xl font-bold">Supplier Stock Report</h2>
+                <h2 className="mb-4 text-2xl font-bold text-center">Jabana Maize Milling</h2>
+                <h3 className="mb-4 text-lg font-bold">Supplier Stock Report</h3>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier">
@@ -186,27 +187,14 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         </select>
                     </div>
                     <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="startDate">
-                            Start Date
+                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="date">
+                            Date
                         </label>
                         <input
                             type="date"
-                            id="startDate"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="endDate">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            id="endDate"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             required
                         />
