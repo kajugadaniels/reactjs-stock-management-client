@@ -32,14 +32,14 @@ const Dashboard = () => {
     const [filteredTypes, setFilteredTypes] = useState([]);
 
 
-  const today = new Date();
+    const today = new Date();
     const localDate = today.toLocaleDateString('en-CA');
 
     const [filters, setFilters] = useState({
-        category: '',  
-        type: '',       
-        name: '',       
-        date: localDate   
+        category: '',
+        type: '',
+        name: '',
+        date: localDate
     });
 
     useEffect(() => {
@@ -108,8 +108,8 @@ const Dashboard = () => {
         }
     };
 
-  
- 
+
+
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -209,7 +209,7 @@ const Dashboard = () => {
             selector: (row) => row.total_stock_out,
             sortable: true,
         },
-        
+
     ];
 
     const customStyles = {
@@ -255,7 +255,9 @@ const Dashboard = () => {
         },
     };
 
-    if (loading) return <div className="mt-8 text-center">Loading dashboard...</div>;
+    if (loading) return <div className="mt-20 text-center">
+        <img src="https://i.sstatic.net/kOnzy.gif" alt="" />
+    </div>;
     if (error) return <div className="mt-8 text-center text-red-600">{error}</div>;
 
     return (
@@ -329,10 +331,10 @@ const Dashboard = () => {
                                 name="date"
                                 value={filters.date}
                                 onChange={handleFilterChange}
-                                max={localDate}   
+                                max={localDate}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#00BDD6] focus:border-[#00BDD6]"
                             />
-                            
+
                         </div>
 
                         {/* <div>

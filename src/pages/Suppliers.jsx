@@ -65,23 +65,29 @@ const Suppliers = () => {
             name: 'Supplier Id',
             selector: row => `supplier-${row.id}`,
             sortable: true,
+            wrap: true,
+            minWidth: '130px',
         },
         {
             name: 'Names',
             selector: row => row.name,
             sortable: true,
+            wrap: true,
+            minWidth: '150px',
         },
         {
             name: 'Contact',
             selector: row => row.contact,
             sortable: true,
-            hide: 'sm',
+            wrap: true,
+            minWidth: '130px',
         },
         {
             name: 'Address',
             selector: row => row.address,
             sortable: true,
-            hide: 'md',
+            wrap: true,
+            minWidth: '150px',
         },
         {
             name: 'Action',
@@ -98,7 +104,10 @@ const Suppliers = () => {
                     </button>
                 </div>
             ),
-            grow: 2,
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+            minWidth: '200px',
         }
     ];
 
@@ -134,6 +143,8 @@ const Suppliers = () => {
         cells: {
             style: {
                 padding: '12px 8px',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
             },
         },
     };
