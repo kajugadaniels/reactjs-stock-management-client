@@ -111,7 +111,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 date: new Date().toISOString().split('T')[0],
                 status: 'Pending',
             });
-
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -122,11 +122,15 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 fetchRequests();
             }
         } catch (error) {
-            setError(error.response?.data?.message || 'Failed to approve stock out');
+            const errorMessage = error.response?.data?.error || 'Failed to approve stock out';
+            const errorTrace = error.response?.data?.trace || 'No trace available';
+            console.error('Error details:', errorMessage, errorTrace);
+    
+            setError(errorMessage);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.message || 'Failed to approve stock out',
+                text: errorMessage,
             });
         } finally {
             setLoading(false);
