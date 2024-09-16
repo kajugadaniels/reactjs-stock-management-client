@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import DataTable from 'react-data-table-component';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -26,6 +26,15 @@ const Stock = () => {
         endDate: '',
     });
     const [userRole, setUserRole] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -33,19 +42,16 @@ const Stock = () => {
             setUserRole(user.role);
         }
         fetchRequests();
-    }, [filters]);
+    }, [filters, currentPage]);
 
     const fetchRequests = async () => {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests`, {
                 params: {
-                    category: filters.category,
-                    type: filters.type,
-                    startDate: filters.startDate,
-                    endDate: filters.endDate,
-                    status: filters.status,
-                    requester: filters.requester
+                    ...filters,
+                    page: currentPage,
+                    itemsPerPage
                 }
             });
             setRequests(response.data);
@@ -85,6 +91,7 @@ const Stock = () => {
             ...prevFilters,
             [name]: value
         }));
+        setCurrentPage(1);
     };
 
     const handleCancel = async (id) => {
@@ -114,7 +121,6 @@ const Stock = () => {
             name: 'Item',
             selector: row => row.items[0]?.item?.name || '',
             sortable: true,
-
             cell: row => (
                 <div>
                     {row.items.map((item, index) => (
@@ -249,6 +255,91 @@ const Stock = () => {
 
     const canAccessStockLinks = ['Manager', 'Storekeeper'].includes(userRole);
 
+    const paginatedRequests = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * itemsPerPage;
+        const lastPageIndex = firstPageIndex + itemsPerPage;
+        return requests.slice(firstPageIndex, lastPageIndex);
+    }, [currentPage, requests, itemsPerPage]);
+
+    const totalPages = Math.ceil(requests.length / itemsPerPage);
+
+    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
+        return (
+            <div className="flex justify-between items-center mt-4 px-4">
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+        );
+    };
+
+    const MobileRequestCard = ({ request }) => (
+        <div className="bg-white shadow rounded-lg p-4 mb-4">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Item:</div>
+                <div>
+                    {request.items.map((item, index) => (
+                        <div key={index} className="mb-2">
+                            <div className="font-semibold">{item.item?.name || ''} ({item.supplier?.name || 'N/A'})</div>
+                            <div className="text-xs text-gray-600">
+                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="font-bold">Request For & Quantity:</div>
+                <div>{`${request.request_for?.name || ''} (${request.quantity})`}</div>
+                <div className="font-bold">Requester:</div>
+                <div>{`${request.request_from || ''} (${request.requester_name})`}</div>
+                <div className="font-bold">Status:</div>
+                <div>
+                    <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                        request.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-green-100 text-green-800'
+                    }`}>
+                        {request.status}
+                    </span>
+                </div>
+            </div>
+            <div className="mt-4 flex justify-end space-x-2">
+                <button
+                    onClick={() => openDetailsModal(request.id)}
+                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                    View Details
+                </button>
+                {userRole !== 'Production' && request.status === 'Pending' && (
+                    <>
+                        <button
+                            onClick={() => openStockOutModal(request.id)}
+                            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+                        >
+                            Approve
+                        </button>
+                        <button
+                            onClick={() => handleCancel(request.id)}
+                            className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                        >
+                            Cancel
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className="p-4 sm:p-6 md:p-8 lg:p-16 mt-20">
             {canAccessStockLinks && (
@@ -358,19 +449,37 @@ const Stock = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
-                <DataTable
-                    columns={columns}
-                    data={requests}
-                    pagination
-                    responsive
-                    highlightOnHover
-                    striped
-                    progressPending={loading}
-                    progressComponent={<div className="p-4">Loading...</div>}
-                    noDataComponent={<div className="p-4">No requests found</div>}
-                    customStyles={customStyles}
-                    width={30}
-                />
+                {isMobile ? (
+                    <div className="p-4">
+                        {paginatedRequests.map(request => (
+                            <MobileRequestCard key={request.id} request={request} />
+                        ))}
+                        <SimplePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={requests}
+                        pagination
+                        paginationPerPage={itemsPerPage}
+                        paginationTotalRows={requests.length}
+                        paginationComponentOptions={{
+                            noRowsPerPage: true
+                        }}
+                        onChangePage={page => setCurrentPage(page)}
+                        responsive
+                        highlightOnHover
+                        striped
+                        progressPending={loading}
+                        progressComponent={<div className="p-4">Loading...</div>}
+                        noDataComponent={<div className="p-4">No requests found</div>}
+                        customStyles={customStyles}
+                    />
+                )}
             </div>
 
             <CreateRequest

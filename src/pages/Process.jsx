@@ -13,7 +13,16 @@ const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
     const [selectedProcess, setSelectedProcess] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchProcesses = async () => {
         try {
@@ -104,7 +113,6 @@ const Process = () => {
                 >
                     {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
                 </button>
-
             ),
         },
     ];
@@ -150,11 +158,76 @@ const Process = () => {
         );
     }, [processes, searchTerm]);
 
+    const paginatedProcesses = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * itemsPerPage;
+        const lastPageIndex = firstPageIndex + itemsPerPage;
+        return filteredProcesses.slice(firstPageIndex, lastPageIndex);
+    }, [currentPage, filteredProcesses, itemsPerPage]);
+
+    const totalPages = Math.ceil(filteredProcesses.length / itemsPerPage);
+
+    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
+        return (
+            <div className="flex justify-between items-center mt-4 px-4">
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+        );
+    };
+
+    const MobileProcessCard = ({ process }) => (
+        <div className="bg-white shadow rounded-lg p-4 mb-4">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Item Name:</div>
+                <div>
+                    {process.request.items.map(item => (
+                        <div key={item.id}>
+                            {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
+                        </div>
+                    ))}
+                </div>
+                <div className="font-bold">Stockout Item:</div>
+                <div>{process.request.request_for.name}</div>
+                <div className="font-bold">Category:</div>
+                <div>{process.request.items[0]?.item.category.name}</div>
+                <div className="font-bold">Total Quantity:</div>
+                <div>{process.total_quantity}</div>
+                <div className="font-bold">Status:</div>
+                <div>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${process.status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        {process.status}
+                    </span>
+                </div>
+            </div>
+            <div className="mt-4">
+                <button
+                    className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${process.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full`}
+                    onClick={() => toggleFinishedCreateModal(process)}
+                    disabled={process.status === 'Finished'}
+                >
+                    {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                </button>
+            </div>
+        </div>
+    );
+
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="container py-32 mx-auto">
+        <div className="container py-32 mx-auto px-4">
             <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <h1 className="text-3xl font-semibold text-gray-800">Production Process and Finished Product</h1>
                 <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
@@ -172,15 +245,34 @@ const Process = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                <DataTable
-                    columns={columns}
-                    data={filteredProcesses}
-                    pagination
-                    responsive
-                    highlightOnHover
-                    pointerOnHover
-                    customStyles={customStyles}
-                />
+                {isMobile ? (
+                    <div className="p-4">
+                        {paginatedProcesses.map(process => (
+                            <MobileProcessCard key={process.id} process={process} />
+                        ))}
+                        <SimplePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={filteredProcesses}
+                        pagination
+                        paginationPerPage={itemsPerPage}
+                        paginationTotalRows={filteredProcesses.length}
+                        paginationComponentOptions={{
+                            noRowsPerPage: true
+                        }}
+                        onChangePage={page => setCurrentPage(page)}
+                        responsive
+                        highlightOnHover
+                        pointerOnHover
+                        customStyles={customStyles}
+                    />
+                )}
             </div>
 
             <FinishedCreate

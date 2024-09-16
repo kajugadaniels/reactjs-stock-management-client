@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
@@ -18,10 +18,17 @@ const StockOut = () => {
         status: '',
         requester: '',
     });
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         fetchStockOuts();
-    }, [currentPage, filters]);
+    }, [currentPage, filters, itemsPerPage]);
 
     const fetchStockOuts = async () => {
         try {
@@ -126,11 +133,73 @@ const StockOut = () => {
         },
     };
 
+    const paginatedStockOuts = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * itemsPerPage;
+        const lastPageIndex = firstPageIndex + itemsPerPage;
+        return stockOuts.slice(firstPageIndex, lastPageIndex);
+    }, [currentPage, stockOuts, itemsPerPage]);
+
+    const totalPages = Math.ceil(stockOuts.length / itemsPerPage);
+
+    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
+        return (
+            <div className="flex justify-between items-center mt-4 px-4">
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+        );
+    };
+
+    const MobileStockOutCard = ({ stockOut }) => (
+        <div className="bg-white shadow rounded-lg p-4 mb-4">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Item:</div>
+                <div>
+                    {stockOut.request.items.map((item, index) => (
+                        <div key={index} className="mb-2">
+                            <div>{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
+                            <div className="text-xs text-gray-600">
+                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                Package Qty {stockOut.package_qty || 'N/A'}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="font-bold">Requester:</div>
+                <div>{stockOut.request.requester_name} / {stockOut.request.request_from}</div>
+                <div className="font-bold">Quantity:</div>
+                <div>{stockOut.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}</div>
+                <div className="font-bold">Date:</div>
+                <div>{stockOut.date}</div>
+                <div className="font-bold">Status:</div>
+                <div>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockOut.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                        {stockOut.status}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
     return (
-        <div className="container py-32 mx-auto">
+        <div className="container py-32 mx-auto px-4">
             <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <h1 className="text-3xl font-semibold text-gray-800">Stock Outs</h1>
                 <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
@@ -167,19 +236,32 @@ const StockOut = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                <DataTable
-                    columns={columns}
-                    data={stockOuts}
-                    pagination
-                    paginationServer
-                    paginationTotalRows={totalItems}
-                    onChangePage={(page) => setCurrentPage(page)}
-                    onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
-                    responsive
-                    highlightOnHover
-                    pointerOnHover
-                    customStyles={customStyles}
-                />
+                {isMobile ? (
+                    <div className="p-4">
+                        {paginatedStockOuts.map(stockOut => (
+                            <MobileStockOutCard key={stockOut.id} stockOut={stockOut} />
+                        ))}
+                        <SimplePagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                ) : (
+                    <DataTable
+                        columns={columns}
+                        data={stockOuts}
+                        pagination
+                        paginationServer
+                        paginationTotalRows={totalItems}
+                        onChangePage={(page) => setCurrentPage(page)}
+                        onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
+                        responsive
+                        highlightOnHover
+                        pointerOnHover
+                        customStyles={customStyles}
+                    />
+                )}
             </div>
         </div>
     );
