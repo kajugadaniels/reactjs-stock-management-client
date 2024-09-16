@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 import { SearchIcon } from '@heroicons/react/solid';
 
@@ -8,38 +7,28 @@ const StockOut = () => {
     const [stockOuts, setStockOuts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [filters, setFilters] = useState({
         startDate: '',
         endDate: '',
-        status: '',
-        requester: '',
     });
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         fetchStockOuts();
-    }, [currentPage, filters, itemsPerPage]);
+    }, [filters]);
 
     const fetchStockOuts = async () => {
         try {
-            const params = {
-                page: currentPage,
-                itemsPerPage,
-                ...filters,
-            };
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`, { params });
-            setStockOuts(response.data);
-            setTotalItems(response.data.length);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`, { params: filters });
+            const formattedData = Object.entries(response.data).map(([requestId, items]) => ({
+                requestId,
+                items: items.map(item => ({
+                    ...item,
+                    request: item.request,
+                    approved_quantity: item.approved_quantity
+                }))
+            }));
+            setStockOuts(formattedData);
             setLoading(false);
         } catch (error) {
             setError('Error fetching stock outs');
@@ -49,57 +38,68 @@ const StockOut = () => {
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
-        setFilters((prevFilters) => ({
+        setFilters(prevFilters => ({
             ...prevFilters,
             [name]: value,
         }));
-        setCurrentPage(1);
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
     };
 
     const columns = [
         {
-            name: 'Item',
-            selector: (row) => row.request.items[0]?.item?.name || '',
-            sortable: true,
-            cell: (row) => (
+            name: 'Items',
+            cell: row => (
                 <div>
-                    {row.request.items.map((item, index) => (
+                    {row.items.map((item, index) => (
                         <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
+                            <div className="font-semibold">{item.request.items[0]?.item?.name || 'N/A'}</div>
                             <div className="text-xs text-gray-600">
-                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
+                                <strong>Approved Qty:</strong> {item.approved_quantity}
                             </div>
                             <div className="text-xs text-gray-600">
-                                Package Qty {row.package_qty || 'N/A'}
+                                <strong>Category:</strong> {item.request.items[0]?.item?.category?.name || 'N/A'}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                <strong>Type:</strong> {item.request.items[0]?.item?.type?.name || 'N/A'}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                <strong>Package Qty:</strong> {item.package_qty || 'N/A'}
                             </div>
                         </div>
                     ))}
                 </div>
             ),
-            grow: 1,
+            grow: 2,
         },
         {
             name: 'Requester Name / Request From',
-            selector: (row) => `${row.request.requester_name} / ${row.request.request_from}`,
-            sortable: true,
-        },
-        {
-            name: 'Quantity',
-            selector: (row) => row.request.items.reduce((total, item) => total + item.pivot.quantity, 0),
+            selector: row => `${row.items[0]?.request?.requester_name || 'N/A'} / ${row.items[0]?.request?.request_from || 'N/A'}`,
             sortable: true,
         },
         {
             name: 'Date',
-            selector: (row) => row.date,
+            selector: row => formatDate(row.items[0]?.created_at),
             sortable: true,
         },
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                    {row.status}
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.items[0]?.request?.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                    {row.items[0]?.request?.status || 'N/A'}
                 </span>
             ),
+            sortable: true,
         },
     ];
 
@@ -133,66 +133,12 @@ const StockOut = () => {
         },
     };
 
-    const paginatedStockOuts = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return stockOuts.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, stockOuts, itemsPerPage]);
-
-    const totalPages = Math.ceil(stockOuts.length / itemsPerPage);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobileStockOutCard = ({ stockOut }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item:</div>
-                <div>
-                    {stockOut.request.items.map((item, index) => (
-                        <div key={index} className="mb-2">
-                            <div>{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
-                            <div className="text-xs text-gray-600">
-                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                Package Qty {stockOut.package_qty || 'N/A'}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="font-bold">Requester:</div>
-                <div>{stockOut.request.requester_name} / {stockOut.request.request_from}</div>
-                <div className="font-bold">Quantity:</div>
-                <div>{stockOut.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}</div>
-                <div className="font-bold">Date:</div>
-                <div>{stockOut.date}</div>
-                <div className="font-bold">Status:</div>
-                <div>
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockOut.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                        {stockOut.status}
-                    </span>
-                </div>
-            </div>
-        </div>
+    const filteredStockOuts = stockOuts.filter(stockOut =>
+        stockOut.items.some(item =>
+            item.request?.items.some(requestItem =>
+                requestItem.item?.name.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        )
     );
 
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
@@ -208,15 +154,12 @@ const StockOut = () => {
                             type="text"
                             placeholder="Search stock outs..."
                             value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                handleFilterChange({ target: { name: 'requester', value: e.target.value } });
-                            }}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
                         />
                         <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-4">
                         <input
                             type="date"
                             name="startDate"
@@ -236,32 +179,15 @@ const StockOut = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                {isMobile ? (
-                    <div className="p-4">
-                        {paginatedStockOuts.map(stockOut => (
-                            <MobileStockOutCard key={stockOut.id} stockOut={stockOut} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={stockOuts}
-                        pagination
-                        paginationServer
-                        paginationTotalRows={totalItems}
-                        onChangePage={(page) => setCurrentPage(page)}
-                        onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
-                        responsive
-                        highlightOnHover
-                        pointerOnHover
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={filteredStockOuts}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                />
             </div>
         </div>
     );
