@@ -15,21 +15,17 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
     const fetchApprovedQuantities = async (requestId) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`, {
-                params: { request_id: requestId }
-            });
-            const stockOuts = response.data;
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
+            const requestData = response.data;
 
             // Initialize an object to hold quantities by item ID
             const quantities = {};
 
             // Populate the quantities object with approved quantities
-            stockOuts.forEach(stockOut => {
-                stockOut.request.items.forEach(item => {
-                    if (item.item_id) { // Ensure item_id exists
-                        quantities[item.item_id] = stockOut.quantity;
-                    }
-                });
+            requestData.items.forEach(item => {
+                if (item.approved_quantity !== undefined) {
+                    quantities[item.item.id] = item.approved_quantity;
+                }
             });
 
             // Ensure that every item in the request has an entry in the quantities object
@@ -128,7 +124,7 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.unit || 'N/A'}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">
-                                                {loading ? 'Loading...' : approvedQuantities[item.item.id]}
+                                                {loading ? 'Loading...' : approvedQuantities[item.item.id] || 'N/A'}
                                             </td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier?.name} ({item.supplier?.contact})</td>
                                         </tr>
