@@ -76,6 +76,16 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         }
     };
 
+    const handleRequestedQtyChange = (itemId, value) => {
+        const newValue = Math.max(0, parseInt(value) || 0);
+        setItems(prevItems => 
+            prevItems.map(item => 
+                item.id === itemId ? { ...item, pivot: { ...item.pivot, quantity: newValue } } : item
+            )
+        );
+        calculateTotalQuantities(items);
+    };
+
     const handlePackageQtyChange = (itemId, value) => {
         const newValue = Math.min(Math.max(0, parseInt(value) || 0), packageQuantities[itemId]);
         setItems(prevItems => 
@@ -93,7 +103,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 request_id: requestId,
                 items: items.map(item => ({ 
                     item_id: item.id, 
-                    quantity: item.pivot.quantity,
+                    quantity: item.pivot.quantity,  // Use modified quantity here
                     package_qty: item.package_qty || 0
                 })),
                 total_raw_material_quantity: totalRawMaterialQuantity,
@@ -155,7 +165,15 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                                 <tr key={item.id} className="border-t border-gray-300">
                                     <td className="px-4 py-2">{item.item.name}</td>
                                     <td className="px-4 py-2">{item.supplier.name}</td>
-                                    <td className="px-4 py-2">{item.pivot.quantity}</td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="number"
+                                            value={item.pivot.quantity}
+                                            onChange={(e) => handleRequestedQtyChange(item.id, e.target.value)}
+                                            min="0"
+                                            className="w-24 px-2 py-1 border border-gray-300 rounded"
+                                        />
+                                    </td>
                                     <td className="px-4 py-2">{availableQuantities[item.id] || 0}</td>
                                     <td className="px-4 py-2">
                                         <input
@@ -201,38 +219,34 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                             Total Package Quantity
                         </label>
                         <input
-                            type="text"
-                            value={totalPackageQuantity}
-                            readOnly
-                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
-                        />
-                    </div>
-                </div>
-                {error && <div className="mt-4 text-sm text-red-500">{error}</div>}
-                <div className="flex justify-end mt-6 space-x-4">
-                    <button 
-                        type="button" 
-                        className="px-4 py-2 text-gray-500 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00BDD6]" 
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] ${
-                            loading || !isAvailable 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-[#00BDD6] hover:bg-[#00a8bb]'
-                        }`}
-                        onClick={handleApprove}
-                        disabled={loading || !isAvailable}
-                    >
-                        {loading ? 'Approving...' : 'Approve'}
-                    </button>
+                        type="text"
+                        value={totalPackageQuantity}
+                        readOnly
+                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                    />
                 </div>
             </div>
+            {error && <div className="mt-4 text-red-600">{error}</div>}
+            <div className="flex justify-end mt-6">
+                <button
+                    onClick={handleApprove}
+                    disabled={loading || !isAvailable}
+                    className={`px-4 py-2 text-white rounded-md ${
+                        loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                    }`}
+                >
+                    {loading ? 'Approving...' : 'Approve'}
+                </button>
+                <button
+                    onClick={onClose}
+                    className="ml-4 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                    Close
+                </button>
+            </div>
         </div>
-    );
+    </div>
+);
 };
 
 export default StockOutApproval;
