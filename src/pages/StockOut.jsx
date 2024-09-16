@@ -25,12 +25,7 @@ const StockOut = () => {
                 items: items.map(item => ({
                     ...item,
                     request: item.request,
-                    approved_quantity: item.approved_quantity,
-                    item_name: item.item_name,
-                    item_category: item.item_category,
-                    item_type: item.item_type,
-                    item_capacity: item.item_capacity,
-                    item_unit: item.item_unit,
+                    approved_quantity: item.approved_quantity
                 }))
             }));
             setStockOuts(formattedData);
@@ -68,15 +63,15 @@ const StockOut = () => {
                 <div>
                     {row.items.map((item, index) => (
                         <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.item_name || 'N/A'}</div>
+                            <div className="font-semibold">{item.request.items[0]?.item?.name || 'N/A'}</div>
                             <div className="text-xs text-gray-600">
                                 <strong>Approved Qty:</strong> {item.approved_quantity}
                             </div>
                             <div className="text-xs text-gray-600">
-                                <strong>Category:</strong> {item.item_category || 'N/A'}
+                                <strong>Category:</strong> {item.request.items[0]?.item?.category?.name || 'N/A'}
                             </div>
                             <div className="text-xs text-gray-600">
-                                <strong>Type:</strong> {item.item_type || 'N/A'}
+                                <strong>Type:</strong> {item.request.items[0]?.item?.type?.name || 'N/A'}
                             </div>
                             <div className="text-xs text-gray-600">
                                 <strong>Package Qty:</strong> {item.package_qty || 'N/A'}
@@ -89,7 +84,12 @@ const StockOut = () => {
         },
         {
             name: 'Requester Name / Request From',
-            selector: row => `${row.items[0]?.request?.requester_name || 'N/A'} / ${row.items[0]?.request?.request_from || 'N/A'}`,
+            selector: row => row.items[0]?.request?.requester_name || 'N/A',
+            sortable: true,
+        },
+        {
+            name: 'Request From',
+            selector: row => row.items[0]?.request?.request_from || 'N/A',
             sortable: true,
         },
         {
@@ -99,11 +99,7 @@ const StockOut = () => {
         },
         {
             name: 'Status',
-            cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.items[0]?.request?.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                    {row.items[0]?.request?.status || 'N/A'}
-                </span>
-            ),
+            selector: row => row.items[0]?.request?.status || 'N/A',
             sortable: true,
         },
     ];
@@ -140,7 +136,9 @@ const StockOut = () => {
 
     const filteredStockOuts = stockOuts.filter(stockOut =>
         stockOut.items.some(item =>
-            item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
+            item.request?.items.some(requestItem =>
+                requestItem.item?.name.toLowerCase().includes(searchTerm.toLowerCase())
+            )
         )
     );
 
