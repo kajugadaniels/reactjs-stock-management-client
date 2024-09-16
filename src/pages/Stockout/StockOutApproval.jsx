@@ -6,7 +6,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [isAvailable, setIsAvailable] = useState(false);
+    const [isAvailable, setIsAvailable] = useState(true); // Default to true initially
     const [availableQuantities, setAvailableQuantities] = useState({});
     const [packageQuantities, setPackageQuantities] = useState({});
     const [totalRawMaterialQuantity, setTotalRawMaterialQuantity] = useState(0);
@@ -64,8 +64,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
 
             setAvailableQuantities(availability);
             setPackageQuantities(packageQty);
-            const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
-            setIsAvailable(allAvailable);
+            validateQuantities(items, availability);
         } catch (error) {
             setError('Failed to fetch stock details');
             setIsAvailable(false);
@@ -76,20 +75,27 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         }
     };
 
+    const validateQuantities = (items, availability) => {
+        const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
+        setIsAvailable(allAvailable);
+    };
+
     const handleRequestedQtyChange = (itemId, value) => {
         const newValue = Math.max(0, parseInt(value) || 0);
-        setItems(prevItems => 
-            prevItems.map(item => 
+        setItems(prevItems => {
+            const updatedItems = prevItems.map(item =>
                 item.id === itemId ? { ...item, pivot: { ...item.pivot, quantity: newValue } } : item
-            )
-        );
-        calculateTotalQuantities(items);
+            );
+            calculateTotalQuantities(updatedItems);
+            validateQuantities(updatedItems, availableQuantities);
+            return updatedItems;
+        });
     };
 
     const handlePackageQtyChange = (itemId, value) => {
         const newValue = Math.min(Math.max(0, parseInt(value) || 0), packageQuantities[itemId]);
-        setItems(prevItems => 
-            prevItems.map(item => 
+        setItems(prevItems =>
+            prevItems.map(item =>
                 item.id === itemId ? { ...item, package_qty: newValue } : item
             )
         );
@@ -101,9 +107,9 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs`, {
                 request_id: requestId,
-                items: items.map(item => ({ 
-                    item_id: item.id, 
-                    quantity: item.pivot.quantity,  // Use modified quantity here
+                items: items.map(item => ({
+                    item_id: item.id,
+                    quantity: item.pivot.quantity,
                     package_qty: item.package_qty || 0
                 })),
                 total_raw_material_quantity: totalRawMaterialQuantity,
@@ -223,34 +229,34 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                             Total Package Quantity
                         </label>
                         <input
-                        type="text"
-                        value={totalPackageQuantity}
-                        readOnly
-                        className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
-                    />
+                            type="text"
+                            value={totalPackageQuantity}
+                            readOnly
+                            className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                </div>
+                {error && <div className="mt-4 text-red-600">{error}</div>}
+                <div className="flex justify-end mt-6">
+                    <button
+                        onClick={handleApprove}
+                        disabled={loading || !isAvailable}
+                        className={`px-4 py-2 text-white rounded-md ${
+                            loading || !isAvailable ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
+                    >
+                        {loading ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="ml-4 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                    >
+                        Close
+                    </button>
                 </div>
             </div>
-            {error && <div className="mt-4 text-red-600">{error}</div>}
-            <div className="flex justify-end mt-6">
-                <button
-                    onClick={handleApprove}
-                    disabled={loading || !isAvailable}
-                    className={`px-4 py-2 text-white rounded-md ${
-                        loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
-                    }`}
-                >
-                    {loading ? 'Approving...' : 'Approve'}
-                </button>
-                <button
-                    onClick={onClose}
-                    className="ml-4 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                >
-                    Close
-                </button>
-            </div>
         </div>
-    </div>
-);
+    );
 };
 
 export default StockOutApproval;
