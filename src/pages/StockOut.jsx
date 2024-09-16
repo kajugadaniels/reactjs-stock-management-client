@@ -25,7 +25,12 @@ const StockOut = () => {
                 items: items.map(item => ({
                     ...item,
                     request: item.request,
-                    approved_quantity: item.approved_quantity
+                    approved_quantity: item.approved_quantity,
+                    item_name: item.item_name,
+                    item_category: item.item_category,
+                    item_type: item.item_type,
+                    item_capacity: item.item_capacity,
+                    item_unit: item.item_unit,
                 }))
             }));
             setStockOuts(formattedData);
@@ -63,15 +68,15 @@ const StockOut = () => {
                 <div>
                     {row.items.map((item, index) => (
                         <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.request.items[0]?.item?.name || 'N/A'}</div>
+                            <div className="font-semibold">{item.item_name || 'N/A'}</div>
                             <div className="text-xs text-gray-600">
                                 <strong>Approved Qty:</strong> {item.approved_quantity}
                             </div>
                             <div className="text-xs text-gray-600">
-                                <strong>Category:</strong> {item.request.items[0]?.item?.category?.name || 'N/A'}
+                                <strong>Category:</strong> {item.item_category || 'N/A'}
                             </div>
                             <div className="text-xs text-gray-600">
-                                <strong>Type:</strong> {item.request.items[0]?.item?.type?.name || 'N/A'}
+                                <strong>Type:</strong> {item.item_type || 'N/A'}
                             </div>
                             <div className="text-xs text-gray-600">
                                 <strong>Package Qty:</strong> {item.package_qty || 'N/A'}
@@ -135,9 +140,7 @@ const StockOut = () => {
 
     const filteredStockOuts = stockOuts.filter(stockOut =>
         stockOut.items.some(item =>
-            item.request?.items.some(requestItem =>
-                requestItem.item?.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
+            item.item_name.toLowerCase().includes(searchTerm.toLowerCase())
         )
     );
 
