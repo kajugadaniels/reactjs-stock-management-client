@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import Swal from 'sweetalert2';
 import StockInReport from './reports/StockInReport';
@@ -28,15 +28,6 @@ const StockIn = () => {
         endDate: '',
         loading_payment_status: '',
     });
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         fetchData();
@@ -69,7 +60,7 @@ const StockIn = () => {
         setLoading(true);
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-ins`, { params: filters });
-            const sortedData = response.data.sort((a, b) => b.id - a.id);
+            const sortedData = response.data.sort((a, b) => b.id - a.id); // Sort data in descending order
             setStockIns(sortedData);
             setLoading(false);
         } catch (error) {
@@ -128,6 +119,7 @@ const StockIn = () => {
             name: 'Supplier',
             selector: row => row.supplier.name,
             sortable: true,
+            omit: isMobile,
         },
         {
             name: 'Item',
@@ -196,6 +188,12 @@ const StockIn = () => {
                     >
                         Edit
                     </button>
+                    {/* <button
+                        onClick={() => handleDeleteStockIn(row.id)}
+                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                        Delete
+                    </button> */}
                 </div>
             ),
         },
@@ -230,84 +228,6 @@ const StockIn = () => {
             },
         },
     };
-
-    const paginatedStockIns = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return stockIns.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, stockIns, itemsPerPage]);
-
-    const totalPages = Math.ceil(stockIns.length / itemsPerPage);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobileStockInCard = ({ stockIn }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Supplier:</div>
-                <div>{stockIn.supplier.name}</div>
-                <div className="font-bold">Item:</div>
-                <div>
-                    <div>{stockIn.item.name}</div>
-                    <div className="text-xs text-gray-500">
-                        {stockIn.item.category.name} - {stockIn.item.type.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {stockIn.item.capacity} {stockIn.item.unit}
-                    </div>
-                </div>
-                <div className="font-bold">Quantity:</div>
-                <div>{stockIn.init_qty}</div>
-                <div className="font-bold">Package Qty:</div>
-                <div>{stockIn.package_qty}</div>
-                <div className="font-bold">Remaining Qty:</div>
-                <div>{stockIn.quantity}</div>
-                <div className="font-bold">Plate Number:</div>
-                <div>{stockIn.plate_number}</div>
-                <div className="font-bold">Batch Number:</div>
-                <div>{stockIn.batch_number}</div>
-                <div className="font-bold">Payment Status:</div>
-                <div>
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockIn.loading_payment_status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {stockIn.loading_payment_status ? 'Paid' : 'Not Paid'}
-                    </span>
-                </div>
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-                <button
-                    onClick={() => { setSelectedStockIn(stockIn.id); setIsStockInDetailsOpen(true); }}
-                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                    Details
-                </button>
-                <button
-                    onClick={() => { setSelectedStockIn(stockIn); setIsStockInEditOpen(true); }}
-                    className="px-3 py-1 text-xs font-medium text-yellow-600 bg-yellow-100 rounded-full hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-300"
-                >
-                    Edit
-                </button>
-            </div>
-        </div>
-    );
 
     return (
         <div className="p-4 mt-20">
@@ -403,36 +323,18 @@ const StockIn = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                {isMobile ? (
-                    <div className="p-4">
-                        {paginatedStockIns.map(stockIn => (
-                            <MobileStockInCard key={stockIn.id} stockIn={stockIn} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={stockIns}
-                        pagination
-                        paginationPerPage={itemsPerPage}
-                        paginationTotalRows={stockIns.length}
-                        paginationComponentOptions={{
-                            noRowsPerPage: true
-                        }}
-                        responsive
-                        highlightOnHover
-                        striped
-                        progressPending={loading}
-                        progressComponent={<div className="p-4">Loading...</div>}
-                        noDataComponent={<div className="p-4">No stock in records found</div>}
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={stockIns}
+                    pagination
+                    responsive
+                    highlightOnHover
+                    striped
+                    progressPending={loading}
+                    progressComponent={<div>Loading...</div>}
+                    noDataComponent={<div className="p-4">No stock in records found</div>}
+                    customStyles={customStyles}
+                />
             </div>
 
             {isSupplierStockOpen && (
@@ -443,34 +345,34 @@ const StockIn = () => {
             )}
 
             {isStockInCreateOpen && (
-                <StockInCreate 
-                    isOpen={isStockInCreateOpen} 
-                    onClose={() => setIsStockInCreateOpen(false)} 
-                    onStockInCreated={fetchStockIns} 
+                <StockInCreate
+                    isOpen={isStockInCreateOpen}
+                    onClose={() => setIsStockInCreateOpen(false)}
+                    onStockInCreated={fetchStockIns}
                 />
             )}
 
             {isStockInEditOpen && (
-                <StockInEdit 
-                    isOpen={isStockInEditOpen} 
-                    onClose={() => setIsStockInEditOpen(false)} 
-                    stockIn={selectedStockIn} 
-                    onStockInUpdated={fetchStockIns} 
+                <StockInEdit
+                    isOpen={isStockInEditOpen}
+                    onClose={() => setIsStockInEditOpen(false)}
+                    stockIn={selectedStockIn}
+                    onStockInUpdated={fetchStockIns}
                 />
             )}
 
             {isStockInDetailsOpen && (
-                <StockInDetails 
-                    isOpen={isStockInDetailsOpen} 
-                    onClose={() => setIsStockInDetailsOpen(false)} 
-                    stockInId={selectedStockIn} 
+                <StockInDetails
+                    isOpen={isStockInDetailsOpen}
+                    onClose={() => setIsStockInDetailsOpen(false)}
+                    stockInId={selectedStockIn}
                 />
             )}
 
             {isStockInReportOpen && (
-                <StockInReport 
-                    isOpen={isStockInReportOpen} 
-                    onClose={() => setIsStockInReportOpen(false)} 
+                <StockInReport
+                    isOpen={isStockInReportOpen}
+                    onClose={() => setIsStockInReportOpen(false)}
                 />
             )}
         </div>

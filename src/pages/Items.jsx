@@ -3,7 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 import { SearchIcon } from '@heroicons/react/solid';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import ItemsCreate from './items/ItemsCreate';
 import ItemsEdit from './items/ItemsEdit';
 import TypesCreate from './types/TypesCreate';
@@ -20,6 +20,7 @@ const Items = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [expandedRows, setExpandedRows] = useState({});
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 640);
@@ -87,41 +88,44 @@ const Items = () => {
         }
     };
 
-    const columns = [
+    const toggleRowExpansion = (id) => {
+        setExpandedRows(prevState => ({
+            ...prevState,
+            [id]: !prevState[id]
+        }));
+    };
+
+    const columns = useMemo(() => [
         {
             name: 'Item Id',
             selector: row => `item-${row.id}`,
             sortable: true,
-            wrap: true,
-            minWidth: '120px',
+            omit: isMobile,
         },
         {
             name: 'Name',
             selector: row => row.name,
             sortable: true,
             wrap: true,
-            minWidth: '150px',
         },
         {
             name: 'Category',
             selector: row => row.category_name,
             sortable: true,
-            wrap: true,
-            minWidth: '150px',
+            omit: isMobile,
         },
         {
             name: 'Type',
             selector: row => row.type_name,
             sortable: true,
             wrap: true,
-            minWidth: '150px',
         },
         {
             name: 'Capacity',
             selector: row => `${row.capacity || 'N/A'} ${row.unit || ''}`,
             sortable: true,
             wrap: true,
-            minWidth: '120px',
+            omit: isMobile,
         },
         {
             name: 'Action',
@@ -129,14 +133,14 @@ const Items = () => {
                 <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
                     <button
                         onClick={() => openItemsEditModal(row)}
-                        className="inline-flex items-center justify-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="inline-flex items-center justify-center px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300 "
                     >
                         <span className="hidden sm:inline">Edit</span>
                         <FaEdit className="block sm:hidden" />
                     </button>
                     <button
                         onClick={() => handleDeleteItem(row.id)}
-                        className="inline-flex items-center justify-center px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                        className="inline-flex items-center justify-center px-1 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300 "
                     >
                         <span className="hidden sm:inline">Delete</span>
                         <FaTrash className="block sm:hidden" />
@@ -146,9 +150,40 @@ const Items = () => {
             ignoreRowClick: true,
             allowOverflow: true,
             button: true,
-            minWidth: '120px',
+            omit: isMobile,
         },
-    ];
+        {
+            name: '',
+            cell: (row) => (
+                <button onClick={() => toggleRowExpansion(row.id)} className="text-gray-500 hover:text-gray-700">
+                    {expandedRows[row.id] ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+            ),
+            width: '50px',
+            omit: !isMobile,
+        },
+    ], [isMobile, expandedRows]);
+
+    const ExpandedRow = ({ data }) => (
+        <div className="p-2 bg-gray-50">
+            <p><strong>Item Id:</strong> item-{data.id}</p>
+            <p><strong>Capacity:</strong> {`${data.capacity || 'N/A'} ${data.unit || ''}`}</p>
+            <div className="mt-2 flex space-x-2">
+                <button
+                    onClick={() => openItemsEditModal(data)}
+                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                    Edit
+                </button>
+                <button
+                    onClick={() => handleDeleteItem(data.id)}
+                    className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    );
 
     const customStyles = {
         headRow: {
@@ -160,10 +195,9 @@ const Items = () => {
         headCells: {
             style: {
                 fontSize: '0.875rem',
-                fontWeight: '600',
                 textTransform: 'uppercase',
                 color: '#374151',
-                padding: '12px 8px',
+                padding: '8px 4px',
             },
         },
         rows: {
@@ -181,7 +215,7 @@ const Items = () => {
         },
         cells: {
             style: {
-                padding: '12px 8px',
+                padding: '8px 4px',
                 whiteSpace: 'normal',
                 wordBreak: 'break-word',
             },
@@ -196,146 +230,8 @@ const Items = () => {
         );
     }, [items, searchTerm]);
 
-    // Pagination logic
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
-
-    const MobileItemCard = ({ item }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item Id:</div>
-                <div>item-{item.id}</div>
-                <div className="font-bold">Name:</div>
-                <div>{item.name}</div>
-                <div className="font-bold">Category:</div>
-                <div>{item.category_name}</div>
-                <div className="font-bold">Type:</div>
-                <div>{item.type_name}</div>
-                <div className="font-bold">Capacity:</div>
-                <div>{`${item.capacity || 'N/A'} ${item.unit || ''}`}</div>
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-                <button
-                    onClick={() => openItemsEditModal(item)}
-                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                    Edit
-                </button>
-                <button
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
-                >
-                    Delete
-                </button>
-            </div>
-        </div>
-    );
-
-    const Pagination = ({ itemsPerPage, totalItems, paginate, currentPage }) => {
-        const pageCount = Math.ceil(totalItems / itemsPerPage);
-        const lastPage = pageCount;
-        const pageRange = 5; // Number of page buttons to show
-
-        let startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
-        let endPage = Math.min(lastPage, startPage + pageRange - 1);
-
-        if (endPage - startPage + 1 < pageRange) {
-            startPage = Math.max(1, endPage - pageRange + 1);
-        }
-
-        const pageNumbers = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-
-        return (
-            <nav className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
-                <div className="flex flex-1 justify-between sm:hidden">
-                    <button
-                        onClick={() => paginate(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === lastPage}
-                        className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                    >
-                        Next
-                    </button>
-                </div>
-                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-sm text-gray-700">
-                            Showing <span className="font-medium">{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{' '}
-                            <span className="font-medium">{totalItems}</span> results
-                        </p>
-                    </div>
-                    <div>
-                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <button
-                                onClick={() => paginate(1)}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">First</span>
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={() => paginate(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Previous</span>
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            {pageNumbers.map(number => (
-                                <button
-                                    key={number}
-                                    onClick={() => paginate(number)}
-                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === number
-                                            ? 'z-10 bg-indigo-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                                        }`}
-                                >
-                                    {number}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => paginate(currentPage + 1)}
-                                disabled={currentPage === lastPage}
-                                className="relative inline-flex items-center px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Next</span>
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            <button
-                                onClick={() => paginate(lastPage)}
-                                disabled={currentPage === lastPage}
-                                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
-                            >
-                                <span className="sr-only">Last</span>
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                        </nav>
-                    </div>
-                </div>
-            </nav>
-        );
-    };
 
     return (
         <div className="container py-8 mx-auto px-4 mt-20">
@@ -367,37 +263,27 @@ const Items = () => {
                 </div>
             </div>
 
-            <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
-                {isMobile ? (
-                    <div className="p-4">
-                        {currentItems.map(item => (
-                            <MobileItemCard key={item.id} item={item} />
-                        ))}
-                        <Pagination
-                            itemsPerPage={itemsPerPage}
-                            totalItems={filteredItems.length}
-                            paginate={paginate}
-                            currentPage={currentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredItems}
-                        pagination
-                        paginationPerPage={itemsPerPage}
-                        paginationTotalRows={filteredItems.length}
-                        paginationComponentOptions={{
-                            noRowsPerPage: true
-                        }}
-                        responsive
-                        highlightOnHover
-                        pointerOnHover
-                        customStyles={customStyles}
-                        defaultSortFieldId={1}
-                        defaultSortAsc={true}
-                    />
-                )}
+            <div className="mt-8 bg-white rounded shadow overflow-hidden">
+                <DataTable
+                    columns={columns}
+                    data={filteredItems}
+                    pagination
+                    paginationPerPage={itemsPerPage}
+                    paginationTotalRows={filteredItems.length}
+                    paginationComponentOptions={{
+                        noRowsPerPage: true
+                    }}
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                    defaultSortFieldId={1}
+                    defaultSortAsc={true}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedRow}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row.id)}
+                />
             </div>
 
             {isItemsCreateOpen && <ItemsCreate isOpen={isItemsCreateOpen} onClose={toggleItemsCreateModal} onItemCreated={fetchItems} />}
