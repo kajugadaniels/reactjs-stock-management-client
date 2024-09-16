@@ -1,195 +1,164 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
-import { SearchIcon } from '@heroicons/react/solid';
+import { SearchIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/solid';
 
 const StockOut = () => {
     const [stockOuts, setStockOuts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filters, setFilters] = useState({
-        startDate: '',
-        endDate: '',
-    });
+    const [filterText, setFilterText] = useState('');
 
     useEffect(() => {
+        const fetchStockOuts = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/stock-outs');
+                const formattedData = formatStockOutData(response.data);
+                setStockOuts(formattedData);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching stock outs:', error);
+                setLoading(false);
+            }
+        };
+
         fetchStockOuts();
-    }, [filters]);
+    }, []);
 
-    const fetchStockOuts = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`, { params: filters });
-            const formattedData = Object.entries(response.data).map(([requestId, items]) => ({
-                requestId,
-                items: items.map(item => ({
-                    ...item,
-                    request: item.request,
-                    approved_quantity: item.approved_quantity
-                }))
-            }));
-            setStockOuts(formattedData);
-            setLoading(false);
-        } catch (error) {
-            setError('Error fetching stock outs');
-            setLoading(false);
-        }
-    };
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value,
-        }));
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleString('en-US', {
-            hour: 'numeric',
-            minute: 'numeric',
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
+    const formatStockOutData = (data) => {
+        const groupedData = {};
+        Object.values(data).forEach(group => {
+            group.forEach(item => {
+                if (!groupedData[item.request_id]) {
+                    groupedData[item.request_id] = {
+                        requestId: item.request_id,
+                        requesterName: item.request.requester_name,
+                        requestFrom: item.request.request_from,
+                        status: item.request.status,
+                        createdAt: new Date(item.created_at).toLocaleString(),
+                        items: []
+                    };
+                }
+                groupedData[item.request_id].items.push({
+                    itemName: item.request.items[0].item.name,
+                    itemType: item.request.items[0].item.type.name,
+                    itemCategory: item.request.items[0].item.category.name,
+                    capacity: item.request.items[0].item.capacity,
+                    unit: item.request.items[0].item.unit,
+                    quantity: item.quantity,
+                    packageQty: item.package_qty,
+                    approvedQuantity: item.approved_quantity,
+                });
+            });
         });
+        return Object.values(groupedData);
     };
 
     const columns = [
         {
-            name: 'Items',
-            cell: row => (
-                <div>
-                    {row.items.map((item, index) => (
-                        <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.request.items[0]?.item?.name || 'N/A'}</div>
-                            <div className="text-xs text-gray-600">
-                                <strong>Approved Qty:</strong> {item.approved_quantity}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                <strong>Category:</strong> {item.request.items[0]?.item?.category?.name || 'N/A'}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                <strong>Type:</strong> {item.request.items[0]?.item?.type?.name || 'N/A'}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                <strong>Package Qty:</strong> {item.package_qty || 'N/A'}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ),
-            grow: 2,
+            name: 'Request ID',
+            selector: row => row.requestId,
+            sortable: true,
         },
         {
-            name: 'Requester Name / Request From',
-            selector: row => row.items[0]?.request?.requester_name || 'N/A',
+            name: 'Requester Name',
+            selector: row => row.requesterName,
             sortable: true,
         },
         {
             name: 'Request From',
-            selector: row => row.items[0]?.request?.request_from || 'N/A',
-            sortable: true,
-        },
-        {
-            name: 'Date',
-            selector: row => formatDate(row.items[0]?.created_at),
+            selector: row => row.requestFrom,
             sortable: true,
         },
         {
             name: 'Status',
-            selector: row => row.items[0]?.request?.status || 'N/A',
+            selector: row => row.status,
+            sortable: true,
+        },
+        {
+            name: 'Created At',
+            selector: row => row.createdAt,
             sortable: true,
         },
     ];
 
-    const customStyles = {
-        headRow: {
-            style: {
-                backgroundColor: '#f3f4f6',
-                borderBottom: '2px solid #e5e7eb',
-            },
-        },
-        headCells: {
-            style: {
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                color: '#374151',
-            },
-        },
-        rows: {
-            style: {
-                fontSize: '0.875rem',
-                backgroundColor: 'white',
-                '&:nth-of-type(odd)': {
-                    backgroundColor: '#f9fafb',
-                },
-                '&:hover': {
-                    backgroundColor: '#f3f4f6',
-                },
-                borderBottom: '1px solid #e5e7eb',
-            },
-        },
+    const ExpandedComponent = ({ data }) => {
+        return (
+            <div className="p-4">
+                <h3 className="text-lg font-semibold mb-2">Items:</h3>
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity & Unit</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved Quantity</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {data.items.map((item, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.itemCategory}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.itemType}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.capacity || ''} {item.unit || 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.approvedQuantity}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">{item.packageQty}</td>
+                                </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
     };
 
-    const filteredStockOuts = stockOuts.filter(stockOut =>
-        stockOut.items.some(item =>
-            item.request?.items.some(requestItem =>
-                requestItem.item?.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        )
+    const filteredItems = stockOuts.filter(
+        item => item.requesterName && item.requesterName.toLowerCase().includes(filterText.toLowerCase())
     );
 
-    if (loading) return <div className="mt-5 text-center">Loading...</div>;
-    if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
-
-    return (
-        <div className="container py-32 mx-auto px-4">
-            <div className="flex flex-col mb-8 space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-                <h1 className="text-3xl font-semibold text-gray-800">Stock Outs</h1>
-                <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:space-x-4">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Search stock outs..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-4 py-2 pl-10 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
-                        />
-                        <SearchIcon className="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <input
-                            type="date"
-                            name="startDate"
-                            value={filters.startDate}
-                            onChange={handleFilterChange}
-                            className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
-                        />
-                        <input
-                            type="date"
-                            name="endDate"
-                            value={filters.endDate}
-                            onChange={handleFilterChange}
-                            className="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] focus:border-transparent"
-                        />
-                    </div>
+    const subHeaderComponentMemo = React.useMemo(() => {
+        return (
+            <div className="flex items-center justify-between p-4 bg-white">
+                <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                        type="text"
+                        className="pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Filter by Requester Name"
+                        value={filterText}
+                        onChange={e => setFilterText(e.target.value)}
+                    />
                 </div>
             </div>
+        );
+    }, [filterText]);
 
-            <div className="mt-8 bg-white rounded-lg shadow">
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h1 className="text-2xl font-bold mb-4">Stock Outs</h1>
+            {loading ? (
+                <p>Loading...</p>
+            ) : (
                 <DataTable
                     columns={columns}
-                    data={filteredStockOuts}
+                    data={filteredItems}
                     pagination
-                    responsive
+                    paginationPerPage={10}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100]}
+                    subHeader
+                    subHeaderComponent={subHeaderComponentMemo}
+                    persistTableHead
+                    striped
                     highlightOnHover
-                    pointerOnHover
-                    customStyles={customStyles}
+                    expandableRows
+                    expandableRowsComponent={ExpandedComponent}
+                    expandableIcon={{
+                        collapsed: <ChevronRightIcon className="h-5 w-5" />,
+                        expanded: <ChevronDownIcon className="h-5 w-5" />
+                    }}
                 />
-            </div>
+            )}
         </div>
     );
 };
