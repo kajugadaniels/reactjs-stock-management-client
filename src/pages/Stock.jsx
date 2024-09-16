@@ -136,7 +136,7 @@ const Stock = () => {
             selector: row => `${row.request_for?.name || ''} (${row.quantity})`,
             sortable: true,
             wrap: true,
-            minWidth: '300px',
+            minWidth: '200px',
         },
         {
             name: 'Requester',
@@ -148,7 +148,7 @@ const Stock = () => {
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
+                <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
                     ? 'bg-yellow-100 text-yellow-800'
                     : row.status === 'Cancelled'
                         ? 'bg-red-100 text-red-800'
