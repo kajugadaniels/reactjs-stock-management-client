@@ -133,10 +133,10 @@ const StockInDetails = ({ isOpen, onClose, stockInId }) => {
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Package Qty</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Plate Number</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Batch Number</th>
+                                                <th className="px-4 py-2 text-left text-gray-700 border">Payment Status</th>
                                                 {canViewRegisteredBy && (
                                                     <th className="px-4 py-2 text-left text-gray-700 border">Registered By</th>
                                                 )}
-                                                <th className="px-4 py-2 text-left text-gray-700 border">Payment Status</th>
                                                 <th className="px-4 py-2 text-left text-gray-700 border">Comment</th>
                                             </tr>
                                         </thead>

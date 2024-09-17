@@ -54,14 +54,14 @@ const SupplierStock = ({ isOpen, onClose }) => {
         try {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
-
+    
             // Add title
             doc.setFontSize(18);
             doc.text('Jabana Maize Milling', pageWidth / 2, 15, { align: 'center' });
-
+    
             doc.setFontSize(14);
             doc.text('Supplier Stock Report', pageWidth / 2, 25, { align: 'center' });
-
+    
             // Add supplier information
             const supplier = suppliers.find(s => s.id.toString() === selectedSupplier);
             doc.setFontSize(12);
@@ -69,7 +69,7 @@ const SupplierStock = ({ isOpen, onClose }) => {
             doc.text(`Contact: ${supplier?.contact || 'N/A'}`, 14, 41);
             doc.text(`Address: ${supplier?.address || 'N/A'}`, 14, 47);
             doc.text(`Date: ${date}`, 14, 53);
-
+    
             // Group data by date, batch_number, and plate_number
             const groupedData = data.reduce((acc, item) => {
                 const key = `${item.date}-${item.batch_number}-${item.plate_number}`;
@@ -83,29 +83,29 @@ const SupplierStock = ({ isOpen, onClose }) => {
                 acc[key].items.push(item);
                 return acc;
             }, {});
-
+    
             let yPos = 60;
             Object.values(groupedData).forEach((group, index) => {
-                // Add group header
+                // Add group header with Plate Number on the left side
                 doc.setFontSize(10);
-                doc.text(`Date: ${group.date || 'N/A'}`, 14, yPos);
-                doc.text(`Plate Number: ${group.plate_number || 'N/A'}`, 80, yPos + 5);
-
+                doc.text(`Plate Number: ${group.plate_number || 'N/A'}`, 14, yPos);  // Adjusted to be on the left
+    
                 yPos += 15;
-
-                // Add items table
-                const tableColumn = ["Time", "Item", "Category", "Type", "Quantity", "Batch Number", "Initial Qty", "Registered By"];
+    
+                // Add items table with capacity and unit
+                const tableColumn = ["Item", "Category", "Type", "Quantity", "Capacity", "Unit", "Batch Number", "Initial Qty", "Registered By"];
                 const tableRows = group.items.map(item => [
-                    new Date(item.created_at).toLocaleTimeString(),
                     item.item?.name || 'N/A',
                     item.item?.category?.name || 'N/A',
                     item.item?.type?.name || 'N/A',
                     item.quantity || 'N/A',
+                    item.item?.capacity || 'N/A',
+                    item.item?.unit || 'N/A',
                     item.batch_number || 'N/A',
                     item.init_qty || 'N/A',
                     item.employee?.name || 'N/A'
                 ]);
-
+    
                 doc.autoTable({
                     head: [tableColumn],
                     body: tableRows,
@@ -117,31 +117,38 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         2: { cellWidth: 20 },
                         3: { cellWidth: 25 },
                         4: { cellWidth: 20 },
-                        5: { cellWidth: 25 },
-                        6: { cellWidth: 20 },
-                        7: { cellWidth: 20 }
+                        5: { cellWidth: 20 },
+                        6: { cellWidth: 15 },
+                        7: { cellWidth: 25 },
+                        8: { cellWidth: 20 }
                     }
                 });
-
+    
                 yPos = doc.lastAutoTable.finalY + 10;
-
+    
                 // Add page break if necessary
                 if (yPos > 270 && index < Object.values(groupedData).length - 1) {
                     doc.addPage();
                     yPos = 20;
                 }
             });
-
+    
             // Add signature section
-            doc.text('Supplier Signature:', 14, yPos + 10);
-            doc.line(50, yPos + 10, 150, yPos + 10); // Signature line
-
+            yPos += 20;
+            doc.setFontSize(12);
+            doc.text('Supplier Signature:', 14, yPos);
+            doc.line(50, yPos, 150, yPos); // Supplier signature line
+    
+            yPos += 20;
+            doc.text('Industry Signature:', 14, yPos);
+            doc.line(50, yPos, 150, yPos); // Industry signature line
+    
             const pdfData = doc.output('datauristring');
-
+    
             // Open the PDF in a new tab
             const newTab = window.open();
-            newTab.document.write(`
-                <html>
+            newTab.document.write(
+                `<html>
                 <head><title>Supplier Stock Report</title></head>
                 <body>
                     <iframe src="${pdfData}" style="width:100%; height:100%;" frameborder="0"></iframe>
@@ -155,42 +162,10 @@ const SupplierStock = ({ isOpen, onClose }) => {
                         }
                     </script>
                 </body>
-                </html>
-            `);
+                </html>`
+            );
         } catch (error) {
             console.error('Error in generatePDF:', error);
-            throw error; // Re-throw the error to be caught in handleSubmit
-        }
-    };
-
-    const generateCSV = (data) => {
-        try {
-            const headers = ['Date', 'Item', 'Category', 'Type', 'Quantity', 'Initial Quantity', 'Plate Number', 'Batch Number', 'Registered By'];
-            const rows = data.map(item => [
-                item.date || 'N/A',
-                item.item?.name || 'N/A',
-                item.item?.category?.name || 'N/A',
-                item.item?.type?.name || 'N/A',
-                item.quantity || 'N/A',
-                item.init_qty || 'N/A',
-                item.plate_number || 'N/A',
-                item.batch_number || 'N/A',
-                item.employee?.name || 'N/A'
-            ]);
-            const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'supplier_stock_report.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        } catch (error) {
-            console.error('Error in generateCSV:', error);
             throw error; // Re-throw the error to be caught in handleSubmit
         }
     };
@@ -198,9 +173,9 @@ const SupplierStock = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Supplier Stock Report</h2>
+        <div className="fixed inset-0 flex items-center justify-center w-full h-full overflow-y-auto bg-gray-600 bg-opacity-50">
+            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
+                <h2 className="mb-4 text-2xl font-bold">Supplier Stock Report</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block mb-2 text-sm font-bold text-gray-700" htmlFor="supplier">
