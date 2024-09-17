@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import { SearchIcon } from '@heroicons/react/solid';
@@ -8,12 +8,13 @@ const PackageStock = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filterText, setFilterText] = useState('');
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [expandedRows, setExpandedRows] = useState({});
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -34,7 +35,37 @@ const PackageStock = () => {
         }
     };
 
-    const columns = [
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
+
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+            ),
+            omit: !isMobile,
+        },
         {
             name: 'Item Name',
             selector: row => row.item_name,
@@ -54,25 +85,30 @@ const PackageStock = () => {
             name: 'Capacity',
             selector: row => `${row.capacity} ${row.unit}`,
             sortable: true,
+            omit: isMobile,
         },
         {
             name: 'Quantity',
             selector: row => row.quantity,
             sortable: true,
+            omit: isMobile,
         },
-    ];
+    ], [isMobile, expandedRows, toggleRowExpansion]);
+
+    const ExpandedRow = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Capacity:</div>
+                <div>{`${data.capacity} ${data.unit}`}</div>
+                <div className="font-bold">Quantity:</div>
+                <div>{data.quantity}</div>
+            </div>
+        </div>
+    );
 
     const filteredItems = packageStocks.filter(
         item => item.item_name && item.item_name.toLowerCase().includes(filterText.toLowerCase()),
     );
-
-    const paginatedItems = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return filteredItems.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, filteredItems, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
 
     const subHeaderComponentMemo = React.useMemo(() => {
         return (
@@ -119,44 +155,6 @@ const PackageStock = () => {
         },
     };
 
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobilePackageStockCard = ({ item }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item Name:</div>
-                <div>{item.item_name}</div>
-                <div className="font-bold">Category:</div>
-                <div>{item.category}</div>
-                <div className="font-bold">Type:</div>
-                <div>{item.type}</div>
-                <div className="font-bold">Capacity:</div>
-                <div>{`${item.capacity} ${item.unit}`}</div>
-                <div className="font-bold">Quantity:</div>
-                <div>{item.quantity}</div>
-            </div>
-        </div>
-    );
-
     if (loading) return <div className="text-center mt-5">Loading...</div>;
     if (error) return <div className="text-center mt-5 text-red-500">{error}</div>;
 
@@ -165,32 +163,23 @@ const PackageStock = () => {
             <h1 className="text-2xl font-bold mb-4">Package Stock Inventory</h1>
             {subHeaderComponentMemo}
             <div className="mt-4">
-                {isMobile ? (
-                    <div>
-                        {paginatedItems.map((item, index) => (
-                            <MobilePackageStockCard key={index} item={item} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredItems}
-                        pagination
-                        paginationPerPage={itemsPerPage}
-                        paginationTotalRows={filteredItems.length}
-                        paginationComponentOptions={{
-                            noRowsPerPage: true
-                        }}
-                        onChangePage={page => setCurrentPage(page)}
-                        persistTableHead
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={filteredItems}
+                    pagination
+                    paginationPerPage={itemsPerPage}
+                    paginationTotalRows={filteredItems.length}
+                    paginationComponentOptions={{
+                        noRowsPerPage: true
+                    }}
+                    onChangePage={page => setCurrentPage(page)}
+                    persistTableHead
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedRow}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
+                />
             </div>
         </div>
     );

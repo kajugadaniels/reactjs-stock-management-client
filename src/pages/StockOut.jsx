@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
@@ -18,10 +18,11 @@ const StockOut = () => {
         status: '',
         requester: '',
     });
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [expandedRows, setExpandedRows] = useState({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -56,58 +57,126 @@ const StockOut = () => {
         setCurrentPage(1);
     };
 
-    const columns = [
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
+
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '40px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+            ),
+            omit: !isMobile,
+        },
         {
             name: 'Item',
             selector: (row) => row.request.items[0]?.item?.name || '',
             sortable: true,
             cell: (row) => (
-                <div>
+                <div className="py-1">
                     {row.request.items.map((item, index) => (
-                        <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
+                        <div key={index} className="mb-1">
+                            <div className="font-semibold text-sm">{item.item?.name || ''} - {item.pivot.quantity}</div>
                             <div className="text-xs text-gray-600">
-                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                Package Qty {row.package_qty || 'N/A'}
+                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'}
                             </div>
                         </div>
                     ))}
                 </div>
             ),
-            grow: 1,
+            width: '25%',
         },
         {
-            name: 'Requester Name / Request From',
+            name: 'Requester',
             selector: (row) => `${row.request.requester_name} / ${row.request.request_from}`,
             sortable: true,
+            cell: (row) => (
+                <div className="text-sm">
+                    <div>{row.request.requester_name}</div>
+                    <div className="text-xs text-gray-600">{row.request.request_from}</div>
+                </div>
+            ),
+            width: '25%',
         },
         {
             name: 'Quantity',
             selector: (row) => row.request.items.reduce((total, item) => total + item.pivot.quantity, 0),
             sortable: true,
+            omit: isMobile,
+            width: '15%',
         },
         {
             name: 'Date',
             selector: (row) => row.date,
             sortable: true,
+            omit: isMobile,
+            width: '15%',
         },
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
                     {row.status}
                 </span>
             ),
+            width: '15%',
         },
-    ];
+    ], [expandedRows, toggleRowExpansion, isMobile]);
+
+    const ExpandedRow = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="font-bold">Quantity:</div>
+                <div>{data.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}</div>
+                <div className="font-bold">Date:</div>
+                <div>{data.date}</div>
+                {data.request.items.map((item, index) => (
+                    <React.Fragment key={index}>
+                        <div className="font-bold">Item {index + 1} Details:</div>
+                        <div>
+                            <div>{item.item?.name || ''} - {item.pivot.quantity}</div>
+                            <div className="text-xs text-gray-600">
+                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                Supplier: {item.supplier?.name || 'N/A'}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                                Package Qty: {data.package_qty || 'N/A'}
+                            </div>
+                        </div>
+                    </React.Fragment>
+                ))}
+            </div>
+        </div>
+    );
 
     const customStyles = {
         headRow: {
             style: {
                 backgroundColor: '#f3f4f6',
                 borderBottom: '2px solid #e5e7eb',
+                minHeight: '40px',
             },
         },
         headCells: {
@@ -116,6 +185,8 @@ const StockOut = () => {
                 fontWeight: '600',
                 textTransform: 'uppercase',
                 color: '#374151',
+                paddingLeft: '8px',
+                paddingRight: '8px',
             },
         },
         rows: {
@@ -129,71 +200,16 @@ const StockOut = () => {
                     backgroundColor: '#f3f4f6',
                 },
                 borderBottom: '1px solid #e5e7eb',
+                minHeight: '40px',
+            },
+        },
+        cells: {
+            style: {
+                paddingLeft: '8px',
+                paddingRight: '8px',
             },
         },
     };
-
-    const paginatedStockOuts = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return stockOuts.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, stockOuts, itemsPerPage]);
-
-    const totalPages = Math.ceil(stockOuts.length / itemsPerPage);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobileStockOutCard = ({ stockOut }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item:</div>
-                <div>
-                    {stockOut.request.items.map((item, index) => (
-                        <div key={index} className="mb-2">
-                            <div>{item.item?.name || ''} - {item.pivot.quantity} ({item.supplier?.name || 'N/A'})</div>
-                            <div className="text-xs text-gray-600">
-                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                                Package Qty {stockOut.package_qty || 'N/A'}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="font-bold">Requester:</div>
-                <div>{stockOut.request.requester_name} / {stockOut.request.request_from}</div>
-                <div className="font-bold">Quantity:</div>
-                <div>{stockOut.request.items.reduce((total, item) => total + item.pivot.quantity, 0)}</div>
-                <div className="font-bold">Date:</div>
-                <div>{stockOut.date}</div>
-                <div className="font-bold">Status:</div>
-                <div>
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${stockOut.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                        {stockOut.status}
-                    </span>
-                </div>
-            </div>
-        </div>
-    );
 
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
@@ -236,32 +252,24 @@ const StockOut = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                {isMobile ? (
-                    <div className="p-4">
-                        {paginatedStockOuts.map(stockOut => (
-                            <MobileStockOutCard key={stockOut.id} stockOut={stockOut} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={stockOuts}
-                        pagination
-                        paginationServer
-                        paginationTotalRows={totalItems}
-                        onChangePage={(page) => setCurrentPage(page)}
-                        onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
-                        responsive
-                        highlightOnHover
-                        pointerOnHover
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={stockOuts}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={totalItems}
+                    onChangePage={(page) => setCurrentPage(page)}
+                    onChangeRowsPerPage={(rowsPerPage) => setItemsPerPage(rowsPerPage)}
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedRow}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
+                    dense
+                />
             </div>
         </div>
     );

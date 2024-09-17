@@ -1,5 +1,5 @@
-import axios from 'axios';
 import React, { useEffect, useState, useMemo } from 'react';
+import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -26,12 +26,13 @@ const Stock = () => {
         endDate: '',
     });
     const [userRole, setUserRole] = useState('');
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [expandedRows, setExpandedRows] = useState({});
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -116,7 +117,37 @@ const Stock = () => {
         }
     };
 
-    const columns = [
+    const toggleRowExpansion = (row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    };
+
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+            ),
+            omit: !isMobile,
+        },
         {
             name: 'Item',
             selector: row => row.items[0]?.item?.name || '',
@@ -143,6 +174,7 @@ const Stock = () => {
             sortable: true,
             wrap: true,
             minWidth: '200px',
+            omit: isMobile,
         },
         {
             name: 'Requester',
@@ -154,12 +186,11 @@ const Stock = () => {
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : row.status === 'Cancelled'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}>
+                <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                    row.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                    'bg-green-100 text-green-800'
+                }`}>
                     {row.status}
                 </span>
             ),
@@ -197,8 +228,43 @@ const Stock = () => {
             allowOverflow: true,
             button: true,
             minWidth: '200px',
+            omit: isMobile,
         },
-    ];
+    ], [expandedRows, userRole, isMobile]);
+
+    const ExpandedRow = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Request For & Quantity:</div>
+                <div>{`${data.request_for?.name || ''} (${data.quantity})`}</div>
+                <div className="font-bold">Actions:</div>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => openDetailsModal(data.id)}
+                        className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    >
+                        View Details
+                    </button>
+                    {userRole !== 'Production' && data.status === 'Pending' && (
+                        <>
+                            <button
+                                onClick={() => openStockOutModal(data.id)}
+                                className="px-2 py-1 text-xs font-medium text-green-600 bg-green-100 rounded hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
+                            >
+                                Approve
+                            </button>
+                            <button
+                                onClick={() => handleCancel(data.id)}
+                                className="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                            >
+                                Cancel
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 
     const customStyles = {
         headRow: {
@@ -255,90 +321,8 @@ const Stock = () => {
 
     const canAccessStockLinks = ['Manager', 'Storekeeper'].includes(userRole);
 
-    const paginatedRequests = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return requests.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, requests, itemsPerPage]);
-
-    const totalPages = Math.ceil(requests.length / itemsPerPage);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobileRequestCard = ({ request }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item:</div>
-                <div>
-                    {request.items.map((item, index) => (
-                        <div key={index} className="mb-2">
-                            <div className="font-semibold">{item.item?.name || ''} ({item.supplier?.name || 'N/A'})</div>
-                            <div className="text-xs text-gray-600">
-                                {item.item?.category?.name || 'N/A'} {item.item?.type?.name || 'N/A'} {item.item?.capacity || ''} {item.item?.unit || ''}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="font-bold">Request For & Quantity:</div>
-                <div>{`${request.request_for?.name || ''} (${request.quantity})`}</div>
-                <div className="font-bold">Requester:</div>
-                <div>{`${request.request_from || ''} (${request.requester_name})`}</div>
-                <div className="font-bold">Status:</div>
-                <div>
-                    <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        request.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        request.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-green-100 text-green-800'
-                    }`}>
-                        {request.status}
-                    </span>
-                </div>
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-                <button
-                    onClick={() => openDetailsModal(request.id)}
-                    className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                >
-                    View Details
-                </button>
-                {userRole !== 'Production' && request.status === 'Pending' && (
-                    <>
-                        <button
-                            onClick={() => openStockOutModal(request.id)}
-                            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-100 rounded hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-300"
-                        >
-                            Approve
-                        </button>
-                        <button
-                            onClick={() => handleCancel(request.id)}
-                            className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
-                        >
-                            Cancel
-                        </button>
-                    </>
-                )}
-            </div>
-        </div>
-    );
+    if (loading) return <div className="p-4 mt-20">Loading...</div>;
+    if (error) return <div className="p-4 mt-20 text-red-500">{error}</div>;
 
     return (
         <div className="p-4 sm:p-6 md:p-8 lg:p-16 mt-20">
@@ -449,37 +433,28 @@ const Stock = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
-                {isMobile ? (
-                    <div className="p-4">
-                        {paginatedRequests.map(request => (
-                            <MobileRequestCard key={request.id} request={request} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={requests}
-                        pagination
-                        paginationPerPage={itemsPerPage}
-                        paginationTotalRows={requests.length}
-                        paginationComponentOptions={{
-                            noRowsPerPage: true
-                        }}
-                        onChangePage={page => setCurrentPage(page)}
-                        responsive
-                        highlightOnHover
-                        striped
-                        progressPending={loading}
-                        progressComponent={<div className="p-4">Loading...</div>}
-                        noDataComponent={<div className="p-4">No requests found</div>}
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={requests}
+                    pagination
+                    paginationPerPage={itemsPerPage}
+                    paginationTotalRows={requests.length}
+                    paginationComponentOptions={{
+                        noRowsPerPage: true
+                    }}
+                    onChangePage={page => setCurrentPage(page)}
+                    responsive
+                    highlightOnHover
+                    striped
+                    progressPending={loading}
+                    progressComponent={<div className="p-4">Loading...</div>}
+                    noDataComponent={<div className="p-4">No requests found</div>}
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedRow}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
+                />
             </div>
 
             <CreateRequest
