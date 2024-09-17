@@ -21,6 +21,7 @@ const StockIn = () => {
     const [isStockInReportOpen, setIsStockInReportOpen] = useState(false);
     const [selectedStockIn, setSelectedStockIn] = useState(null);
     const [isSupplierStockOpen, setIsSupplierStockOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [filters, setFilters] = useState({
         category: '',
         type: '',

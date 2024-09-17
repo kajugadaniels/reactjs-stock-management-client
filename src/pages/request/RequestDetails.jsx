@@ -15,25 +15,26 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
     const fetchApprovedQuantities = async (requestId) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/stock-outs`);
-            const stockOuts = response.data;
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/requests/${requestId}`);
+            const requestData = response.data;
 
+            // Initialize an object to hold quantities by item ID
             const quantities = {};
-            details.items.forEach(item => {
-                const relevantStockOut = stockOuts.find(so => 
-                    so.request_id === details.id && 
-                    so.request.items.some(ri => ri.item.id === item.item.id)
-                );
 
-                if (relevantStockOut) {
-                    const matchingItem = relevantStockOut.request.items.find(ri => ri.item.id === item.item.id);
-                    quantities[item.id] = matchingItem ? matchingItem.pivot.quantity : 'Not found';
-                } else {
-                    quantities[item.id] = 'Request still pending';
+            // Populate the quantities object with approved quantities
+            requestData.items.forEach(item => {
+                if (item.approved_quantity !== undefined) {
+                    quantities[item.item.id] = item.approved_quantity;
                 }
             });
 
-            setApprovedQuantities(quantities);
+            // Ensure that every item in the request has an entry in the quantities object
+            const updatedQuantities = {};
+            details.items.forEach(item => {
+                updatedQuantities[item.item.id] = quantities[item.item.id] || 'Request still pending';
+            });
+
+            setApprovedQuantities(updatedQuantities);
         } catch (error) {
             console.error('Error fetching approved quantities:', error);
             setError('Failed to fetch approved quantities');
@@ -75,13 +76,12 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                         </div>
                         <div>
                             <strong className="block text-gray-700">Status:</strong>
-                            <p className={`text-gray-900 ${
-                                details.status === 'Pending' 
-                                    ? 'text-yellow-600' 
+                            <p className={`text-gray-900 ${details.status === 'Pending'
+                                    ? 'text-yellow-600'
                                     : details.status === 'Cancelled'
                                         ? 'text-red-600'
                                         : 'text-green-600'
-                            }`}>
+                                }`}>
                                 {details.status}
                             </p>
                         </div>
@@ -124,7 +124,7 @@ const RequestDetails = ({ isOpen, onClose, details }) => {
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.item.unit || 'N/A'}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.pivot.quantity}</td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">
-                                                {loading ? 'Loading...' : approvedQuantities[item.id]}
+                                                {loading ? 'Loading...' : approvedQuantities[item.item.id] || 'N/A'}
                                             </td>
                                             <td className="px-4 py-4 text-sm text-gray-600 border-b border-gray-300">{item.supplier?.name} ({item.supplier?.contact})</td>
                                         </tr>

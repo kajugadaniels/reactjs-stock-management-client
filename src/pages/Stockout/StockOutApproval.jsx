@@ -6,7 +6,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [isAvailable, setIsAvailable] = useState(false);
+    const [isAvailable, setIsAvailable] = useState(true); // Default to true initially
     const [availableQuantities, setAvailableQuantities] = useState({});
     const [packageQuantities, setPackageQuantities] = useState({});
     const [totalRawMaterialQuantity, setTotalRawMaterialQuantity] = useState(0);
@@ -64,8 +64,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
 
             setAvailableQuantities(availability);
             setPackageQuantities(packageQty);
-            const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
-            setIsAvailable(allAvailable);
+            validateQuantities(items, availability);
         } catch (error) {
             setError('Failed to fetch stock details');
             setIsAvailable(false);
@@ -76,10 +75,27 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         }
     };
 
+    const validateQuantities = (items, availability) => {
+        const allAvailable = items.every(item => availability[item.id] >= item.pivot.quantity);
+        setIsAvailable(allAvailable);
+    };
+
+    const handleRequestedQtyChange = (itemId, value) => {
+        const newValue = Math.max(0, parseInt(value) || 0);
+        setItems(prevItems => {
+            const updatedItems = prevItems.map(item =>
+                item.id === itemId ? { ...item, pivot: { ...item.pivot, quantity: newValue } } : item
+            );
+            calculateTotalQuantities(updatedItems);
+            validateQuantities(updatedItems, availableQuantities);
+            return updatedItems;
+        });
+    };
+
     const handlePackageQtyChange = (itemId, value) => {
         const newValue = Math.min(Math.max(0, parseInt(value) || 0), packageQuantities[itemId]);
-        setItems(prevItems => 
-            prevItems.map(item => 
+        setItems(prevItems =>
+            prevItems.map(item =>
                 item.id === itemId ? { ...item, package_qty: newValue } : item
             )
         );
@@ -91,8 +107,8 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
         try {
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/stock-outs`, {
                 request_id: requestId,
-                items: items.map(item => ({ 
-                    item_id: item.id, 
+                items: items.map(item => ({
+                    item_id: item.id,
                     quantity: item.pivot.quantity,
                     package_qty: item.package_qty || 0
                 })),
@@ -101,7 +117,7 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 date: new Date().toISOString().split('T')[0],
                 status: 'Pending',
             });
-
+    
             Swal.fire({
                 icon: 'success',
                 title: 'Success',
@@ -112,11 +128,15 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                 fetchRequests();
             }
         } catch (error) {
-            setError(error.response?.data?.message || 'Failed to approve stock out');
+            const errorMessage = error.response?.data?.error || 'Failed to approve stock out';
+            const errorTrace = error.response?.data?.trace || 'No trace available';
+            console.error('Error details:', errorMessage, errorTrace);
+    
+            setError(errorMessage);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.message || 'Failed to approve stock out',
+                text: errorMessage,
             });
         } finally {
             setLoading(false);
@@ -155,7 +175,15 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                                 <tr key={item.id} className="border-t border-gray-300">
                                     <td className="px-4 py-2">{item.item.name}</td>
                                     <td className="px-4 py-2">{item.supplier.name}</td>
-                                    <td className="px-4 py-2">{item.pivot.quantity}</td>
+                                    <td className="px-4 py-2">
+                                        <input
+                                            type="number"
+                                            value={item.pivot.quantity}
+                                            onChange={(e) => handleRequestedQtyChange(item.id, e.target.value)}
+                                            min="0"
+                                            className="w-24 px-2 py-1 border border-gray-300 rounded"
+                                        />
+                                    </td>
                                     <td className="px-4 py-2">{availableQuantities[item.id] || 0}</td>
                                     <td className="px-4 py-2">
                                         <input
@@ -208,26 +236,22 @@ const StockOutApproval = ({ isOpen, onClose, requestId, fetchRequests }) => {
                         />
                     </div>
                 </div>
-                {error && <div className="mt-4 text-sm text-red-500">{error}</div>}
-                <div className="flex justify-end mt-6 space-x-4">
-                    <button 
-                        type="button" 
-                        className="px-4 py-2 text-gray-500 border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#00BDD6]" 
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </button>
+                {error && <div className="mt-4 text-red-600">{error}</div>}
+                <div className="flex justify-end mt-6">
                     <button
-                        type="button"
-                        className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#00BDD6] ${
-                            loading || !isAvailable 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-[#00BDD6] hover:bg-[#00a8bb]'
-                        }`}
                         onClick={handleApprove}
                         disabled={loading || !isAvailable}
+                        className={`px-4 py-2 text-white rounded-md ${
+                            loading || !isAvailable ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
                     >
                         {loading ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="ml-4 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                    >
+                        Close
                     </button>
                 </div>
             </div>
