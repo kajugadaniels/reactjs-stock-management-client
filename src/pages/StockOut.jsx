@@ -38,24 +38,19 @@ const StockOut = () => {
                         requestFrom: item.request.request_from,
                         status: item.request.status,
                         createdAt: new Date(item.created_at).toLocaleString(),
-                        items: [] // Initialize items array for the request
+                        items: []
                     };
                 }
-                // Find the correct request item related to the stock_out entry
-                const stockOutItem = item.request.items.find(i => i.id === item.request_item_id); // Assuming you have request_item_id
-                
-                if (stockOutItem) {
-                    groupedData[item.request_id].items.push({
-                        itemName: stockOutItem.item.name,
-                        itemType: stockOutItem.item.type.name,
-                        itemCategory: stockOutItem.item.category.name,
-                        capacity: stockOutItem.item.capacity,
-                        unit: stockOutItem.item.unit,
-                        quantity: item.quantity, 
-                        packageQty: item.package_qty,
-                        approvedQuantity: item.approved_quantity,
-                    });
-                }
+                groupedData[item.request_id].items.push({
+                    itemName: item.request.items[0].item.name,
+                    itemType: item.request.items[0].item.type.name,
+                    itemCategory: item.request.items[0].item.category.name,
+                    capacity: item.request.items[0].item.capacity,
+                    unit: item.request.items[0].item.unit,
+                    quantity: item.quantity,
+                    packageQty: item.package_qty,
+                    approvedQuantity: item.approved_quantity,
+                });
             });
         });
         return Object.values(groupedData);
