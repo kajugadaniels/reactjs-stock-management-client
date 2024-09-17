@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { BarElement, CategoryScale, Chart as ChartJS, Legend, LinearScale, Title, Tooltip } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
@@ -33,6 +33,7 @@ const Dashboard = () => {
     const [filteredTypes, setFilteredTypes] = useState([]);
     const [productionInventory, setProductionInventory] = useState([]);
     const [filterText, setFilterText] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const today = new Date();
     const localDate = today.toLocaleDateString('en-CA');
@@ -43,6 +44,12 @@ const Dashboard = () => {
         name: '',
         date: localDate
     });
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         fetchDashboardData();
@@ -150,33 +157,7 @@ const Dashboard = () => {
         </div>
     );
 
-    const RecentActivityTable = ({ title, data, type }) => (
-        <div className="p-4 overflow-x-auto bg-white rounded-lg shadow-md md:p-6">
-            <h3 className="mb-4 text-sm font-semibold text-gray-800 md:text-lg">{title}</h3>
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Date</th>
-                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Item</th>
-                        <th className="px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase md:px-6 md:py-3 md:text-sm">Quantity</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {data.map((item, index) => (
-                        <tr key={index}>
-                            <td className="px-4 py-2 text-xs text-gray-500 md:px-6 md:py-4 md:text-sm whitespace-nowrap">{item.date}</td>
-                            <td className="px-4 py-2 text-xs font-medium text-gray-900 md:px-6 md:py-4 md:text-sm whitespace-nowrap">{item.item_name}</td>
-                            <td className="px-4 py-2 text-xs text-gray-500 md:px-6 md:py-4 md:text-sm whitespace-nowrap">
-                                {type === 'in' ? '+' : '-'}{item.quantity}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-
-    const inventoryColumns = [
+    const inventoryColumns = useMemo(() => [
         {
             name: 'Item',
             selector: (row) => row.name,
@@ -197,8 +178,6 @@ const Dashboard = () => {
             name: 'Available',
             selector: (row) => row.available_quantity,
             sortable: true,
-            wrap: true,
-            minWidth: '200px',
             cell: row => {
                 const availableQuantity = row.available_quantity;
                 return (
@@ -215,18 +194,15 @@ const Dashboard = () => {
         },
         {
             name: 'Stock Out',
-            wrap: true,
-            minWidth: '200px',
             selector: (row) => row.total_stock_out,
             sortable: true,
+            omit: isMobile,
         },
-    ];
+    ], [isMobile]);
 
-    const productionColumns = [
+    const productionColumns = useMemo(() => [
         {
             name: 'Item',
-            wrap: true,
-            minWidth: '200px',
             selector: (row) => row.item_name,
             sortable: true,
             cell: row => (
@@ -240,8 +216,6 @@ const Dashboard = () => {
         },
         {
             name: 'Available',
-            wrap: true,
-            minWidth: '200px',
             selector: row => row.available_quantity,
             sortable: true,
             cell: row => {
@@ -262,8 +236,9 @@ const Dashboard = () => {
             name: 'Stock Out',
             selector: row => row.total_stock_out,
             sortable: true,
+            omit: isMobile,
         },
-    ];
+    ], [isMobile]);
 
     const customStyles = {
         headRow: {
@@ -314,42 +289,6 @@ const Dashboard = () => {
         );
     }, [filterText]);
 
-    // const productionOverviewOptions = {
-    //     scales: {
-    //         xAxes: [{
-    //             type: 'time',
-    //             time: {
-    //                 unit: 'month',
-    //                 displayFormats: {
-    //                     month: 'MMMM' 
-    //                 }
-    //             },
-    //             scaleLabel: {
-    //                 display: true,
-    //                 labelString: 'Month'
-    //             }
-    //         }],
-    //         yAxes: [{
-    //             ticks: {
-    //                 beginAtZero: true
-    //             },
-    //             scaleLabel: {
-    //                 display: true,
-    //                 labelString: 'Quantity'
-    //             }
-    //         }]
-    //     },
-    //     responsive: true,
-    //     plugins: {
-    //         legend: {
-    //             position: 'top'
-    //         }
-    //     }
-    // };
-
-
-
-
     const productionOverviewOptions = {
         responsive: true,
         plugins: {
@@ -359,7 +298,6 @@ const Dashboard = () => {
             title: {
                 display: true,
                 text: 'Production Overview',
-
             },
         },
     };

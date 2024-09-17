@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -13,13 +13,14 @@ const Process = () => {
     const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
     const [selectedProcess, setSelectedProcess] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const [expandedRows, setExpandedRows] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -53,7 +54,37 @@ const Process = () => {
         setIsFinishedModalOpen(false);
     };
 
-    const columns = [
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
+
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)}>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+            ),
+            omit: !isMobile,
+        },
         {
             name: 'Item Name',
             wrap: true,
@@ -76,6 +107,7 @@ const Process = () => {
             sortable: true,
             wrap: true,
             minWidth: '300px',
+            omit: isMobile,
         },
         {
             name: 'Category',
@@ -90,6 +122,7 @@ const Process = () => {
             sortable: true,
             wrap: true,
             minWidth: '300px',
+            omit: isMobile,
         },
         {
             name: 'Status',
@@ -114,8 +147,30 @@ const Process = () => {
                     {row.status === 'Finished' ? 'Already Finished' : 'Finish'}
                 </button>
             ),
+            omit: isMobile,
         },
-    ];
+    ], [expandedRows, toggleRowExpansion, isMobile]);
+
+    const ExpandedRow = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Stockout Item:</div>
+                <div>{data.request.request_for.name}</div>
+                <div className="font-bold">Total Quantity:</div>
+                <div>{data.total_quantity}</div>
+                <div className="font-bold">Actions:</div>
+                <div>
+                    <button
+                        className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${data.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full sm:w-auto`}
+                        onClick={() => toggleFinishedCreateModal(data)}
+                        disabled={data.status === 'Finished'}
+                    >
+                        {data.status === 'Finished' ? 'Already Finished' : 'Finish'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 
     const customStyles = {
         headRow: {
@@ -158,71 +213,6 @@ const Process = () => {
         );
     }, [processes, searchTerm]);
 
-    const paginatedProcesses = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return filteredProcesses.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, filteredProcesses, itemsPerPage]);
-
-    const totalPages = Math.ceil(filteredProcesses.length / itemsPerPage);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
-
-    const MobileProcessCard = ({ process }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2">
-                <div className="font-bold">Item Name:</div>
-                <div>
-                    {process.request.items.map(item => (
-                        <div key={item.id}>
-                            {item.item.name} - {item.item.type.name} - {item.pivot.quantity}
-                        </div>
-                    ))}
-                </div>
-                <div className="font-bold">Stockout Item:</div>
-                <div>{process.request.request_for.name}</div>
-                <div className="font-bold">Category:</div>
-                <div>{process.request.items[0]?.item.category.name}</div>
-                <div className="font-bold">Total Quantity:</div>
-                <div>{process.total_quantity}</div>
-                <div className="font-bold">Status:</div>
-                <div>
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${process.status === 'Pending' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                        {process.status}
-                    </span>
-                </div>
-            </div>
-            <div className="mt-4">
-                <button
-                    className={`px-4 py-2 inline-flex text-xs leading-5 font-semibold rounded-md ${process.status === 'Finished' ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'} w-full`}
-                    onClick={() => toggleFinishedCreateModal(process)}
-                    disabled={process.status === 'Finished'}
-                >
-                    {process.status === 'Finished' ? 'Already Finished' : 'Finish'}
-                </button>
-            </div>
-        </div>
-    );
-
     if (loading) return <div className="mt-5 text-center">Loading...</div>;
     if (error) return <div className="mt-5 text-center text-red-500">{error}</div>;
 
@@ -245,34 +235,25 @@ const Process = () => {
             </div>
 
             <div className="mt-8 bg-white rounded-lg shadow">
-                {isMobile ? (
-                    <div className="p-4">
-                        {paginatedProcesses.map(process => (
-                            <MobileProcessCard key={process.id} process={process} />
-                        ))}
-                        <SimplePagination
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={setCurrentPage}
-                        />
-                    </div>
-                ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredProcesses}
-                        pagination
-                        paginationPerPage={itemsPerPage}
-                        paginationTotalRows={filteredProcesses.length}
-                        paginationComponentOptions={{
-                            noRowsPerPage: true
-                        }}
-                        onChangePage={page => setCurrentPage(page)}
-                        responsive
-                        highlightOnHover
-                        pointerOnHover
-                        customStyles={customStyles}
-                    />
-                )}
+                <DataTable
+                    columns={columns}
+                    data={filteredProcesses}
+                    pagination
+                    paginationPerPage={itemsPerPage}
+                    paginationTotalRows={filteredProcesses.length}
+                    paginationComponentOptions={{
+                        noRowsPerPage: true
+                    }}
+                    onChangePage={page => setCurrentPage(page)}
+                    responsive
+                    highlightOnHover
+                    pointerOnHover
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedRow}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
+                />
             </div>
 
             <FinishedCreate
