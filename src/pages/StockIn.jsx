@@ -21,7 +21,6 @@ const StockIn = () => {
     const [isStockInReportOpen, setIsStockInReportOpen] = useState(false);
     const [selectedStockIn, setSelectedStockIn] = useState(null);
     const [isSupplierStockOpen, setIsSupplierStockOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [filters, setFilters] = useState({
         category: '',
         type: '',
@@ -249,7 +248,7 @@ const StockIn = () => {
                 <div className="font-bold">Batch Number:</div>
                 <div>{data.batch_number}</div>
             </div>
-            <div className="mt-4 flex justify-end space-x-2">
+            <div className="flex justify-end mt-4 space-x-2">
                 <button
                     onClick={() => { setSelectedStockIn(data.id); setIsStockInDetailsOpen(true); }}
                     className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
