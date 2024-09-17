@@ -74,7 +74,7 @@ const ProductStockIn = () => {
             width: '50px',
             cell: row => (
                 <button onClick={() => toggleRowExpansion(row)}>
-                    <svg
+                    {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -90,7 +90,7 @@ const ProductStockIn = () => {
                         }}
                     >
                         <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    </svg> */}
                 </button>
             ),
             omit: !isMobile,
@@ -100,33 +100,39 @@ const ProductStockIn = () => {
             selector: (row) => `Prod-${row.id}`,
             sortable: true,
             omit: isMobile,
+            minWidth: '150px',
         },
         {
             name: 'Finished Product',
             selector: (row) => row.item_name,
             sortable: true,
+            minWidth: '200px',
         },
         {
             name: 'Package Type',
             selector: (row) => row.package_type,
             sortable: true,
+            minWidth: '300px',
         },
         {
             name: 'Quantity',
             selector: (row) => row.quantity,
             sortable: true,
             omit: isMobile,
+            minWidth: '150px',
         },
         {
             name: 'Comment',
             selector: (row) => row.comment,
             sortable: true,
             omit: isMobile,
+            minWidth: '150px',
         },
         {
             name: 'Date',
             selector: (row) => new Date(row.created_at).toLocaleDateString(),
             sortable: true,
+            minWidth: '150px',
         },
     ], [isMobile, expandedRows, toggleRowExpansion]);
 

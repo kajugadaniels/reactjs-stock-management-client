@@ -45,7 +45,7 @@ const PackageStock = () => {
             width: '50px',
             cell: row => (
                 <button onClick={() => toggleRowExpansion(row)}>
-                    <svg
+                    {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -61,7 +61,7 @@ const PackageStock = () => {
                         }}
                     >
                         <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    </svg> */}
                 </button>
             ),
             omit: !isMobile,
@@ -70,21 +70,25 @@ const PackageStock = () => {
             name: 'Item Name',
             selector: row => row.item_name,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Category',
             selector: row => row.category,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Type',
             selector: row => row.type,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Capacity',
             selector: row => `${row.capacity} ${row.unit}`,
             sortable: true,
+            minWidth: '150px',
             omit: isMobile,
         },
         {
@@ -92,6 +96,7 @@ const PackageStock = () => {
             selector: row => row.quantity,
             sortable: true,
             omit: isMobile,
+            minWidth: '150px',
         },
     ], [isMobile, expandedRows, toggleRowExpansion]);
 

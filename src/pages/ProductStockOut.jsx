@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import DataTable from 'react-data-table-component';
 import ProductStockOutCreate from './ProductStockOut/ProductStockOutCreate';
 import ProductStockOutReport from './reports/ProductStockOutReport';
 
@@ -8,12 +9,11 @@ const ProductStockOut = () => {
     const [stockOutData, setStockOutData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
-    const itemsPerPage = 10;
+    const [expandedRows, setExpandedRows] = useState({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 640);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -30,8 +30,8 @@ const ProductStockOut = () => {
         setIsLoading(true);
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/product-stock-out`);
-            const contentType = response.headers.get("content-type");
             if (!response.ok) throw new Error('Network response was not ok.');
+            const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes('application/json')) {
                 throw new TypeError("Received non-JSON response from server");
             }
@@ -52,65 +52,149 @@ const ProductStockOut = () => {
         fetchStockOutData();
     };
 
-    const paginatedStockOuts = useMemo(() => {
-        const firstPageIndex = (currentPage - 1) * itemsPerPage;
-        const lastPageIndex = firstPageIndex + itemsPerPage;
-        return stockOutData.slice(firstPageIndex, lastPageIndex);
-    }, [currentPage, stockOutData]);
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
 
-    const totalPages = Math.ceil(stockOutData.length / itemsPerPage);
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)} className="w-full h-full flex items-center justify-center">
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const SimplePagination = ({ currentPage, totalPages, onPageChange }) => {
-        return (
-            <div className="flex justify-between items-center mt-4 px-4">
-                <button
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Previous
                 </button>
-                <button
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        );
-    };
+            ),
+            omit: !isMobile,
+        },
+        {
+            name: 'Item Name',
+            selector: row => row.product_stock_in?.item_name || 'N/A',
+            sortable: true,
+            wrap: true,
+            minWidth: '130px',
+            grow: 1,
+        },
+        {
+            name: 'Quantity',
+            selector: row => `${row.quantity || 0} Sacks of ${row.product_stock_in?.package_type || 'N/A'}`,
+            sortable: true,
+            wrap: true, minWidth: '150px',
 
-    const MobileStockOutCard = ({ item }) => (
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
+        },
+        {
+            name: 'L P S',
+            selector: row => row.loading_payment_status,
+            minWidth: '150px',
+            sortable: true,
+            cell: row => (
+                <span className={row.loading_payment_status ? 'text-teal-600' : 'text-red-600'}>
+                    {row.loading_payment_status ? 'Paid' : 'Not Paid'}
+                </span>
+            ),
+        },
+        {
+            name: 'Stock OUT ID',
+            selector: row => `STCK_OUT-${row.id}`,
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Location',
+            selector: row => row.location || 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Employee',
+            selector: row => row.employee?.name || 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Batch',
+            selector: row => row.batch || 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Client Name',
+            selector: row => row.client_name || 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Plate Number',
+            selector: row => row.plate || 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+        {
+            name: 'Date',
+            selector: row => row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A',
+            sortable: true,
+            omit: isMobile,
+        },
+    ], [expandedRows, toggleRowExpansion, isMobile]);
+
+    const ExpandedComponent = ({ data }) => (
+        <div className="p-4 bg-gray-50">
             <div className="grid grid-cols-2 gap-2">
                 <div className="font-bold">Stock OUT ID:</div>
-                <div>STCK_OUT-{item.id}</div>
+                <div>{`STCK_OUT-${data.id}`}</div>
                 <div className="font-bold">Location:</div>
-                <div>{item.location || 'N/A'}</div>
+                <div>{data.location || 'N/A'}</div>
                 <div className="font-bold">Employee:</div>
-                <div>{item.employee?.name || 'N/A'}</div>
-                <div className="font-bold">Item Name:</div>
-                <div>{item.product_stock_in?.item_name || 'N/A'}</div>
+                <div>{data.employee?.name || 'N/A'}</div>
                 <div className="font-bold">Batch:</div>
-                <div>{item.batch || 'N/A'}</div>
+                <div>{data.batch || 'N/A'}</div>
                 <div className="font-bold">Client Name:</div>
-                <div>{item.client_name || 'N/A'}</div>
-                <div className="font-bold">Quantity:</div>
-                <div>{`${item.quantity || 0} Sacks of ${item.product_stock_in?.package_type || 'N/A'}`}</div>
+                <div>{data.client_name || 'N/A'}</div>
                 <div className="font-bold">Plate Number:</div>
-                <div>{item.plate || 'N/A'}</div>
-                <div className="font-bold">L P S:</div>
-                <div className={item.loading_payment_status ? 'text-teal-600' : 'text-red-600'}>
-                    {item.loading_payment_status ? 'Paid' : 'Not Paid'}
-                </div>
+                <div>{data.plate || 'N/A'}</div>
                 <div className="font-bold">Date:</div>
-                <div>{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'}</div>
+                <div>{data.created_at ? new Date(data.created_at).toLocaleDateString() : 'N/A'}</div>
             </div>
         </div>
     );
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+                padding: '12px 8px',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+                minHeight: 'auto',
+            },
+        },
+        cells: {
+            style: {
+                padding: '12px 8px',
+                whiteSpace: 'normal',
+            },
+        },
+    };
 
     if (isLoading) return <p className="text-center text-gray-600">Loading...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
@@ -145,68 +229,23 @@ const ProductStockOut = () => {
                 onClose={toggleProductStockOutReportModal}
             />
 
-            {isMobile ? (
-                <div>
-                    {paginatedStockOuts.map((item) => (
-                        <MobileStockOutCard key={item.id} item={item} />
-                    ))}
-                    <SimplePagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={paginate}
-                    />
-                </div>
-            ) : (
-                <>
-                    <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Stock OUT ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Location</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Employee</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Item Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Batch</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Client Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Quantity</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Plate Number</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">L P S</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal min-w-[150px]">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {paginatedStockOuts.map((item) => (
-                                    <tr key={item.id}>
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">STCK_OUT-{item.id}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.location || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.employee?.name || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.product_stock_in?.item_name || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.batch || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.client_name || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{`${item.quantity || 0} Sacks of ${item.product_stock_in?.package_type || 'N/A'}`}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.plate || 'N/A'}</td>
-                                        <td className={`px-6 py-4 text-sm font-medium ${item.loading_payment_status ? 'text-teal-600' : 'text-red-600'}`}>
-                                            {item.loading_payment_status ? 'Paid' : 'Not Paid'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A'}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="flex justify-center mt-4">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                            <button
-                                key={number}
-                                onClick={() => paginate(number)}
-                                className={`px-4 py-2 mx-1 ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                            >
-                                {number}
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
+            <div className="mt-8 bg-white rounded-lg shadow">
+                <DataTable
+                    columns={columns}
+                    data={stockOutData}
+                    pagination
+                    paginationPerPage={10}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100]}
+                    highlightOnHover
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedComponent}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
+                />
+            </div>
         </div>
     );
 };
