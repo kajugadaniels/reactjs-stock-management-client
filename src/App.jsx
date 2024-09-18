@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { LoginLayout, UserLayout } from './layouts';
-import { Dashboard, Users, FinishedProduct, FinishedStock, Inventory, ItemInventory, Items, Login, PackageStock, Process, ProductStockIn, ProductStockOut, ProductionInventory, Stock, StockIn, StockOut, Suppliers } from './pages';
+import { Dashboard, Users, FinishedProduct, FinishedStock, Inventory, ItemInventory, Items, Login, PackageStock, Process, ProductStockIn, ProductStockOut, ProductionInventory, Stock, StockIn, StockOut, Suppliers, ChangePassword } from './pages';
 import TotalPackeging from './pages/totalStockin/TotalPackeging';
 import TotalRowMaterial from './pages/totalStockin/TotalRowMaterial';
 import TotalPackegingOut from './pages/totalStockout/TotalPackegingOut';
@@ -35,6 +35,7 @@ const App = () => {
                     <Route path="totalPackegingOut" element={<TotalPackegingOut />} />
                     <Route path="package-stock" element={<PackageStock />} />
                     <Route path="finished-stock" element={<FinishedStock />} />
+                    <Route path="change-password" element={<ChangePassword />} />
                 </Route>
             </Routes>
         </Router>
