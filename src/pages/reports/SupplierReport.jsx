@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSupplier } from '../../hooks';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const SupplierReport = ({ onClose }) => {
     const { suppliers, loading: suppliersLoading } = useSupplier();
@@ -37,38 +39,39 @@ const SupplierReport = ({ onClose }) => {
             }
 
             const data = await response.json();
-            generateCSV(data.data);
+            generatePDF(data.data);
         } catch (error) {
             console.error('Error generating report:', error);
         }
         setLoading(false);
     };
 
-    const generateCSV = (data) => {
-        const headers = ['Supplier Name', 'Item Name', 'Category', 'Type', 'Quantity', 'Date Added'];
-        const csvContent = [
-            headers.join(','),
-            ...data.map(item => [
-                item.supplier_name,
-                item.name,
-                item.category_name,
-                item.type_name,
-                item.quantity || 'N/A',
-                new Date(item.created_at).toLocaleDateString() // Format the date
-            ].join(','))
-        ].join('\n');
+    const generatePDF = (data) => {
+        const doc = new jsPDF();
+        
+        // Add a title
+        doc.text('Supplier Report', 14, 20);
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `supplier_report_${formData.supplierId}_${formData.startDate}_${formData.endDate}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        // Prepare the headers and the data for the table
+        const headers = [['Supplier Name', 'Item Name', 'Category', 'Type', 'Quantity', 'Date Added']];
+        const tableData = data.map(item => [
+            item.supplier_name,
+            item.name,
+            item.category_name,
+            item.type_name,
+            item.quantity || 'N/A',
+            new Date(item.created_at).toLocaleDateString()
+        ]);
+
+        // Auto table to format the report in table format
+        doc.autoTable({
+            head: headers,
+            body: tableData,
+            startY: 30,
+        });
+
+        // Save the generated PDF
+        doc.save(`supplier_report_${formData.supplierId}_${formData.startDate}_${formData.endDate}.pdf`);
     };
 
     if (suppliersLoading) {
@@ -133,7 +136,7 @@ const SupplierReport = ({ onClose }) => {
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             disabled={loading}
                         >
-                            {loading ? 'Generating...' : 'Generate CSV Report'}
+                            {loading ? 'Generating...' : 'Generate PDF Report'}
                         </button>
                         <button
                             type="button"

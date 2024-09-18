@@ -127,7 +127,7 @@ const Stock = () => {
             width: '50px',
             cell: row => (
                 <button onClick={() => toggleRowExpansion(row)}>
-                    <svg
+                    {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -143,7 +143,7 @@ const Stock = () => {
                         }}
                     >
                         <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    </svg> */}
                 </button>
             ),
             omit: !isMobile,
@@ -186,11 +186,10 @@ const Stock = () => {
         {
             name: 'Status',
             cell: row => (
-                <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                <span className={`px-1 inline-flex text-xs leading-5 font-semibold rounded-full ${row.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
                     row.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                    'bg-green-100 text-green-800'
-                }`}>
+                        'bg-green-100 text-green-800'
+                    }`}>
                     {row.status}
                 </span>
             ),
@@ -325,11 +324,11 @@ const Stock = () => {
     if (error) return <div className="p-4 mt-20 text-red-500">{error}</div>;
 
     return (
-        <div className="p-4 sm:p-6 md:p-8 lg:p-16 mt-20">
+        <div className="p-4  sm:p-6 md:p-8 lg:p-16 mt-20">
             {canAccessStockLinks && (
                 <div className="flex flex-wrap gap-4 mb-6">
                     <Link to='/products'>
-                        <div className="bg-[rgba(78,189,214,255)] text-white p-2 rounded-lg w-32">
+                        <div className="bg-[rgba(78,189,214,255)] text-white p-2 px-4 py-6 rounded w-32">
                             <div className="flex ">
                                 <div>
                                     <div className='flex'>
@@ -343,7 +342,7 @@ const Stock = () => {
                         </div>
                     </Link>
                     <Link to='/StockOut'>
-                        <div className="w-32 p-2 text-white bg-purple-500 rounded-lg">
+                        <div className="w-32 p-2 px-4 py-6 text-white bg-purple-900 rounded">
                             <div className="flex items-center ">
                                 <div>
                                     <div className='flex gap-1'>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardListIcon, CubeIcon } from '@heroicons/react/outline';
-import ItemInventory from './ItemInventory'; 
-import ProductionInventory from './ProductionInventory'; 
+import ItemInventory from './ItemInventory';
+import ProductionInventory from './ProductionInventory';
 
 const InventoryCard = ({ title, description, icon, onClick, isSelected }) => (
     <div
@@ -26,7 +26,7 @@ const Inventory = () => {
     const [selectedInventory, setSelectedInventory] = useState('ItemInventory');
 
     return (
-        <div className="container px-4 py-12 mx-auto">
+        <div className="container mt-11 px-4 py-12 mx-auto mt-20">
             <h1 className="mb-8 text-3xl font-bold text-gray-800">Inventory Management</h1>
 
             <div className="grid gap-8 mb-12 md:grid-cols-2">

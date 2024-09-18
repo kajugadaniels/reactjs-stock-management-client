@@ -162,6 +162,7 @@ const Dashboard = () => {
             name: 'Item',
             selector: (row) => row.name,
             sortable: true,
+            minWidth: '150px',
             cell: row => (
                 <div>
                     <div>{row.name}</div>
@@ -178,6 +179,7 @@ const Dashboard = () => {
             name: 'Available',
             selector: (row) => row.available_quantity,
             sortable: true,
+            minWidth: '150px',
             cell: row => {
                 const availableQuantity = row.available_quantity;
                 return (
@@ -191,11 +193,13 @@ const Dashboard = () => {
             name: 'Stock In',
             selector: (row) => row.total_stock_in,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Stock Out',
             selector: (row) => row.total_stock_out,
             sortable: true,
+            minWidth: '150px',
             omit: isMobile,
         },
     ], [isMobile]);
@@ -205,6 +209,7 @@ const Dashboard = () => {
             name: 'Item',
             selector: (row) => row.item_name,
             sortable: true,
+            minWidth: '150px',
             cell: row => (
                 <div>
                     <div>{row.item_name}</div>
@@ -218,6 +223,7 @@ const Dashboard = () => {
             name: 'Available',
             selector: row => row.available_quantity,
             sortable: true,
+            minWidth: '150px',
             cell: row => {
                 const availableQuantity = row.total_stock_in - row.total_stock_out;
                 return (
@@ -231,11 +237,13 @@ const Dashboard = () => {
             name: 'Stock In',
             selector: row => row.total_stock_in,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Stock Out',
             selector: row => row.total_stock_out,
             sortable: true,
+            minWidth: '150px',
             omit: isMobile,
         },
     ], [isMobile]);

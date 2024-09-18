@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
@@ -12,6 +12,14 @@ const EmployeesCreate = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(false);
     const [employees, setEmployees] = useState([]);
     const [editingEmployee, setEditingEmployee] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [expandedRows, setExpandedRows] = useState({});
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         fetchEmployees();
@@ -84,7 +92,37 @@ const EmployeesCreate = ({ isOpen, onClose }) => {
         }
     };
 
-    const columns = [
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
+
+    const columns = useMemo(() => [
+        {
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)} className="w-full h-full flex items-center justify-center">
+                    {/* <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg> */}
+                </button>
+            ),
+            omit: !isMobile,
+        },
         {
             name: 'Name',
             selector: row => row.name,
@@ -118,8 +156,66 @@ const EmployeesCreate = ({ isOpen, onClose }) => {
                     </button>
                 </>
             ),
+            omit: isMobile,
         },
-    ];
+    ], [expandedRows, toggleRowExpansion, isMobile]);
+
+    const ExpandedComponent = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="flex justify-end space-x-2">
+                <button 
+                    onClick={() => handleEdit(data)} 
+                    className="px-2 py-1 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600"
+                >
+                    Edit
+                </button>
+                <button 
+                    onClick={() => handleDelete(data.id)} 
+                    className="px-2 py-1 text-xs font-medium text-white bg-red-500 rounded hover:bg-red-600"
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    );
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f3f4f6',
+                borderBottom: '2px solid #e5e7eb',
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                color: '#374151',
+                padding: '12px 8px',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem',
+                backgroundColor: 'white',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#f9fafb',
+                },
+                '&:hover': {
+                    backgroundColor: '#f3f4f6',
+                },
+                borderBottom: '1px solid #e5e7eb',
+                minHeight: 'auto',
+            },
+        },
+        cells: {
+            style: {
+                padding: '12px 8px',
+                whiteSpace: 'normal',
+            },
+        },
+    };
 
     if (!isOpen) return null;
 
@@ -196,6 +292,11 @@ const EmployeesCreate = ({ isOpen, onClose }) => {
                     highlightOnHover
                     striped
                     responsive
+                    customStyles={customStyles}
+                    expandableRows={isMobile}
+                    expandableRowsComponent={ExpandedComponent}
+                    expandableRowExpanded={row => expandedRows[row.id]}
+                    onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
                 />
 
                 <div className="mt-4">

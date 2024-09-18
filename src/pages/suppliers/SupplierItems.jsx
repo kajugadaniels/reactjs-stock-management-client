@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import Swal from 'sweetalert2';
@@ -9,6 +9,14 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
     const [types, setTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [expandedRows, setExpandedRows] = useState({});
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchData = async () => {
         setLoading(true);
@@ -51,7 +59,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
 
             if (result.isConfirmed) {
                 const response = await axios.delete(`${import.meta.env.VITE_API_URL}/supplier-items/${id}`);
-                
+
                 if (response.status === 200) {
                     setItems(items.filter(item => item.id !== id));
                     Swal.fire('Deleted!', response.data.message, 'success');
@@ -65,31 +73,66 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
         }
     };
 
-    const columns = [
+    const toggleRowExpansion = useCallback((row) => {
+        setExpandedRows(prev => ({ ...prev, [row.id]: !prev[row.id] }));
+    }, []);
+
+    const columns = useMemo(() => [
         {
-            name: 'Item ID',
-            selector: row => row.supplier_item_id,
-            sortable: true,
+            name: '',
+            width: '50px',
+            cell: row => (
+                <button onClick={() => toggleRowExpansion(row)} className="w-full h-full flex items-center justify-center">
+                    {/* <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                            transform: expandedRows[row.id] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease-in-out'
+                        }}
+                    >
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg> */}
+                </button>
+            ),
+            omit: !isMobile,
         },
         {
             name: 'Name',
             selector: row => row.name,
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Category',
             selector: row => categories.find(cat => cat.id === row.category_id)?.name || 'Unknown',
             sortable: true,
+            minWidth: '150px',
         },
         {
             name: 'Type',
             selector: row => types.find(type => type.id === row.type_id)?.name || 'Unknown',
             sortable: true,
+            minWidth: '150px',
+        },
+        {
+            name: 'Item ID',
+            selector: row => row.supplier_item_id,
+            sortable: true,
+            omit: isMobile,
         },
         {
             name: 'Capacity',
             selector: row => `${row.capacity || 'N/A'} ${row.unit || ''}`,
             sortable: true,
+            omit: isMobile,
         },
         {
             name: 'Actions',
@@ -101,8 +144,29 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                     Delete
                 </button>
             ),
+            omit: isMobile,
         },
-    ];
+    ], [categories, types, expandedRows, toggleRowExpansion, isMobile]);
+
+    const ExpandedComponent = ({ data }) => (
+        <div className="p-4 bg-gray-50">
+            <div className="grid grid-cols-2 gap-2">
+                <div className="font-bold">Item ID:</div>
+                <div>{data.supplier_item_id}</div>
+                <div className="font-bold">Capacity:</div>
+                <div>{`${data.capacity || 'N/A'} ${data.unit || ''}`}</div>
+                <div className="font-bold">Actions:</div>
+                <div>
+                    <button
+                        onClick={() => handleDelete(data.supplier_item_id)}
+                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 
     const customStyles = {
         headRow: {
@@ -117,6 +181,7 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                 fontWeight: '600',
                 textTransform: 'uppercase',
                 color: '#374151',
+                padding: '12px 8px',
             },
         },
         rows: {
@@ -130,6 +195,13 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                     backgroundColor: '#f3f4f6',
                 },
                 borderBottom: '1px solid #e5e7eb',
+                minHeight: 'auto',
+            },
+        },
+        cells: {
+            style: {
+                padding: '12px 8px',
+                whiteSpace: 'normal',
             },
         },
     };
@@ -157,6 +229,10 @@ const SupplierItems = ({ isOpen, onClose, supplier }) => {
                         highlightOnHover
                         pointerOnHover
                         customStyles={customStyles}
+                        expandableRows={isMobile}
+                        expandableRowsComponent={ExpandedComponent}
+                        expandableRowExpanded={row => expandedRows[row.id]}
+                        onRowExpandToggled={(expanded, row) => toggleRowExpansion(row)}
                     />
                 )}
                 <div className="flex justify-end mt-4">

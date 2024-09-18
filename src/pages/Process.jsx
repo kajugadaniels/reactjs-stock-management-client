@@ -64,7 +64,7 @@ const Process = () => {
             width: '50px',
             cell: row => (
                 <button onClick={() => toggleRowExpansion(row)}>
-                    <svg
+                    {/* <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -80,7 +80,7 @@ const Process = () => {
                         }}
                     >
                         <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                    </svg> */}
                 </button>
             ),
             omit: !isMobile,
@@ -88,7 +88,7 @@ const Process = () => {
         {
             name: 'Item Name',
             wrap: true,
-            minWidth: '300px',
+            minWidth: '150px',
             cell: row => (
                 <div>
                     {row.request.items.map(item => (
@@ -106,7 +106,7 @@ const Process = () => {
             selector: row => row.request.request_for.name,
             sortable: true,
             wrap: true,
-            minWidth: '300px',
+            minWidth: '150px',
             omit: isMobile,
         },
         {
@@ -114,14 +114,14 @@ const Process = () => {
             selector: row => row.request.items[0]?.item.category.name,
             sortable: true,
             wrap: true,
-            minWidth: '300px',
+            minWidth: '150px',
         },
         {
             name: 'Total Quantity',
             selector: row => row.total_quantity,
             sortable: true,
             wrap: true,
-            minWidth: '300px',
+            minWidth: '150px',
             omit: isMobile,
         },
         {
